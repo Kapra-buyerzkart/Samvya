@@ -18,7 +18,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
         'HRMS requires your location to verify attendance at authorized office sites during check-in.',
-      UIBackgroundModes: ['fetch'],
+      NSLocationAlwaysAndWhenInUseUsageDescription:
+        'HRMS requires continuous location updates in the background during active work sessions for field tracking.',
+      UIBackgroundModes: ['location', 'fetch'],
     },
   },
   android: {
@@ -32,6 +34,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     permissions: [
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.ACCESS_FINE_LOCATION',
+      'android.permission.ACCESS_BACKGROUND_LOCATION',
+      'android.permission.FOREGROUND_SERVICE',
+      'android.permission.FOREGROUND_SERVICE_LOCATION',
     ],
   },
   web: {
@@ -57,9 +62,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         locationWhenInUsePermission:
           'Allow HRMS to verify your current location for attendance check-in.',
-        isIosBackgroundLocationEnabled: false,
-        isAndroidBackgroundLocationEnabled: false,
-        isAndroidForegroundServiceEnabled: false,
+        locationAlwaysAndWhenInUsePermission:
+          'Allow HRMS to record your work-session route while clocked in.',
+        isIosBackgroundLocationEnabled: true,
+        isAndroidBackgroundLocationEnabled: true,
+        isAndroidForegroundServiceEnabled: true,
+        androidForegroundServiceIcon: './assets/images/android-icon-monochrome.png',
       },
     ],
     [

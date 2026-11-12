@@ -1,4 +1,5 @@
 import {
+  evaluateBackgroundPermissionState,
   evaluatePermissionState,
   type PermissionEvaluationInput,
 } from '../permissionMachine';
@@ -63,6 +64,52 @@ describe('Location Permission State Machine', () => {
       canAskAgain: false,
     };
     expect(evaluatePermissionState(input)).toEqual({ status: 'blocked' });
+  });
+
+  describe('Background Permission State Machine', () => {
+    it('returns foreground_required if foreground permission is not yet granted', () => {
+      const input: PermissionEvaluationInput = {
+        status: 'granted',
+        granted: true,
+      };
+      // foregroundGranted = false
+      expect(evaluateBackgroundPermissionState(input, false)).toEqual({
+        status: 'foreground_required',
+      });
+    });
+
+    it('returns granted when foreground is granted and background is granted', () => {
+      const input: PermissionEvaluationInput = {
+        status: 'granted',
+        granted: true,
+      };
+      expect(evaluateBackgroundPermissionState(input, true)).toEqual({
+        status: 'granted',
+      });
+    });
+
+    it('returns denied when background is denied but canAskAgain is true', () => {
+      const input: PermissionEvaluationInput = {
+        status: 'denied',
+        granted: false,
+        canAskAgain: true,
+      };
+      expect(evaluateBackgroundPermissionState(input, true)).toEqual({
+        status: 'denied',
+        canAskAgain: true,
+      });
+    });
+
+    it('returns blocked when background is denied and canAskAgain is false', () => {
+      const input: PermissionEvaluationInput = {
+        status: 'denied',
+        granted: false,
+        canAskAgain: false,
+      };
+      expect(evaluateBackgroundPermissionState(input, true)).toEqual({
+        status: 'blocked',
+      });
+    });
   });
 });
 

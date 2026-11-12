@@ -8,6 +8,13 @@ export type LocationPermissionState =
   | { status: 'denied'; canAskAgain: boolean }
   | { status: 'blocked' };
 
+export type BackgroundPermissionState =
+  | { status: 'undetermined' }
+  | { status: 'granted' }
+  | { status: 'denied'; canAskAgain: boolean }
+  | { status: 'blocked' }
+  | { status: 'foreground_required' };
+
 export interface PermissionEvaluationInput {
   status: Location.PermissionStatus | 'undetermined' | 'granted' | 'denied';
   granted: boolean;
@@ -25,6 +32,29 @@ export function evaluatePermissionState(input: PermissionEvaluationInput): Locat
       return { status: 'approximate_only' };
     }
     return { status: 'granted', accuracy: 'full' };
+  }
+
+  if (input.canAskAgain === false) {
+    return { status: 'blocked' };
+  }
+
+  return { status: 'denied', canAskAgain: true };
+}
+
+export function evaluateBackgroundPermissionState(
+  input: PermissionEvaluationInput,
+  foregroundGranted: boolean,
+): BackgroundPermissionState {
+  if (!foregroundGranted) {
+    return { status: 'foreground_required' };
+  }
+
+  if (input.status === 'undetermined') {
+    return { status: 'undetermined' };
+  }
+
+  if (input.granted) {
+    return { status: 'granted' };
   }
 
   if (input.canAskAgain === false) {
@@ -54,7 +84,43 @@ export async function requestLocationPermission(): Promise<LocationPermissionSta
   });
 }
 
+export async function checkBackgroundLocationPermission(): Promise<BackgroundPermissionState> {
+  const fg = await checkLocationPermission();
+  const fgGranted = fg.status === 'granted';
+
+  if (!fgGranted) {
+    return { status: 'foreground_required' };
+  }
+
+  const response = await Location.getBackgroundPermissionsAsync();
+  return evaluateBackgroundPermissionState(
+    {
+      status: response.status,
+      granted: response.granted,
+      canAskAgain: response.canAskAgain,
+    },
+    true,
+  );
+}
+
+export async function requestBackgroundLocationPermission(): Promise<BackgroundPermissionState> {
+  // Invariant: Request background permission only after foreground is granted
+  const fg = await checkLocationPermission();
+  if (fg.status !== 'granted') {
+    return { status: 'foreground_required' };
+  }
+
+  const response = await Location.requestBackgroundPermissionsAsync();
+  return evaluateBackgroundPermissionState(
+    {
+      status: response.status,
+      granted: response.granted,
+      canAskAgain: response.canAskAgain,
+    },
+    true,
+  );
+}
+
 export async function openSettingsDeepLink(): Promise<void> {
   await Linking.openSettings();
 }
-

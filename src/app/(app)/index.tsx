@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
 import { useFeatureFlag } from '@/shared/flags';
+import { BackgroundTrackingBanner, getActiveTrackingSession } from '@/features/location';
 
 const DEFAULT_OFFICE_SITE = {
   id: 'site_hq_main',
@@ -21,6 +22,8 @@ const LazyOneShotCheckInLocation = React.lazy(() =>
 export default function DashboardRoute(): React.JSX.Element {
   const { t } = useTranslation();
   const isLiveLocationEnabled = useFeatureFlag('liveLocation');
+  const isBackgroundTrackingEnabled = useFeatureFlag('backgroundTracking');
+  const activeSession = isBackgroundTrackingEnabled ? getActiveTrackingSession() : null;
 
   const handleStartFaceCheckIn = (): void => {
     router.push('/(app)/attendance/face-verify');
@@ -41,6 +44,10 @@ export default function DashboardRoute(): React.JSX.Element {
           <ThemedText variant="title">{t('common.appName')}</ThemedText>
           <ThemedText variant="subheading">{t('attendance.offDuty')}</ThemedText>
         </View>
+
+        {isBackgroundTrackingEnabled && activeSession ? (
+          <BackgroundTrackingBanner session={activeSession} />
+        ) : null}
 
         {isLiveLocationEnabled ? (
           <Suspense fallback={<ActivityIndicator size="small" />}>

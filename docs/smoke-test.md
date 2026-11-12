@@ -61,3 +61,23 @@ This document defines the manual and automated smoke-testing procedure required 
 - [ ] **Dark Mode**: Toggle system dark mode. Contrast ratios for text, cards, and badges meet WCAG AA standards.
 - [ ] **Safe Areas**: Top header and bottom buttons clear the Dynamic Island, camera notch, and home indicator bar.
 - [ ] **Screen Readers**: VoiceOver / TalkBack correctly reads the location status, retry buttons, and geofence badges.
+
+---
+
+### 6. Background Live Tracking Matrix (`backgroundTracking: true`)
+
+#### A. App Lifecycle & Process Termination
+- [ ] **App Swiped Away (Recents)**: Start tracking on-duty. Swipe away HRMS from Android Recents / iOS App Switcher. Verify foreground notification remains visible on Android; points continue logging into SQLite `location_breadcrumbs`.
+- [ ] **Device Reboot**: Restart device. Upon device boot and user app launch, `initializeTrackingOnStartup()` checks active shift. If still on-duty, tracking restarts; if off-duty, native task is confirmed unregistered.
+- [ ] **Doze Mode & Screen Off**: Lock screen for 15+ minutes. Android Doze batches updates with `deferredUpdatesInterval` (30s) without dropping points or triggering battery drain warnings.
+
+#### B. Network & Environmental Faults
+- [ ] **Airplane Mode**: Toggle Airplane mode during active tracking. Breadcrumbs accumulate in SQLite `location_breadcrumbs` with status `pending`. Reconnecting network drains the queue with idempotent batching and backoff.
+- [ ] **Permission Revoked Mid-Session**: While tracking is active, navigate to System Settings and revoke Location permission. Return to app: error is caught gracefully, task unregisters, and UI prompts user with rationale without crashing.
+- [ ] **Low Battery Mode**: Enable iOS Low Power Mode / Android Battery Saver. Verify that tracking throttles gracefully and pauses when user is stationary (`isStationary: true`), preventing OS thermal kills.
+
+#### C. Invariants & Kill Switch
+- [ ] **Off-Duty Invariant**: Verify background tracking **never** runs when off-duty or after checking out.
+- [ ] **Server-Driven Kill Switch**: Enable kill switch remotely (`killSwitch: true`). Background tracking stops immediately, the foreground service notification dismisses, and the session status switches to `stopped`.
+
+

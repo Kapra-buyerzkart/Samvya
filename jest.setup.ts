@@ -18,13 +18,28 @@ jest.mock('react-native-safe-area-context', () => {
 
 // Mock react-native-mmkv
 jest.mock('react-native-mmkv', () => {
-  const storage = new Map<string, string>();
+  const storage = new Map<string, unknown>();
   return {
     createMMKV: () => ({
-      getString: (key: string) => storage.get(key),
-      set: (key: string, value: string) => storage.set(key, value),
+      getString: (key: string) => {
+        const val = storage.get(key);
+        return val != null ? String(val) : undefined;
+      },
+      getBoolean: (key: string) => {
+        const val = storage.get(key);
+        if (typeof val === 'boolean') return val;
+        if (val === 'true') return true;
+        if (val === 'false') return false;
+        return undefined;
+      },
+      getNumber: (key: string) => {
+        const val = storage.get(key);
+        return typeof val === 'number' ? val : val != null ? Number(val) : undefined;
+      },
+      set: (key: string, value: unknown) => storage.set(key, value),
       delete: (key: string) => storage.delete(key),
       remove: (key: string) => storage.delete(key),
+      contains: (key: string) => storage.has(key),
       clearAll: () => storage.clear(),
       getAllKeys: () => Array.from(storage.keys()),
     }),
