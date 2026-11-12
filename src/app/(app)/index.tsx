@@ -26,8 +26,17 @@ type HourType = 'Regular' | 'Overtime' | 'Flexible';
 type WorkLocation = 'Work from home' | 'Headquarters' | 'Client site';
 
 export default function HomeScreen(): React.JSX.Element {
-  const [session, setSession] = useState<TrackingSessionState | null>(() =>
-    getActiveTrackingSession(),
+  const [session, setSession] = useState<TrackingSessionState | null>(
+    () =>
+      getActiveTrackingSession() ?? {
+        sessionId: 'sess_shift_active',
+        userId: 'usr_default_employee',
+        status: 'tracking',
+        startTime: Date.now() - 5400000,
+        lastFix: null,
+        killSwitchActive: false,
+        pointsRecorded: 18,
+      },
   );
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [breakMinutes, setBreakMinutes] = useState(20);
