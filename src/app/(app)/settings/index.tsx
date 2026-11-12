@@ -4,15 +4,18 @@ import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ThemedText, ThemedView } from '@/shared/components';
+import { useAuthStore } from '@/features/auth';
 
 export default function SettingsRoute(): React.JSX.Element {
   const { t } = useTranslation();
+  const logout = useAuthStore((s) => s.logout);
 
   const handleBack = (): void => {
     router.back();
   };
 
   const handleSignOut = (): void => {
+    logout();
     router.replace('/(auth)/login');
   };
 
