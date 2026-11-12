@@ -90,20 +90,26 @@ export function useFaceVerificationFlow({
         return;
       }
 
-      let currentStatus: PermissionStatus = VisionCamera.cameraPermissionStatus;
-      if (currentStatus === 'not-determined') {
-        setStep('requesting_permission');
-        const granted = await VisionCamera.requestCameraPermission();
-        currentStatus = granted ? 'authorized' : 'denied';
-      }
+      try {
+        let currentStatus: PermissionStatus =
+          VisionCamera?.cameraPermissionStatus ?? 'denied';
+        if (currentStatus === 'not-determined') {
+          setStep('requesting_permission');
+          const granted = await VisionCamera?.requestCameraPermission?.();
+          currentStatus = granted ? 'authorized' : 'denied';
+        }
 
-      if (currentStatus === 'authorized') {
-        setStep('positioning');
-        setInstruction('Position your face inside the oval.');
-        setChallengeSession(createChallengeSession());
-      } else {
+        if (currentStatus === 'authorized') {
+          setStep('positioning');
+          setInstruction('Position your face inside the oval.');
+          setChallengeSession(createChallengeSession());
+        } else {
+          setStep('error');
+          setInstruction('Camera permission required for face check-in.');
+        }
+      } catch {
         setStep('error');
-        setInstruction('Camera permission required for face check-in.');
+        setInstruction('Camera native module not available in this environment (e.g. Expo Go). Please use supervisor approval.');
       }
     }
 

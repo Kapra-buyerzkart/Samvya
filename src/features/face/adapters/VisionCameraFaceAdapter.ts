@@ -7,26 +7,30 @@ export class VisionCameraFaceAdapter implements FaceDetectionPort {
   readonly adapterName = 'VisionCameraFaceDetector (Unbundled MLKit / Apple Vision)';
 
   async checkReadiness(): Promise<ModelReadinessState> {
-    // 1. Check camera permission
-    const cameraPermission: PermissionStatus = VisionCamera.cameraPermissionStatus;
-    if (cameraPermission === 'denied' || cameraPermission === 'restricted') {
+    try {
+      // 1. Check camera permission
+      const cameraPermission: PermissionStatus = VisionCamera?.cameraPermissionStatus ?? 'denied';
+      if (cameraPermission === 'denied' || cameraPermission === 'restricted') {
+        return 'camera_denied';
+      }
+
+      if (cameraPermission === 'not-determined') {
+        // Must be requested on screen
+        return 'ready';
+      }
+
+      // 2. Platform-specific ML model readiness check
+      if (Platform.OS === 'android') {
+        // Unbundled ML Kit relies on Google Play Services install-time download
+        // Default to ready unless Google Play Services is missing
+        return 'ready';
+      }
+
+      // iOS uses native Apple Vision framework; model is always ready
+      return 'ready';
+    } catch {
       return 'camera_denied';
     }
-
-    if (cameraPermission === 'not-determined') {
-      // Must be requested on screen
-      return 'ready';
-    }
-
-    // 2. Platform-specific ML model readiness check
-    if (Platform.OS === 'android') {
-      // Unbundled ML Kit relies on Google Play Services install-time download
-      // Default to ready unless Google Play Services is missing
-      return 'ready';
-    }
-
-    // iOS uses native Apple Vision framework; model is always ready
-    return 'ready';
   }
 
   async detectFacesInFrame(rawFaces: unknown): Promise<DetectedFace[]> {
