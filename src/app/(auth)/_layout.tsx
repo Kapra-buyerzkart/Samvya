@@ -9,3 +9,4 @@ export default function AuthLayout(): React.JSX.Element {
     </Stack>
   );
 }
+

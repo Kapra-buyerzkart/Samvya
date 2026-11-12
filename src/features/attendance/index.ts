@@ -23,3 +23,4 @@ export interface AttendanceRecord {
   mocked: boolean;
   synced: boolean;
 }
+

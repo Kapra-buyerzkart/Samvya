@@ -19,3 +19,4 @@ export interface FaceDetectionMetrics {
 export interface FaceDetectionPort {
   evaluateQuality(face: FaceDetectionMetrics, frameSize: { width: number; height: number }): boolean;
 }
+

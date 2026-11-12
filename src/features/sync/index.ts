@@ -11,3 +11,4 @@ export interface SyncQueueItem {
   errorMessage?: string;
   createdAt: number;
 }
+

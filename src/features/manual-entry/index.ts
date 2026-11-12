@@ -13,3 +13,4 @@ export interface ManualLocationRequest {
   status: ManualApprovalStatus;
   timestamp: number;
 }
+

@@ -24,6 +24,7 @@ jest.mock('react-native-mmkv', () => {
       getString: (key: string) => storage.get(key),
       set: (key: string, value: string) => storage.set(key, value),
       delete: (key: string) => storage.delete(key),
+      remove: (key: string) => storage.delete(key),
       clearAll: () => storage.clear(),
       getAllKeys: () => Array.from(storage.keys()),
     }),

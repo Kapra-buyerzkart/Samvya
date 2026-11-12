@@ -21,3 +21,4 @@ export type LocationPermissionStatus =
   | 'denied'
   | 'blocked'
   | 'approximate_only';
+

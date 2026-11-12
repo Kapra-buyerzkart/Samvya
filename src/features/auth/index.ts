@@ -8,3 +8,4 @@ export interface UserProfile {
   department: string;
   dpdpConsentGiven: boolean;
 }
+

@@ -9,6 +9,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   icon: './assets/images/icon.png',
   scheme: 'hrms',
   userInterfaceStyle: 'automatic',
+  runtimeVersion: {
+    policy: 'fingerprint',
+  },
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.hrms.attendance',
