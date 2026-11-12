@@ -1,8 +1,8 @@
+import { Button, Card, ThemedText } from '@/shared/components';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, ThemedText } from '@/shared/components';
-import { VerificationFlowStep } from '../hooks/useFaceVerificationFlow';
 import { LivenessChallengeType } from '../domain/types';
+import { VerificationFlowStep } from '../hooks/useFaceVerificationFlow';
 
 interface FaceVerifyCameraViewProps {
   step: VerificationFlowStep;

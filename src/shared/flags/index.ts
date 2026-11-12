@@ -10,13 +10,13 @@ export type FeatureFlagKey =
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
 export const DEFAULT_FLAGS: FeatureFlags = {
-  liveLocation: false,
-  backgroundTracking: false,
-  manualGps: false,
-  faceCheckIn: false,
+  liveLocation: true,
+  backgroundTracking: true,
+  manualGps: true,
+  faceCheckIn: true,
 };
 
-const STORAGE_KEY = 'hrms-feature-flags';
+const STORAGE_KEY = 'hrms-feature-flags-v2';
 
 function loadStoredFlags(): FeatureFlags {
   try {
@@ -33,6 +33,7 @@ interface FeatureFlagStore {
   flags: FeatureFlags;
   setFlag: (key: FeatureFlagKey, value: boolean) => void;
   applyRemoteFlags: (remoteFlags: Partial<FeatureFlags>) => void;
+  enableAllFeatures: () => void;
   resetFlags: () => void;
 }
 
@@ -47,6 +48,16 @@ export const useFeatureFlagStore = create<FeatureFlagStore>((set, get) => ({
     const updated = { ...get().flags, ...remoteFlags };
     appStorage.set(STORAGE_KEY, JSON.stringify(updated));
     set({ flags: updated });
+  },
+  enableAllFeatures: () => {
+    const allEnabled: FeatureFlags = {
+      liveLocation: true,
+      backgroundTracking: true,
+      manualGps: true,
+      faceCheckIn: true,
+    };
+    appStorage.set(STORAGE_KEY, JSON.stringify(allEnabled));
+    set({ flags: allEnabled });
   },
   resetFlags: () => {
     appStorage.remove(STORAGE_KEY);

@@ -19,6 +19,7 @@ describe('TrackingSession State & Invariants', () => {
   });
 
   it('prohibits tracking when backgroundTracking feature flag is off', () => {
+    useFeatureFlagStore.getState().setFlag('backgroundTracking', false);
     expect(canTrack()).toBe(false);
     expect(() => startTrackingSession('sess-1', 'user-1')).toThrow(
       'Background tracking is disabled by feature flag.',

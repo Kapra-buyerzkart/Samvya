@@ -1,11 +1,11 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { router, useNavigation } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FaceVerifyCameraView, useFaceVerificationFlow } from '@/features/face';
 import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
 import { useFeatureFlag } from '@/shared/flags';
-import { FaceVerifyCameraView, useFaceVerificationFlow } from '@/features/face';
+import { router, useNavigation } from 'expo-router';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FaceVerifyRoute(): React.JSX.Element {
   const { t } = useTranslation();
@@ -57,7 +57,8 @@ export default function FaceVerifyRoute(): React.JSX.Element {
                 Biometric Verification Disabled
               </ThemedText>
               <ThemedText variant="body" style={styles.disabledText}>
-                Facial verification is turned off by administrative policy. Please check in using hardware GPS or supervisor-approved manual entry.
+                Facial verification is turned off by administrative policy. Please check in using
+                hardware GPS or supervisor-approved manual entry.
               </ThemedText>
               <Button
                 title="Use Supervisor Approval (Manual GPS)"
@@ -118,4 +119,3 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
-
