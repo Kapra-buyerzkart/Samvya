@@ -2,20 +2,18 @@ import { create } from 'zustand';
 import { appStorage } from '@/shared/storage';
 
 export type FeatureFlagKey =
-  | 'auth_flow'
-  | 'live_location_tracking'
-  | 'face_verification'
-  | 'manual_gps_entry'
-  | 'offline_sync_queue';
+  | 'liveLocation'
+  | 'backgroundTracking'
+  | 'manualGps'
+  | 'faceCheckIn';
 
 export type FeatureFlags = Record<FeatureFlagKey, boolean>;
 
 export const DEFAULT_FLAGS: FeatureFlags = {
-  auth_flow: false,
-  live_location_tracking: false,
-  face_verification: false,
-  manual_gps_entry: false,
-  offline_sync_queue: false,
+  liveLocation: false,
+  backgroundTracking: false,
+  manualGps: false,
+  faceCheckIn: false,
 };
 
 const STORAGE_KEY = 'hrms-feature-flags';

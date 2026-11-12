@@ -16,13 +16,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     bundleIdentifier: 'com.hrms.attendance',
     infoPlist: {
-      NSCameraUsageDescription:
-        'HRMS requires camera access for biometric face verification during check-in and check-out.',
       NSLocationWhenInUseUsageDescription:
-        'HRMS requires your location to verify attendance at authorized office sites.',
-      NSLocationAlwaysAndWhenInUseUsageDescription:
-        'HRMS requires continuous location updates in the background during active work sessions for field tracking.',
-      UIBackgroundModes: ['location', 'fetch'],
+        'HRMS requires your location to verify attendance at authorized office sites during check-in.',
+      UIBackgroundModes: ['fetch'],
     },
   },
   android: {
@@ -36,12 +32,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     permissions: [
       'android.permission.ACCESS_COARSE_LOCATION',
       'android.permission.ACCESS_FINE_LOCATION',
-      'android.permission.ACCESS_BACKGROUND_LOCATION',
-      'android.permission.FOREGROUND_SERVICE',
-      'android.permission.FOREGROUND_SERVICE_LOCATION',
-      'android.permission.POST_NOTIFICATIONS',
-      'android.permission.CAMERA',
-      'android.permission.RECEIVE_BOOT_COMPLETED',
     ],
   },
   web: {
@@ -65,13 +55,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-location',
       {
-        locationAlwaysAndWhenInUsePermission:
-          'Allow HRMS to record your work-session route while clocked in.',
         locationWhenInUsePermission:
           'Allow HRMS to verify your current location for attendance check-in.',
-        isIosBackgroundLocationEnabled: true,
-        isAndroidBackgroundLocationEnabled: true,
-        isAndroidForegroundServiceEnabled: true,
+        isIosBackgroundLocationEnabled: false,
+        isAndroidBackgroundLocationEnabled: false,
+        isAndroidForegroundServiceEnabled: false,
       },
     ],
     [

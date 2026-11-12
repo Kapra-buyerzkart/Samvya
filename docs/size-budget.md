@@ -15,8 +15,9 @@ This document records the baseline sizes and per-phase deltas for the HRMS Atten
 | Phase | Description | JS Bundle (Hermes Bytecode) | Delta (JS) | Android Size (arm64-v8a) | iOS Thinned Size | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Phase 1** | Baseline Scaffold, CNG, Core Tooling, Theme & Primitives | 2,758,858 bytes (2.63 MB) | Baseline | Baseline | Baseline | ✅ Passed |
+| **liveLocation** | One-Shot Location Capture & Offline SQLite Queue | 3,098,586 bytes (2.96 MB) | +339.7 KB (unshook existing SDK modules) | +0 MB (0 new dependencies) | +0 MB (0 new dependencies) | ✅ Passed |
 | **Phase 2** | Auth & API Layer, SecureStore, MMKV Session, MSW | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
-| **Phase 3** | Location Tracking & Offline SQLite Queue | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
+| **Phase 3** | Background Live GPS Tracking | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
 | **Phase 4** | Face Detection & Active Liveness Flow | TBD | Budget: +150 KB | Budget: +4.0 MB | Budget: +4.0 MB | Pending |
 | **Phase 5** | Manual GPS Fallback & Audit Trail | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
 | **Phase 6** | Hardening, CI & Production Polish | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
@@ -33,3 +34,4 @@ This document records the baseline sizes and per-phase deltas for the HRMS Atten
    npx expo-atlas
    ```
 3. **Budget Violation Protocol**: If any phase exceeds its budget threshold, development halts immediately to evaluate tree-shaking, dynamic imports, or alternative lightweight platform APIs before merging.
+

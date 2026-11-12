@@ -1,12 +1,26 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { Suspense } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
+import { useFeatureFlag } from '@/shared/flags';
+
+const DEFAULT_OFFICE_SITE = {
+  id: 'site_hq_main',
+  name: 'Headquarters Main Campus',
+  latitude: 28.6139,
+  longitude: 77.209,
+  radiusMeters: 100,
+};
+
+const LazyOneShotCheckInLocation = React.lazy(() =>
+  import('@/features/location').then((m) => ({ default: m.OneShotCheckInLocation })),
+);
 
 export default function DashboardRoute(): React.JSX.Element {
   const { t } = useTranslation();
+  const isLiveLocationEnabled = useFeatureFlag('liveLocation');
 
   const handleStartFaceCheckIn = (): void => {
     router.push('/(app)/attendance/face-verify');
@@ -28,21 +42,30 @@ export default function DashboardRoute(): React.JSX.Element {
           <ThemedText variant="subheading">{t('attendance.offDuty')}</ThemedText>
         </View>
 
-        <Card style={styles.statusCard}>
-          <ThemedText variant="heading" style={styles.cardTitle}>
-            Shift Status
-          </ThemedText>
-          <ThemedText variant="body" style={styles.statusDescription}>
-            {t('location.offDuty')}
-          </ThemedText>
-          <View style={styles.actionRow}>
-            <Button
-              title={t('attendance.checkIn')}
-              onPress={handleStartFaceCheckIn}
-              style={styles.primaryAction}
+        {isLiveLocationEnabled ? (
+          <Suspense fallback={<ActivityIndicator size="small" />}>
+            <LazyOneShotCheckInLocation
+              officeSite={DEFAULT_OFFICE_SITE}
+              onSuccess={() => {}}
             />
-          </View>
-        </Card>
+          </Suspense>
+        ) : (
+          <Card style={styles.statusCard}>
+            <ThemedText variant="heading" style={styles.cardTitle}>
+              Shift Status
+            </ThemedText>
+            <ThemedText variant="body" style={styles.statusDescription}>
+              {t('location.offDuty')}
+            </ThemedText>
+            <View style={styles.actionRow}>
+              <Button
+                title={t('attendance.checkIn')}
+                onPress={handleStartFaceCheckIn}
+                style={styles.primaryAction}
+              />
+            </View>
+          </Card>
+        )}
 
         <View style={styles.secondaryActions}>
           <Button
@@ -97,4 +120,3 @@ const styles = StyleSheet.create({
     width: '100%',
   },
 });
-
