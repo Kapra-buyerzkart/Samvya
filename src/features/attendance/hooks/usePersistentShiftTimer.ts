@@ -101,7 +101,8 @@ export function usePersistentShiftTimer() {
   // Formatting helpers
   const workedHours = Math.floor(metrics.workedSeconds / 3600);
   const workedMins = Math.floor((metrics.workedSeconds % 3600) / 60);
-  const workedDisplay = `${workedHours}h ${workedMins < 10 ? '0' : ''}${workedMins}m`;
+  const workedSecs = metrics.workedSeconds % 60;
+  const workedDisplay = `${workedHours}h ${workedMins < 10 ? '0' : ''}${workedMins}m ${workedSecs < 10 ? '0' : ''}${workedSecs}s`;
 
   const remHours = Math.floor(metrics.remainingSeconds / 3600);
   const remMins = Math.floor((metrics.remainingSeconds % 3600) / 60);
@@ -117,6 +118,9 @@ export function usePersistentShiftTimer() {
     isOnBreak: shiftState.status === 'on_break',
     isPunchedOut: shiftState.status === 'punched_out',
     workedSeconds: metrics.workedSeconds,
+    workedHours,
+    workedMinutes: workedMins,
+    workedSecondsPart: workedSecs,
     workedDisplay,
     remainingDisplay,
     breakDisplay,

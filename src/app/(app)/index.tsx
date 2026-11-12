@@ -240,7 +240,13 @@ export default function HomeScreen(): React.JSX.Element {
               {/* Inner White Disc */}
               <View style={styles.dialCenter}>
                 <Text style={styles.workedLabel}>Worked today</Text>
-                <Text style={styles.workedTime}>{timer.workedDisplay}</Text>
+                <Text
+                  style={styles.workedTime}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {timer.workedDisplay}
+                </Text>
                 <Text style={styles.workedTarget}>of 8h</Text>
               </View>
             </View>
@@ -669,10 +675,13 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   workedTime: {
-    fontSize: 34,
+    fontSize: 26,
     fontWeight: '800',
     color: '#0F172A',
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
+    fontVariant: ['tabular-nums'],
+    textAlign: 'center',
+    paddingHorizontal: 6,
   },
   workedTarget: {
     fontSize: 13,
