@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Modal,
@@ -19,63 +19,21 @@ import {
   startTrackingSession,
   stopBackgroundTracking,
   stopTrackingSession,
-  type TrackingSessionState,
 } from '@/features/location';
-
-type HourType = 'Regular' | 'Overtime' | 'Flexible';
-type WorkLocation = 'Work from home' | 'Headquarters' | 'Client site';
+import { usePersistentShiftTimer } from '@/features/attendance';
 
 export default function HomeScreen(): React.JSX.Element {
-  const [session, setSession] = useState<TrackingSessionState | null>(
-    () =>
-      getActiveTrackingSession() ?? {
-        sessionId: 'sess_shift_active',
-        userId: 'usr_default_employee',
-        status: 'tracking',
-        startTime: Date.now() - 5400000,
-        lastFix: null,
-        killSwitchActive: false,
-        pointsRecorded: 18,
-      },
-  );
-  const [isOnBreak, setIsOnBreak] = useState(false);
-  const [breakMinutes, setBreakMinutes] = useState(20);
-  const [hoursType, setHoursType] = useState<HourType>('Regular');
-  const [workLocation, setWorkLocation] = useState<WorkLocation>('Work from home');
+  const timer = usePersistentShiftTimer();
+
   const [showHoursModal, setShowHoursModal] = useState(false);
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [workedSeconds, setWorkedSeconds] = useState(5400); // 1h 30m = 5400s
-
-  const isTracking = session !== null && session.status === 'tracking';
-
-  // Live timer for working duration
-  useEffect(() => {
-    if (!isOnBreak) {
-      const timer = setInterval(() => {
-        setWorkedSeconds((prev) => prev + 1);
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [isOnBreak]);
-
-  // Format seconds into "1h 30m"
-  const hours = Math.floor(workedSeconds / 3600);
-  const minutes = Math.floor((workedSeconds % 3600) / 60);
-  const workedDisplay = `${hours}h ${minutes < 10 ? '0' : ''}${minutes}m`;
-
-  // Remaining time of 8h (28800s)
-  const remainingTotalSeconds = Math.max(0, 8 * 3600 - workedSeconds);
-  const remHours = Math.floor(remainingTotalSeconds / 3600);
-  const remMinutes = Math.floor((remainingTotalSeconds % 3600) / 60);
-  const remainingDisplay = `${remHours}h ${remMinutes < 10 ? '0' : ''}${remMinutes}m`;
 
   const handleToggleBreak = (): void => {
-    if (!isOnBreak) {
-      setIsOnBreak(true);
-      setBreakMinutes((prev) => prev + 1);
+    if (!timer.isOnBreak) {
+      timer.startBreak();
       Alert.alert('Break Started', 'You are now on break. Work timer is paused.');
     } else {
-      setIsOnBreak(false);
+      timer.resumeWork();
       Alert.alert('Break Ended', 'Welcome back! Work timer has resumed.');
     }
   };
@@ -96,9 +54,9 @@ export default function HomeScreen(): React.JSX.Element {
           text: 'Quick Punch Out',
           style: 'destructive',
           onPress: async () => {
+            timer.punchOut();
             stopTrackingSession();
             await stopBackgroundTracking();
-            setSession(null);
             Alert.alert('Punched Out', 'Shift ended successfully.');
           },
         },
@@ -108,12 +66,15 @@ export default function HomeScreen(): React.JSX.Element {
 
   const handlePunchIn = async (): Promise<void> => {
     try {
-      const newSession = startTrackingSession(
-        `sess_${Date.now()}`,
-        'usr_default_employee',
-      );
-      await startBackgroundTracking(newSession.sessionId, 'usr_default_employee');
-      setSession(newSession);
+      timer.punchIn();
+      const current = getActiveTrackingSession();
+      if (!current || current.status !== 'tracking') {
+        const newSession = startTrackingSession(
+          `sess_${Date.now()}`,
+          'usr_default_employee',
+        );
+        await startBackgroundTracking(newSession.sessionId, 'usr_default_employee');
+      }
       Alert.alert('Punched In', 'Shift started with live background GPS tracking.');
     } catch {
       Alert.alert('Notice', 'Started shift.');
@@ -135,6 +96,14 @@ export default function HomeScreen(): React.JSX.Element {
       ],
     );
   };
+
+  // Dynamically compute dial knob position based on persistent elapsed time
+  const angleDeg = Math.min(360, Math.max(0, timer.progressFraction * 360));
+  const angleRad = (angleDeg - 90) * (Math.PI / 180);
+  const dialRadius = 105;
+  const dialCenter = 110;
+  const knobLeft = dialCenter + dialRadius * Math.cos(angleRad) - 8;
+  const knobTop = dialCenter + dialRadius * Math.sin(angleRad) - 8;
 
   return (
     <LinearGradient
@@ -176,7 +145,7 @@ export default function HomeScreen(): React.JSX.Element {
               </View>
               <View style={styles.dropdownTextCol}>
                 <Text style={styles.dropdownLabel}>Hours</Text>
-                <Text style={styles.dropdownValue}>{hoursType}</Text>
+                <Text style={styles.dropdownValue}>{timer.hoursType}</Text>
               </View>
               <Feather name="chevron-down" size={18} color="#64748B" />
             </TouchableOpacity>
@@ -193,7 +162,7 @@ export default function HomeScreen(): React.JSX.Element {
               <View style={styles.dropdownTextCol}>
                 <Text style={styles.dropdownLabel}>Location</Text>
                 <Text style={styles.dropdownValue} numberOfLines={1}>
-                  {workLocation}
+                  {timer.workLocation}
                 </Text>
               </View>
               <Feather name="chevron-down" size={18} color="#64748B" />
@@ -215,15 +184,25 @@ export default function HomeScreen(): React.JSX.Element {
             <Feather
               name="clock"
               size={18}
-              color={isOnBreak ? '#D97706' : '#2563EB'}
+              color={
+                timer.isOnBreak ? '#D97706' : timer.isWorking ? '#2563EB' : '#64748B'
+              }
             />
             <Text
               style={[
                 styles.statusIndicatorText,
-                isOnBreak ? styles.statusTextBreak : null,
+                timer.isOnBreak
+                  ? styles.statusTextBreak
+                  : timer.isPunchedOut
+                    ? styles.statusTextOff
+                    : null,
               ]}
             >
-              {isOnBreak ? 'On Break' : 'Working'}
+              {timer.isOnBreak
+                ? 'On Break'
+                : timer.isWorking
+                  ? 'Working'
+                  : 'Off Duty'}
             </Text>
           </View>
 
@@ -233,16 +212,35 @@ export default function HomeScreen(): React.JSX.Element {
               {/* Outer Track */}
               <View style={styles.dialTrack} />
 
-              {/* Progress Arc (representing ~1h 30m / 8h) */}
-              <View style={styles.dialProgressArc} />
+              {/* Progress Arc */}
+              <View
+                style={[
+                  styles.dialProgressArc,
+                  {
+                    transform: [
+                      {
+                        rotate: `${Math.min(270, Math.max(-25, angleDeg - 25))}deg`,
+                      },
+                    ],
+                  },
+                ]}
+              />
 
               {/* White Knob on Arc End */}
-              <View style={styles.dialKnob} />
+              <View
+                style={[
+                  styles.dialKnob,
+                  {
+                    left: knobLeft,
+                    top: knobTop,
+                  },
+                ]}
+              />
 
               {/* Inner White Disc */}
               <View style={styles.dialCenter}>
                 <Text style={styles.workedLabel}>Worked today</Text>
-                <Text style={styles.workedTime}>{workedDisplay}</Text>
+                <Text style={styles.workedTime}>{timer.workedDisplay}</Text>
                 <Text style={styles.workedTarget}>of 8h</Text>
               </View>
             </View>
@@ -253,12 +251,12 @@ export default function HomeScreen(): React.JSX.Element {
             <View style={styles.infoBarItem}>
               <Feather name="coffee" size={16} color="#475569" />
               <Text style={styles.infoBarTextMuted}> Break </Text>
-              <Text style={styles.infoBarTextBold}>{breakMinutes}m</Text>
+              <Text style={styles.infoBarTextBold}>{timer.breakDisplay}</Text>
             </View>
             <View style={styles.infoBarDivider} />
             <View style={styles.infoBarItem}>
               <Feather name="clock" size={16} color="#475569" />
-              <Text style={styles.infoBarTextBold}> {remainingDisplay} </Text>
+              <Text style={styles.infoBarTextBold}> {timer.remainingDisplay} </Text>
               <Text style={styles.infoBarTextMuted}>remaining</Text>
             </View>
           </View>
@@ -266,32 +264,45 @@ export default function HomeScreen(): React.JSX.Element {
           {/* Action Buttons: Start Break & Punch Out */}
           <View style={styles.actionsRow}>
             <TouchableOpacity
-              style={[styles.breakButton, isOnBreak && styles.breakButtonActive]}
+              style={[
+                styles.breakButton,
+                timer.isOnBreak && styles.breakButtonActive,
+                timer.isPunchedOut && styles.buttonDisabled,
+              ]}
               onPress={handleToggleBreak}
+              disabled={timer.isPunchedOut}
               activeOpacity={0.85}
             >
               <Feather
-                name={isOnBreak ? 'play' : 'pause'}
+                name={timer.isOnBreak ? 'play' : 'pause'}
                 size={18}
                 color="#FFFFFF"
               />
               <Text style={styles.breakButtonText}>
-                {isOnBreak ? 'Resume work' : 'Start break'}
+                {timer.isOnBreak ? 'Resume work' : 'Start break'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.punchOutButton}
-              onPress={isTracking ? handlePunchOut : handlePunchIn}
+              style={[
+                styles.punchOutButton,
+                timer.isPunchedOut && styles.punchInStyle,
+              ]}
+              onPress={timer.isPunchedOut ? handlePunchIn : handlePunchOut}
               activeOpacity={0.85}
             >
               <Feather
-                name={isTracking ? 'log-out' : 'log-in'}
+                name={timer.isPunchedOut ? 'log-in' : 'log-out'}
                 size={18}
-                color="#0F172A"
+                color={timer.isPunchedOut ? '#FFFFFF' : '#0F172A'}
               />
-              <Text style={styles.punchOutButtonText}>
-                {isTracking ? 'Punch out' : 'Punch in'}
+              <Text
+                style={[
+                  styles.punchOutButtonText,
+                  timer.isPunchedOut && styles.punchInText,
+                ]}
+              >
+                {timer.isPunchedOut ? 'Punch in' : 'Punch out'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -397,27 +408,27 @@ export default function HomeScreen(): React.JSX.Element {
         >
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Select Work Hours</Text>
-            {(['Regular', 'Overtime', 'Flexible'] as HourType[]).map((type) => (
+            {(['Regular', 'Overtime', 'Flexible'] as const).map((type) => (
               <TouchableOpacity
                 key={type}
                 style={[
                   styles.modalItem,
-                  hoursType === type && styles.modalItemActive,
+                  timer.hoursType === type && styles.modalItemActive,
                 ]}
                 onPress={() => {
-                  setHoursType(type);
+                  timer.setHoursType(type);
                   setShowHoursModal(false);
                 }}
               >
                 <Text
                   style={[
                     styles.modalItemText,
-                    hoursType === type && styles.modalItemTextActive,
+                    timer.hoursType === type && styles.modalItemTextActive,
                   ]}
                 >
                   {type}
                 </Text>
-                {hoursType === type && (
+                {timer.hoursType === type && (
                   <Feather name="check" size={18} color="#1D4ED8" />
                 )}
               </TouchableOpacity>
@@ -434,28 +445,28 @@ export default function HomeScreen(): React.JSX.Element {
         >
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Select Work Location</Text>
-            {(['Work from home', 'Headquarters', 'Client site'] as WorkLocation[]).map(
+            {(['Work from home', 'Headquarters', 'Client site'] as const).map(
               (loc) => (
                 <TouchableOpacity
                   key={loc}
                   style={[
                     styles.modalItem,
-                    workLocation === loc && styles.modalItemActive,
+                    timer.workLocation === loc && styles.modalItemActive,
                   ]}
                   onPress={() => {
-                    setWorkLocation(loc);
+                    timer.setWorkLocation(loc);
                     setShowLocationModal(false);
                   }}
                 >
                   <Text
                     style={[
                       styles.modalItemText,
-                      workLocation === loc && styles.modalItemTextActive,
+                      timer.workLocation === loc && styles.modalItemTextActive,
                     ]}
                   >
                     {loc}
                   </Text>
-                  {workLocation === loc && (
+                  {timer.workLocation === loc && (
                     <Feather name="check" size={18} color="#1D4ED8" />
                   )}
                 </TouchableOpacity>
@@ -591,6 +602,9 @@ const styles = StyleSheet.create({
   statusTextBreak: {
     color: '#D97706',
   },
+  statusTextOff: {
+    color: '#64748B',
+  },
   dialWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -620,12 +634,9 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
     borderTopColor: '#1D4ED8',
     borderRightColor: '#1D4ED8',
-    transform: [{ rotate: '-25deg' }],
   },
   dialKnob: {
     position: 'absolute',
-    top: 56,
-    left: 196,
     width: 16,
     height: 16,
     borderRadius: 8,
@@ -747,6 +758,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#0F172A',
+  },
+  punchInStyle: {
+    backgroundColor: '#1D4ED8',
+    borderColor: '#1D4ED8',
+  },
+  punchInText: {
+    color: '#FFFFFF',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   punchNote: {
     fontSize: 12,
