@@ -42,7 +42,7 @@ export function LoginScreen(): React.JSX.Element {
         'Required',
         method === 'phone'
           ? 'Please enter your mobile phone number.'
-          : 'Please enter your email or employee code.',
+          : 'Please enter your work email or employee code.',
       );
       return;
     }
@@ -67,7 +67,9 @@ export function LoginScreen(): React.JSX.Element {
 
       Alert.alert(
         'OTP Sent Successfully',
-        `A 5-digit verification code has been sent to ${identifier}.\n\n(Demo code: 12345)`,
+        method === 'phone'
+          ? `A 5-digit verification code has been sent by SMS to ${identifier}.\n\n(Demo code: 12345)`
+          : `A 5-digit verification code has been sent to your registered work email (${identifier}).\n\n(Demo code: 12345)`,
       );
 
       // Focus first OTP input
@@ -108,7 +110,12 @@ export function LoginScreen(): React.JSX.Element {
     const code = otpDigits.join('');
 
     if (!identifier.trim()) {
-      Alert.alert('Required', 'Please enter your registered phone number or email first.');
+      Alert.alert(
+        'Required',
+        method === 'phone'
+          ? 'Please enter your registered phone number first.'
+          : 'Please enter your registered work email or employee code first.',
+      );
       return;
     }
 
@@ -178,7 +185,7 @@ export function LoginScreen(): React.JSX.Element {
                         method === 'phone' ? styles.pillTextActive : styles.pillTextInactive,
                       ]}
                     >
-                      Mobile Number
+                      Mobile number
                     </Text>
                   </Pressable>
 
@@ -224,10 +231,10 @@ export function LoginScreen(): React.JSX.Element {
                 <Text style={styles.cardSubtitle}>
                   {method === 'phone'
                     ? "Use the phone number registered with HR.\nWe'll send your code by SMS."
-                    : "Use the email address or employee code registered with HR.\nWe'll send your code."}
+                    : "Use your work email or employee code registered with HR.\nWe'll send your code to your registered work email."}
                 </Text>
 
-                {/* Input with embedded Send OTP button */}
+                {/* Input Container */}
                 <View style={styles.inputContainer}>
                   <View style={styles.inputIcon}>
                     <Feather
@@ -241,7 +248,7 @@ export function LoginScreen(): React.JSX.Element {
                     placeholder={
                       method === 'phone'
                         ? 'Enter phone number'
-                        : 'Enter email or employee code'
+                        : 'Enter Email / employee code'
                     }
                     placeholderTextColor="#94A3B8"
                     value={identifier}
@@ -250,6 +257,10 @@ export function LoginScreen(): React.JSX.Element {
                     autoCapitalize="none"
                     autoCorrect={false}
                   />
+                </View>
+
+                {/* Send OTP button row (below input box, right-aligned) */}
+                <View style={styles.sendOtpRow}>
                   <TouchableOpacity
                     onPress={handleSendOtp}
                     disabled={isSendingOtp || countdown > 0}
@@ -260,7 +271,7 @@ export function LoginScreen(): React.JSX.Element {
                       <ActivityIndicator size="small" color="#1D4ED8" />
                     ) : (
                       <Text style={styles.sendOtpText}>
-                        {countdown > 0 ? `${countdown}s` : 'Send OTP >'}
+                        {countdown > 0 ? `Resend in ${countdown}s` : 'Send OTP >'}
                       </Text>
                     )}
                   </TouchableOpacity>
@@ -446,10 +457,10 @@ const styles = StyleSheet.create({
     borderColor: '#CBD5E1',
     borderRadius: 14,
     height: 52,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   inputIcon: {
-    marginRight: 6,
+    marginRight: 8,
   },
   textInput: {
     flex: 1,
@@ -457,12 +468,18 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     paddingVertical: 8,
   },
+  sendOtpRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 8,
+    marginBottom: 8,
+  },
   sendOtpButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
   sendOtpText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: '#1D4ED8',
   },
@@ -470,7 +487,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#0F172A',
-    marginTop: 20,
+    marginTop: 12,
     marginBottom: 10,
   },
   otpRow: {
