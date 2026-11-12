@@ -60,3 +60,22 @@ jest.mock('expo-secure-store', () => {
     }),
   };
 });
+
+// Mock react-native-vision-camera
+jest.mock('react-native-vision-camera', () => ({
+  Camera: {
+    getCameraPermissionStatus: jest.fn(async () => 'authorized'),
+    requestCameraPermission: jest.fn(async () => true),
+  },
+  VisionCamera: {
+    cameraPermissionStatus: 'authorized',
+    requestCameraPermission: jest.fn(async () => true),
+  },
+  useCameraDevice: jest.fn(() => ({ id: 'front-camera' })),
+  useCameraPermission: jest.fn(() => ({
+    hasPermission: true,
+    requestPermission: jest.fn(async () => true),
+    status: 'authorized',
+    canRequestPermission: true,
+  })),
+}));

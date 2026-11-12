@@ -1,16 +1,37 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, ThemedText, ThemedView } from '@/shared/components';
+import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
+import { useFeatureFlag } from '@/shared/flags';
+import { FaceVerifyCameraView, useFaceVerificationFlow } from '@/features/face';
 
 export default function FaceVerifyRoute(): React.JSX.Element {
   const { t } = useTranslation();
+  const navigation = useNavigation();
+  const isFaceCheckInEnabled = useFeatureFlag('faceCheckIn');
+  const isFocused = navigation.isFocused();
 
   const handleCancel = (): void => {
     router.back();
   };
+
+  const handleFallbackToManual = (): void => {
+    router.push('/(app)/attendance/manual-entry');
+  };
+
+  const handleViewConsent = (): void => {
+    router.push('/(auth)/consent');
+  };
+
+  const flow = useFaceVerificationFlow({
+    isFocused,
+    onSuccess: () => {
+      router.replace('/(app)');
+    },
+    onFallbackToManual: handleFallbackToManual,
+  });
 
   return (
     <ThemedView style={styles.container}>
@@ -20,17 +41,39 @@ export default function FaceVerifyRoute(): React.JSX.Element {
           <ThemedText variant="subheading">{t('face.alignFace')}</ThemedText>
         </View>
 
-        <View style={styles.previewPlaceholder}>
-          <View style={styles.faceGuideRing} />
-        </View>
-
-        <View style={styles.footer}>
-          <Button
-            title={t('common.cancel')}
-            variant="secondary"
-            onPress={handleCancel}
+        {isFaceCheckInEnabled ? (
+          <FaceVerifyCameraView
+            step={flow.step}
+            instruction={flow.instruction}
+            challengeType={flow.challengeSession.type}
+            onFallbackToManual={handleFallbackToManual}
+            onViewConsent={handleViewConsent}
+            onRetry={flow.resetFlow}
           />
-        </View>
+        ) : (
+          <View style={styles.content}>
+            <Card style={styles.disabledCard}>
+              <ThemedText variant="heading" style={styles.disabledTitle}>
+                Biometric Verification Disabled
+              </ThemedText>
+              <ThemedText variant="body" style={styles.disabledText}>
+                Facial verification is turned off by administrative policy. Please check in using hardware GPS or supervisor-approved manual entry.
+              </ThemedText>
+              <Button
+                title="Use Supervisor Approval (Manual GPS)"
+                variant="primary"
+                onPress={handleFallbackToManual}
+                style={styles.actionBtn}
+              />
+              <Button
+                title={t('common.cancel')}
+                variant="secondary"
+                onPress={handleCancel}
+                style={styles.actionBtn}
+              />
+            </Card>
+          </View>
+        )}
       </SafeAreaView>
     </ThemedView>
   );
@@ -42,28 +85,37 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    padding: 20,
-    justifyContent: 'space-between',
   },
   header: {
     alignItems: 'center',
-    marginTop: 20,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
-  previewPlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  content: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  faceGuideRing: {
-    width: 260,
-    height: 320,
-    borderRadius: 130,
-    borderWidth: 3,
-    borderColor: '#3B82F6',
-    borderStyle: 'dashed',
+  disabledCard: {
+    padding: 24,
+    alignItems: 'center',
+    width: '100%',
   },
-  footer: {
+  disabledTitle: {
+    marginBottom: 8,
+    color: '#F8FAFC',
+    textAlign: 'center',
+  },
+  disabledText: {
+    textAlign: 'center',
+    color: '#94A3B8',
     marginBottom: 20,
+    lineHeight: 22,
+  },
+  actionBtn: {
+    width: '100%',
+    marginBottom: 10,
   },
 });
 

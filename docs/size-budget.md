@@ -18,8 +18,8 @@ This document records the baseline sizes and per-phase deltas for the HRMS Atten
 | **liveLocation** | One-Shot Location Capture & Offline SQLite Queue | 3,098,586 bytes (2.96 MB) | +339.7 KB (unshook existing SDK modules) | +0 MB (0 new dependencies) | +0 MB (0 new dependencies) | ✅ Passed |
 | **backgroundTracking** | Background Live GPS Tracking, Foreground Service & SQLite Breadcrumbs | 3,137,201 bytes (2.99 MB) | +38.6 KB (Budget: +150 KB) | +0 MB (0 new dependencies) | +0 MB (0 new dependencies) | ✅ Passed |
 | **manualGps** | Manual GPS Coordinate Entry, Zod Validation, Form & Audit Workflow | 4,070,171 bytes (3.88 MB) | +932.9 KB (Zod & React Hook Form activation) | +0 MB (0 new dependencies, OTA-safe) | +0 MB (0 new dependencies, OTA-safe) | ⚠️ Budget Review |
+| **faceCheckIn** | Face Detection, Active Liveness Flow & DPDP Compliance | 4,177,945 bytes (3.98 MB) | +105.2 KB (Budget: +150 KB) | Dynamic Download via Play Services (~0 MB APK delta, budget +4 MB) | Native Apple Vision (0 extra pods, budget +4 MB) | ✅ Passed |
 | **Phase 2** | Auth & API Layer, SecureStore, MMKV Session, MSW | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
-| **Phase 4** | Face Detection & Active Liveness Flow | TBD | Budget: +150 KB | Budget: +4.0 MB | Budget: +4.0 MB | Pending |
 | **Phase 5** | Manual GPS Fallback & Audit Trail | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
 | **Phase 6** | Hardening, CI & Production Polish | TBD | Budget: +150 KB | Budget: +1.0 MB | Budget: +1.0 MB | Pending |
 

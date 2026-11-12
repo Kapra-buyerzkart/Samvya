@@ -16,6 +16,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     bundleIdentifier: 'com.hrms.attendance',
     infoPlist: {
+      NSCameraUsageDescription:
+        'HRMS requires camera access for biometric face verification during check-in and check-out.',
       NSLocationWhenInUseUsageDescription:
         'HRMS requires your location to verify attendance at authorized office sites during check-in.',
       NSLocationAlwaysAndWhenInUseUsageDescription:
@@ -37,6 +39,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'android.permission.ACCESS_BACKGROUND_LOCATION',
       'android.permission.FOREGROUND_SERVICE',
       'android.permission.FOREGROUND_SERVICE_LOCATION',
+      'android.permission.CAMERA',
     ],
   },
   web: {
@@ -77,6 +80,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         project: 'hrms-mobile',
       },
     ],
+    './plugins/withUnbundledMlKit',
   ],
   experiments: {
     typedRoutes: true,
