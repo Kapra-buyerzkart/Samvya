@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Alert,
+  ImageBackground,
   Modal,
   Pressable,
   ScrollView,
@@ -9,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -106,11 +106,10 @@ export default function HomeScreen(): React.JSX.Element {
   const knobTop = dialCenter + dialRadius * Math.sin(angleRad) - 8;
 
   return (
-    <LinearGradient
-      colors={['#EBF2FB', '#F3F7FD', '#FAFCFF', '#FFFFFF']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
+    <ImageBackground
+      source={require('../../../assets/images/background_home.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
     >
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
@@ -481,13 +480,15 @@ export default function HomeScreen(): React.JSX.Element {
           </View>
         </Pressable>
       </Modal>
-    </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
+  backgroundImage: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
   safeArea: {
     flex: 1,
