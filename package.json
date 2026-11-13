@@ -62,7 +62,10 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "build:apk": "./scripts/build-apk.sh",
+    "build:apk:install": "./scripts/build-apk.sh && adb install -r ./dist/Samavya.apk",
+    "build:cloud": "eas build -p android --profile preview"
   },
   "private": true
 }
