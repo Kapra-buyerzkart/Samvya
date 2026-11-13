@@ -80,3 +80,4 @@ export const Typography = {
     fontVariant: ['tabular-nums'] as const,
   },
 } as const;
+

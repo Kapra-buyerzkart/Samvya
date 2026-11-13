@@ -204,7 +204,7 @@ export function LoginScreen(): React.JSX.Element {
                         method === 'email' ? styles.pillTextActive : styles.pillTextInactive,
                       ]}
                     >
-                      Email / employee code
+                      Email / EMP code
                     </Text>
                   </Pressable>
                 </View>
@@ -214,7 +214,7 @@ export function LoginScreen(): React.JSX.Element {
               </View>
 
               {/* Card Container */}
-              <GlassCard intensity={80} tint="light" style={styles.card}>
+              <GlassCard intensity={80} tint="dark" style={styles.card}>
                 {/* Logo */}
                 <View style={styles.logoContainer}>
                   <Image
@@ -419,13 +419,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 30,
     padding: 24,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.85)',
-    shadowColor: '#0F172A',
+    shadowColor: '#19326cff',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.07,
     shadowRadius: 20,
-    elevation: 4,
+    elevation: 10,
     marginBottom: 24,
     overflow: 'hidden',
   },

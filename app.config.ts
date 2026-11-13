@@ -106,9 +106,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-splash-screen',
       {
-        backgroundColor: '#0F172A',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 100,
+        backgroundColor: '#FFFFFF',
+        image: './assets/images/samavya-splash.png',
+        imageWidth: 140,
       },
     ],
     'expo-sqlite',
