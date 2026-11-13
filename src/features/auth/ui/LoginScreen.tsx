@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
@@ -21,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { GlassCard } from '@/shared/components';
 import { useAuthStore } from '../model/authStore';
 
 type AuthMethod = 'phone' | 'email';
@@ -213,7 +213,7 @@ export function LoginScreen(): React.JSX.Element {
               </View>
 
               {/* Card Container */}
-              <BlurView intensity={60} tint="light" style={styles.card}>
+              <GlassCard intensity={60} tint="light" style={styles.card}>
                 {/* Logo */}
                 <View style={styles.logoContainer}>
                   <Image
@@ -316,7 +316,7 @@ export function LoginScreen(): React.JSX.Element {
                     <Text style={styles.verifyButtonText}>Verify & sign in →</Text>
                   )}
                 </TouchableOpacity>
-              </BlurView>
+              </GlassCard>
 
               {/* Bottom HR Note */}
               <View style={styles.footer}>
