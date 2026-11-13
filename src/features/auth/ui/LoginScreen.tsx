@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   type NativeSyntheticEvent,
@@ -16,7 +17,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -142,11 +142,10 @@ export function LoginScreen(): React.JSX.Element {
   };
 
   return (
-    <LinearGradient
-      colors={['#C5DCFC', '#DDEAFB', '#EDF4FC', '#F4F8FE']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={styles.gradient}
+    <ImageBackground
+      source={require('../../../../assets/images/background.png')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
@@ -331,13 +330,15 @@ export function LoginScreen(): React.JSX.Element {
           </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: {
+  backgroundImage: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
   safeArea: {
     flex: 1,
