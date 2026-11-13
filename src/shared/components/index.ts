@@ -3,4 +3,5 @@ export * from './ThemedView';
 export * from './Button';
 export * from './Card';
 export * from './GlassCard';
+export * from './CircularProgressDial';
 

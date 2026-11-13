@@ -1,3 +1,4 @@
+import { GlassCard } from '@/shared/components';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
@@ -20,7 +21,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { GlassCard } from '@/shared/components';
 import { useAuthStore } from '../model/authStore';
 
 type AuthMethod = 'phone' | 'email';
@@ -213,7 +213,7 @@ export function LoginScreen(): React.JSX.Element {
               </View>
 
               {/* Card Container */}
-              <GlassCard intensity={60} tint="light" style={styles.card}>
+              <GlassCard intensity={80} tint="light" style={styles.card}>
                 {/* Logo */}
                 <View style={styles.logoContainer}>
                   <Image
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+    backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 30,
     padding: 24,
     borderWidth: 1,

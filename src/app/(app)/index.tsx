@@ -1,4 +1,5 @@
 import { usePersistentShiftTimer } from '@/features/attendance';
+import { CircularProgressDial } from '@/shared/components';
 import {
   getActiveTrackingSession,
   startBackgroundTracking,
@@ -77,14 +78,6 @@ export default function HomeScreen(): React.JSX.Element {
   const handleRequestLeave = (): void => {
     router.push('/(app)/leave/request');
   };
-
-  // Dynamically compute dial knob position based on persistent elapsed time
-  const angleDeg = Math.min(360, Math.max(0, timer.progressFraction * 360));
-  const angleRad = (angleDeg - 90) * (Math.PI / 180);
-  const dialRadius = 105;
-  const dialCenter = 110;
-  const knobLeft = dialCenter + dialRadius * Math.cos(angleRad) - 8;
-  const knobTop = dialCenter + dialRadius * Math.sin(angleRad) - 8;
 
   return (
     <ImageBackground
@@ -182,44 +175,20 @@ export default function HomeScreen(): React.JSX.Element {
 
           {/* Circular Progress Hero Dial */}
           <View style={styles.dialWrapper}>
-            <View style={styles.dialContainer}>
-              {/* Outer Track */}
-              <View style={styles.dialTrack} />
-
-              {/* Progress Arc */}
-              <View
-                style={[
-                  styles.dialProgressArc,
-                  {
-                    transform: [
-                      {
-                        rotate: `${Math.min(270, Math.max(-25, angleDeg - 25))}deg`,
-                      },
-                    ],
-                  },
-                ]}
-              />
-
-              {/* White Knob on Arc End */}
-              <View
-                style={[
-                  styles.dialKnob,
-                  {
-                    left: knobLeft,
-                    top: knobTop,
-                  },
-                ]}
-              />
-
-              {/* Inner White Disc */}
-              <View style={styles.dialCenter}>
-                <Text style={styles.workedLabel}>Worked today</Text>
-                <Text style={styles.workedTime} numberOfLines={1} adjustsFontSizeToFit>
-                  {timer.workedDisplay}
-                </Text>
-                <Text style={styles.workedTarget}>of 8h</Text>
-              </View>
-            </View>
+            <CircularProgressDial
+              size={220}
+              strokeWidth={10}
+              progress={timer.progressFraction}
+              trackColor="#DDEBFC"
+              progressColor="#1D4ED8"
+              knobSize={18}
+            >
+              <Text style={styles.workedLabel}>Worked today</Text>
+              <Text style={styles.workedTime} numberOfLines={1} adjustsFontSizeToFit>
+                {timer.workedDisplay}
+              </Text>
+              <Text style={styles.workedTarget}>of 8h</Text>
+            </CircularProgressDial>
           </View>
 
           {/* Break and Remaining Info Bar */}
@@ -553,58 +522,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 20,
-  },
-  dialContainer: {
-    width: 220,
-    height: 220,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  dialTrack: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderWidth: 10,
-    borderColor: '#E2EDFD',
-  },
-  dialProgressArc: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderWidth: 10,
-    borderColor: 'transparent',
-    borderTopColor: '#1D4ED8',
-    borderRightColor: '#1D4ED8',
-  },
-  dialKnob: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3.5,
-    borderColor: '#1D4ED8',
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  dialCenter: {
-    width: 184,
-    height: 184,
-    borderRadius: 92,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
   },
   workedLabel: {
     fontSize: 13,
