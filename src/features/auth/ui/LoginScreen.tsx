@@ -1,9 +1,11 @@
+import { Feather } from '@expo/vector-icons';
+import { ImageBackground } from 'expo-image';
+import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Image,
-  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   type NativeSyntheticEvent,
@@ -18,8 +20,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useAuthStore } from '../model/authStore';
 
 type AuthMethod = 'phone' | 'email';
@@ -97,10 +97,7 @@ export function LoginScreen(): React.JSX.Element {
     }
   };
 
-  const handleOtpKeyPress = (
-    e: NativeSyntheticEvent<{ key: string }>,
-    index: number,
-  ): void => {
+  const handleOtpKeyPress = (e: NativeSyntheticEvent<{ key: string }>, index: number): void => {
     if (e.nativeEvent.key === 'Backspace' && !otpDigits[index] && index > 0) {
       otpInputsRef.current[index - 1]?.focus();
     }
@@ -245,9 +242,7 @@ export function LoginScreen(): React.JSX.Element {
                   <TextInput
                     style={styles.textInput}
                     placeholder={
-                      method === 'phone'
-                        ? 'Enter phone number'
-                        : 'Enter Email / employee code'
+                      method === 'phone' ? 'Enter phone number' : 'Enter Email / employee code'
                     }
                     placeholderTextColor="#94A3B8"
                     value={identifier}

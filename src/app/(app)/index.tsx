@@ -1,7 +1,17 @@
+import { usePersistentShiftTimer } from '@/features/attendance';
+import {
+  getActiveTrackingSession,
+  startBackgroundTracking,
+  startTrackingSession,
+  stopBackgroundTracking,
+  stopTrackingSession,
+} from '@/features/location';
+import { Feather } from '@expo/vector-icons';
+import { ImageBackground } from 'expo-image';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
-  ImageBackground,
   Modal,
   Pressable,
   ScrollView,
@@ -11,16 +21,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import {
-  getActiveTrackingSession,
-  startBackgroundTracking,
-  startTrackingSession,
-  stopBackgroundTracking,
-  stopTrackingSession,
-} from '@/features/location';
-import { usePersistentShiftTimer } from '@/features/attendance';
 
 export default function HomeScreen(): React.JSX.Element {
   const timer = usePersistentShiftTimer();
@@ -39,29 +39,25 @@ export default function HomeScreen(): React.JSX.Element {
   };
 
   const handlePunchOut = (): void => {
-    Alert.alert(
-      'Punch Out Verification',
-      'Punch-out requires a live photo and location check.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Verify Face & Location',
-          onPress: () => {
-            router.push('/(app)/attendance/face-verify');
-          },
+    Alert.alert('Punch Out Verification', 'Punch-out requires a live photo and location check.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Verify Face & Location',
+        onPress: () => {
+          router.push('/(app)/attendance/face-verify');
         },
-        {
-          text: 'Quick Punch Out',
-          style: 'destructive',
-          onPress: async () => {
-            timer.punchOut();
-            stopTrackingSession();
-            await stopBackgroundTracking();
-            Alert.alert('Punched Out', 'Shift ended successfully.');
-          },
+      },
+      {
+        text: 'Quick Punch Out',
+        style: 'destructive',
+        onPress: async () => {
+          timer.punchOut();
+          stopTrackingSession();
+          await stopBackgroundTracking();
+          Alert.alert('Punched Out', 'Shift ended successfully.');
         },
-      ],
-    );
+      },
+    ]);
   };
 
   const handlePunchIn = async (): Promise<void> => {
@@ -69,10 +65,7 @@ export default function HomeScreen(): React.JSX.Element {
       timer.punchIn();
       const current = getActiveTrackingSession();
       if (!current || current.status !== 'tracking') {
-        const newSession = startTrackingSession(
-          `sess_${Date.now()}`,
-          'usr_default_employee',
-        );
+        const newSession = startTrackingSession(`sess_${Date.now()}`, 'usr_default_employee');
         await startBackgroundTracking(newSession.sessionId, 'usr_default_employee');
       }
       Alert.alert('Punched In', 'Shift started with live background GPS tracking.');
@@ -82,19 +75,7 @@ export default function HomeScreen(): React.JSX.Element {
   };
 
   const handleRequestLeave = (): void => {
-    Alert.alert(
-      'Request Leave',
-      'You have 14 days remaining in your annual leave allocation.\n\nWould you like to submit a leave request?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Apply Leave',
-          onPress: () => {
-            Alert.alert('Application Submitted', 'Your leave request has been forwarded to HR for approval.');
-          },
-        },
-      ],
-    );
+    router.push('/(app)/leave/request');
   };
 
   // Dynamically compute dial knob position based on persistent elapsed time
@@ -183,9 +164,7 @@ export default function HomeScreen(): React.JSX.Element {
             <Feather
               name="clock"
               size={18}
-              color={
-                timer.isOnBreak ? '#D97706' : timer.isWorking ? '#2563EB' : '#64748B'
-              }
+              color={timer.isOnBreak ? '#D97706' : timer.isWorking ? '#2563EB' : '#64748B'}
             />
             <Text
               style={[
@@ -197,11 +176,7 @@ export default function HomeScreen(): React.JSX.Element {
                     : null,
               ]}
             >
-              {timer.isOnBreak
-                ? 'On Break'
-                : timer.isWorking
-                  ? 'Working'
-                  : 'Off Duty'}
+              {timer.isOnBreak ? 'On Break' : timer.isWorking ? 'Working' : 'Off Duty'}
             </Text>
           </View>
 
@@ -239,11 +214,7 @@ export default function HomeScreen(): React.JSX.Element {
               {/* Inner White Disc */}
               <View style={styles.dialCenter}>
                 <Text style={styles.workedLabel}>Worked today</Text>
-                <Text
-                  style={styles.workedTime}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
+                <Text style={styles.workedTime} numberOfLines={1} adjustsFontSizeToFit>
                   {timer.workedDisplay}
                 </Text>
                 <Text style={styles.workedTarget}>of 8h</Text>
@@ -278,21 +249,14 @@ export default function HomeScreen(): React.JSX.Element {
               disabled={timer.isPunchedOut}
               activeOpacity={0.85}
             >
-              <Feather
-                name={timer.isOnBreak ? 'play' : 'pause'}
-                size={18}
-                color="#FFFFFF"
-              />
+              <Feather name={timer.isOnBreak ? 'play' : 'pause'} size={18} color="#FFFFFF" />
               <Text style={styles.breakButtonText}>
                 {timer.isOnBreak ? 'Resume work' : 'Start break'}
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.punchOutButton,
-                timer.isPunchedOut && styles.punchInStyle,
-              ]}
+              style={[styles.punchOutButton, timer.isPunchedOut && styles.punchInStyle]}
               onPress={timer.isPunchedOut ? handlePunchIn : handlePunchOut}
               activeOpacity={0.85}
             >
@@ -301,21 +265,14 @@ export default function HomeScreen(): React.JSX.Element {
                 size={18}
                 color={timer.isPunchedOut ? '#FFFFFF' : '#0F172A'}
               />
-              <Text
-                style={[
-                  styles.punchOutButtonText,
-                  timer.isPunchedOut && styles.punchInText,
-                ]}
-              >
+              <Text style={[styles.punchOutButtonText, timer.isPunchedOut && styles.punchInText]}>
                 {timer.isPunchedOut ? 'Punch in' : 'Punch out'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Helper Subtext */}
-          <Text style={styles.punchNote}>
-            Punch-out requires a live photo and location.
-          </Text>
+          <Text style={styles.punchNote}>Punch-out requires a live photo and location.</Text>
 
           {/* Weekly Work Progress Card */}
           <View style={styles.weeklyCard}>
@@ -346,9 +303,7 @@ export default function HomeScreen(): React.JSX.Element {
             <View style={styles.leaveMetricsRow}>
               {/* Days Remaining */}
               <View style={styles.leaveMetricCol}>
-                <Text style={[styles.leaveMetricNumber, styles.leaveMetricBlue]}>
-                  14
-                </Text>
+                <Text style={[styles.leaveMetricNumber, styles.leaveMetricBlue]}>14</Text>
                 <Text style={styles.leaveMetricLabel}>days remaining</Text>
               </View>
 
@@ -407,19 +362,13 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* Hours Selector Modal */}
       <Modal visible={showHoursModal} transparent animationType="fade">
-        <Pressable
-          style={styles.modalBackdrop}
-          onPress={() => setShowHoursModal(false)}
-        >
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowHoursModal(false)}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Select Work Hours</Text>
             {(['Regular', 'Overtime', 'Flexible'] as const).map((type) => (
               <TouchableOpacity
                 key={type}
-                style={[
-                  styles.modalItem,
-                  timer.hoursType === type && styles.modalItemActive,
-                ]}
+                style={[styles.modalItem, timer.hoursType === type && styles.modalItemActive]}
                 onPress={() => {
                   timer.setHoursType(type);
                   setShowHoursModal(false);
@@ -433,9 +382,7 @@ export default function HomeScreen(): React.JSX.Element {
                 >
                   {type}
                 </Text>
-                {timer.hoursType === type && (
-                  <Feather name="check" size={18} color="#1D4ED8" />
-                )}
+                {timer.hoursType === type && <Feather name="check" size={18} color="#1D4ED8" />}
               </TouchableOpacity>
             ))}
           </View>
@@ -444,39 +391,29 @@ export default function HomeScreen(): React.JSX.Element {
 
       {/* Location Selector Modal */}
       <Modal visible={showLocationModal} transparent animationType="fade">
-        <Pressable
-          style={styles.modalBackdrop}
-          onPress={() => setShowLocationModal(false)}
-        >
+        <Pressable style={styles.modalBackdrop} onPress={() => setShowLocationModal(false)}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Select Work Location</Text>
-            {(['Work from home', 'Headquarters', 'Client site'] as const).map(
-              (loc) => (
-                <TouchableOpacity
-                  key={loc}
+            {(['Work from home', 'Headquarters', 'Client site'] as const).map((loc) => (
+              <TouchableOpacity
+                key={loc}
+                style={[styles.modalItem, timer.workLocation === loc && styles.modalItemActive]}
+                onPress={() => {
+                  timer.setWorkLocation(loc);
+                  setShowLocationModal(false);
+                }}
+              >
+                <Text
                   style={[
-                    styles.modalItem,
-                    timer.workLocation === loc && styles.modalItemActive,
+                    styles.modalItemText,
+                    timer.workLocation === loc && styles.modalItemTextActive,
                   ]}
-                  onPress={() => {
-                    timer.setWorkLocation(loc);
-                    setShowLocationModal(false);
-                  }}
                 >
-                  <Text
-                    style={[
-                      styles.modalItemText,
-                      timer.workLocation === loc && styles.modalItemTextActive,
-                    ]}
-                  >
-                    {loc}
-                  </Text>
-                  {timer.workLocation === loc && (
-                    <Feather name="check" size={18} color="#1D4ED8" />
-                  )}
-                </TouchableOpacity>
-              ),
-            )}
+                  {loc}
+                </Text>
+                {timer.workLocation === loc && <Feather name="check" size={18} color="#1D4ED8" />}
+              </TouchableOpacity>
+            ))}
           </View>
         </Pressable>
       </Modal>
