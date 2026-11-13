@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
@@ -212,7 +213,7 @@ export function LoginScreen(): React.JSX.Element {
               </View>
 
               {/* Card Container */}
-              <View style={styles.card}>
+              <BlurView intensity={60} tint="light" style={styles.card}>
                 {/* Logo */}
                 <View style={styles.logoContainer}>
                   <Image
@@ -315,7 +316,7 @@ export function LoginScreen(): React.JSX.Element {
                     <Text style={styles.verifyButtonText}>Verify & sign in →</Text>
                   )}
                 </TouchableOpacity>
-              </View>
+              </BlurView>
 
               {/* Bottom HR Note */}
               <View style={styles.footer}>
@@ -412,17 +413,18 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
     borderRadius: 30,
     padding: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: 'rgba(255, 255, 255, 0.85)',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.07,
     shadowRadius: 20,
     elevation: 4,
     marginBottom: 24,
+    overflow: 'hidden',
   },
   logoContainer: {
     alignItems: 'center',
