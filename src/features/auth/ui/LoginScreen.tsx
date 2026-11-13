@@ -1,4 +1,5 @@
 import { GlassCard } from '@/shared/components';
+import { FontFamily } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
@@ -354,15 +355,15 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   brandTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 36,
-    fontWeight: '700',
     color: '#0F1E36',
     letterSpacing: -0.5,
     marginBottom: 4,
   },
   brandSubtitle: {
+    fontFamily: FontFamily.regular,
     fontSize: 15,
-    fontWeight: '400',
     color: '#475569',
   },
   switcherWrapper: {
@@ -396,17 +397,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   pillText: {
+    fontFamily: FontFamily.medium,
     fontSize: 14,
-    fontWeight: '500',
   },
   pillTextActive: {
     color: '#FFFFFF',
-    fontWeight: '600',
+    fontFamily: FontFamily.semiBold,
   },
   pillTextInactive: {
     color: '#475569',
+    fontFamily: FontFamily.medium,
   },
   switcherHint: {
+    fontFamily: FontFamily.regular,
     fontSize: 12,
     color: '#64748B',
     marginTop: 8,
@@ -436,12 +439,13 @@ const styles = StyleSheet.create({
     height: 82,
   },
   cardTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 20,
-    fontWeight: '700',
     color: '#0F172A',
     marginBottom: 6,
   },
   cardSubtitle: {
+    fontFamily: FontFamily.regular,
     fontSize: 13,
     lineHeight: 18,
     color: '#64748B',
@@ -462,6 +466,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
+    fontFamily: FontFamily.regular,
     fontSize: 15,
     color: '#0F172A',
     paddingVertical: 8,
@@ -477,13 +482,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   sendOtpText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 14,
-    fontWeight: '600',
     color: '#1D4ED8',
   },
   otpLabel: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 15,
-    fontWeight: '600',
     color: '#0F172A',
     marginTop: 12,
     marginBottom: 10,
@@ -501,9 +506,10 @@ const styles = StyleSheet.create({
     borderColor: '#CBD5E1',
     backgroundColor: '#F8FAFC',
     textAlign: 'center',
+    fontFamily: FontFamily.headingBold,
     fontSize: 22,
-    fontWeight: '700',
     color: '#0F172A',
+    fontVariant: ['tabular-nums'],
   },
   otpBoxFocused: {
     borderColor: '#1D4ED8',
@@ -531,14 +537,15 @@ const styles = StyleSheet.create({
   },
   verifyButtonText: {
     color: '#FFFFFF',
+    fontFamily: FontFamily.semiBold,
     fontSize: 16,
-    fontWeight: '600',
   },
   footer: {
     alignItems: 'center',
     paddingVertical: 8,
   },
   footerText: {
+    fontFamily: FontFamily.regular,
     fontSize: 13,
     color: '#64748B',
   },

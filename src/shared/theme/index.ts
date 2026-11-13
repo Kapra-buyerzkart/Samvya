@@ -7,4 +7,5 @@ export function useAppTheme(): Theme {
 }
 
 export * from './colors';
+export * from './typography';
 

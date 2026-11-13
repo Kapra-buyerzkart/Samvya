@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { FontFamily } from '@/shared/theme';
 import {
   Alert,
   Keyboard,
@@ -484,8 +485,8 @@ const styles = StyleSheet.create({
     marginLeft: -4,
   },
   navTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 22,
-    fontWeight: '700',
     color: '#0F172A',
     letterSpacing: -0.3,
   },
@@ -498,8 +499,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   availableBadgeText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 13,
-    fontWeight: '600',
     color: '#2563EB',
   },
   summaryCard: {
@@ -517,15 +518,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   summaryLabel: {
+    fontFamily: FontFamily.medium,
     fontSize: 12,
-    fontWeight: '500',
     color: '#2563EB',
     marginBottom: 4,
   },
   summaryValue: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 17,
-    fontWeight: '800',
     color: '#0F172A',
+    fontVariant: ['tabular-nums'],
   },
   summaryDivider: {
     width: 1,
@@ -539,8 +541,8 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   sectionTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 17,
-    fontWeight: '700',
     color: '#0F172A',
   },
   durationToggleContainer: {
@@ -562,11 +564,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#1D4ED8',
   },
   durationToggleText: {
+    fontFamily: FontFamily.medium,
     fontSize: 14,
-    fontWeight: '600',
     color: '#0F172A',
   },
   durationToggleTextActive: {
+    fontFamily: FontFamily.semiBold,
     color: '#FFFFFF',
   },
   datesRowCard: {
@@ -585,14 +588,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   datePickerLabel: {
+    fontFamily: FontFamily.medium,
     fontSize: 12,
     color: '#2563EB',
-    fontWeight: '500',
     marginBottom: 2,
   },
   datePickerValue: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 14,
-    fontWeight: '700',
     color: '#0F172A',
   },
   datesVerticalDivider: {
@@ -616,8 +619,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   calendarMonthTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 19,
-    fontWeight: '700',
     color: '#0F172A',
   },
   calendarArrowsRow: {
@@ -637,8 +640,8 @@ const styles = StyleSheet.create({
   weekdayLabel: {
     width: 40,
     textAlign: 'center',
+    fontFamily: FontFamily.semiBold,
     fontSize: 13,
-    fontWeight: '600',
     color: '#2563EB',
   },
   daysGrid: {
@@ -669,16 +672,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#DBEAFE',
   },
   dayText: {
+    fontFamily: FontFamily.regular,
     fontSize: 15,
-    fontWeight: '500',
     color: '#0F172A',
+    fontVariant: ['tabular-nums'],
   },
   dayTextSingle: {
-    fontWeight: '700',
+    fontFamily: FontFamily.semiBold,
     color: '#0F172A',
   },
   dayTextEndpoint: {
-    fontWeight: '700',
+    fontFamily: FontFamily.semiBold,
     color: '#FFFFFF',
   },
   reasonSection: {
@@ -693,6 +697,7 @@ const styles = StyleSheet.create({
     minHeight: 84,
   },
   reasonInput: {
+    fontFamily: FontFamily.regular,
     fontSize: 14,
     color: '#0F172A',
     minHeight: 60,
@@ -714,18 +719,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   durationSummaryTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 15,
-    fontWeight: '700',
     color: '#0F172A',
   },
   durationSummarySubtitle: {
+    fontFamily: FontFamily.regular,
     fontSize: 12,
     color: '#2563EB',
     marginTop: 2,
   },
   durationSummaryValue: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 16,
-    fontWeight: '700',
     color: '#0F172A',
   },
   submitButton: {
@@ -746,8 +752,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitButtonText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 16,
-    fontWeight: '700',
     color: '#FFFFFF',
   },
 });

@@ -7,7 +7,7 @@ import {
   type GestureResponderEvent,
   type ViewStyle,
 } from 'react-native';
-import { useAppTheme } from '@/shared/theme';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'outline';
 
@@ -106,8 +106,8 @@ export function Button({
 
 const styles = StyleSheet.create({
   text: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 15,
-    fontWeight: '600',
   },
 });
 

@@ -1,5 +1,6 @@
 import { usePersistentShiftTimer } from '@/features/attendance';
 import { CircularProgressDial } from '@/shared/components';
+import { FontFamily } from '@/shared/theme';
 import {
   getActiveTrackingSession,
   startBackgroundTracking,
@@ -411,8 +412,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   brandTitle: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 28,
-    fontWeight: '700',
     color: '#0F1E36',
     letterSpacing: -0.5,
   },
@@ -422,8 +423,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerDate: {
+    fontFamily: FontFamily.medium,
     fontSize: 14,
-    fontWeight: '500',
     color: '#1E293B',
   },
   settingsIconBtn: {
@@ -459,13 +460,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   dropdownLabel: {
+    fontFamily: FontFamily.regular,
     fontSize: 12,
     color: '#64748B',
     marginBottom: 1,
   },
   dropdownValue: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 14,
-    fontWeight: '700',
     color: '#0F172A',
   },
   shiftBanner: {
@@ -485,8 +487,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   shiftLabel: {
+    fontFamily: FontFamily.medium,
     fontSize: 14,
-    fontWeight: '500',
     color: '#475569',
   },
   shiftDivider: {
@@ -496,8 +498,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   shiftTime: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 14,
-    fontWeight: '600',
     color: '#0F172A',
   },
   statusIndicatorRow: {
@@ -508,8 +510,8 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   statusIndicatorText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 16,
-    fontWeight: '600',
     color: '#0F172A',
   },
   statusTextBreak: {
@@ -524,14 +526,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   workedLabel: {
+    fontFamily: FontFamily.medium,
     fontSize: 13,
-    fontWeight: '500',
     color: '#64748B',
     marginBottom: 2,
   },
   workedTime: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 26,
-    fontWeight: '800',
     color: '#0F172A',
     letterSpacing: -0.3,
     fontVariant: ['tabular-nums'],
@@ -539,8 +541,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   workedTarget: {
+    fontFamily: FontFamily.regular,
     fontSize: 13,
-    fontWeight: '500',
     color: '#64748B',
     marginTop: 2,
   },
@@ -559,12 +561,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoBarTextMuted: {
+    fontFamily: FontFamily.regular,
     fontSize: 13,
     color: '#64748B',
   },
   infoBarTextBold: {
+    fontFamily: FontFamily.bold,
     fontSize: 13,
-    fontWeight: '700',
     color: '#0F172A',
   },
   infoBarDivider: {
@@ -597,8 +600,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#D97706',
   },
   breakButtonText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 15,
-    fontWeight: '600',
     color: '#FFFFFF',
   },
   punchOutButton: {
@@ -619,8 +622,8 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   punchOutButtonText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 15,
-    fontWeight: '600',
     color: '#0F172A',
   },
   punchInStyle: {
@@ -634,6 +637,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   punchNote: {
+    fontFamily: FontFamily.regular,
     fontSize: 12,
     color: '#64748B',
     textAlign: 'center',
@@ -654,13 +658,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   weeklyTitle: {
+    fontFamily: FontFamily.medium,
     fontSize: 14,
-    fontWeight: '600',
     color: '#475569',
   },
   weeklyStats: {
+    fontFamily: FontFamily.bold,
     fontSize: 14,
-    fontWeight: '700',
     color: '#0F172A',
   },
   progressBarTrack: {
@@ -693,13 +697,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   leaveHeaderTitle: {
+    fontFamily: FontFamily.headingSemiBold,
     fontSize: 14,
-    fontWeight: '600',
     color: '#0F172A',
   },
   leaveRequestLink: {
+    fontFamily: FontFamily.semiBold,
     fontSize: 13,
-    fontWeight: '600',
     color: '#1D4ED8',
   },
   leaveMetricsRow: {
@@ -712,15 +716,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   leaveMetricNumber: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 32,
-    fontWeight: '800',
     color: '#0F172A',
     marginBottom: 2,
+    fontVariant: ['tabular-nums'],
   },
   leaveMetricBlue: {
     color: '#1D4ED8',
   },
   leaveMetricLabel: {
+    fontFamily: FontFamily.regular,
     fontSize: 12,
     color: '#64748B',
     textAlign: 'center',
@@ -744,8 +750,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   shortcutsTitle: {
+    fontFamily: FontFamily.headingSemiBold,
     fontSize: 12,
-    fontWeight: '600',
     color: '#64748B',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -766,9 +772,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   shortcutBtnText: {
+    fontFamily: FontFamily.medium,
     fontSize: 12,
-    fontWeight: '600',
-    color: '#1E293B',
+    color: '#334155',
   },
   modalBackdrop: {
     flex: 1,
