@@ -42,39 +42,67 @@ export default function HomeScreen(): React.JSX.Element {
   };
 
   const handlePunchOut = (): void => {
-    Alert.alert('Punch Out Verification', 'Punch-out requires a live photo and location check.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Verify Face & Location',
-        onPress: () => {
-          router.push('/(app)/attendance/face-verify');
+    Alert.alert(
+      'Punch Out Verification',
+      'Punch-out requires face verification and location check.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Quick Punch Out',
+          style: 'destructive',
+          onPress: async () => {
+            timer.punchOut();
+            stopTrackingSession();
+            await stopBackgroundTracking();
+            Alert.alert('Punched Out', 'Shift ended successfully.');
+          },
         },
-      },
-      {
-        text: 'Quick Punch Out',
-        style: 'destructive',
-        onPress: async () => {
-          timer.punchOut();
-          stopTrackingSession();
-          await stopBackgroundTracking();
-          Alert.alert('Punched Out', 'Shift ended successfully.');
+        {
+          text: 'Verify Face & Location',
+          onPress: () => {
+            router.push({
+              pathname: '/(app)/attendance/face-verify',
+              params: { action: 'punch-out' },
+            });
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
-  const handlePunchIn = async (): Promise<void> => {
-    try {
-      timer.punchIn();
-      const current = getActiveTrackingSession();
-      if (!current || current.status !== 'tracking') {
-        const newSession = startTrackingSession(`sess_${Date.now()}`, 'usr_default_employee');
-        await startBackgroundTracking(newSession.sessionId, 'usr_default_employee');
-      }
-      Alert.alert('Punched In', 'Shift started with live background GPS tracking.');
-    } catch {
-      Alert.alert('Notice', 'Started shift.');
-    }
+  const handlePunchIn = (): void => {
+    Alert.alert(
+      'Punch In Verification',
+      'Would you like to verify your face with liveness detection or proceed with quick punch-in?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Quick Punch In',
+          onPress: async () => {
+            try {
+              timer.punchIn();
+              const current = getActiveTrackingSession();
+              if (!current || current.status !== 'tracking') {
+                const newSession = startTrackingSession(`sess_${Date.now()}`, 'usr_default_employee');
+                await startBackgroundTracking(newSession.sessionId, 'usr_default_employee');
+              }
+              Alert.alert('Punched In', 'Shift started with live background GPS tracking.');
+            } catch {
+              Alert.alert('Notice', 'Started shift.');
+            }
+          },
+        },
+        {
+          text: 'Verify Face & Punch In',
+          onPress: () => {
+            router.push({
+              pathname: '/(app)/attendance/face-verify',
+              params: { action: 'punch-in' },
+            });
+          },
+        },
+      ],
+    );
   };
 
   const handleRequestLeave = (): void => {
@@ -179,7 +207,7 @@ export default function HomeScreen(): React.JSX.Element {
             </Text>
           </View>
 
-          {/* Circular Progress Hero Dial with Skia Aura & Breathing Knob */}
+          {/* Circular Progress Hero Dial with Ambient Aura & Breathing Knob */}
           <View style={styles.dialWrapper}>
             <CircularProgressDial
               size={220}

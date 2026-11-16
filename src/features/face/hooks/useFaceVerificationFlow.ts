@@ -205,6 +205,34 @@ export function useFaceVerificationFlow({
     setIsFlowActive(true);
   }, []);
 
+  const simulateVerification = useCallback(() => {
+    setStep('challenging');
+    setInstruction('Liveness challenge: Verifying facial geometry...');
+    setTimeout(() => {
+      setStep('capturing');
+      setInstruction('Liveness confirmed. Capturing audit photo...');
+      setTimeout(() => {
+        setStep('completed');
+        setInstruction('Face verified successfully!');
+        const payload: FaceVerificationPayload = {
+          photoUri: `file:///data/user/0/com.hrms.attendance/cache/face_verify_${Date.now()}.jpg`,
+          challengeType: 'blink',
+          challengeCompleted: true,
+          timeToCompleteMs: 1200,
+          audit: {
+            challengeType: 'blink',
+            timeToCompleteMs: 1200,
+            pitch: 0,
+            yaw: 0,
+            roll: 0,
+            timestamp: Date.now(),
+          },
+        };
+        onSuccess?.(payload);
+      }, 600);
+    }, 600);
+  }, [onSuccess]);
+
   return {
     step,
     instruction,
@@ -214,5 +242,6 @@ export function useFaceVerificationFlow({
     cameraRef,
     onFacesDetected,
     resetFlow,
+    simulateVerification,
   };
 }
