@@ -260,17 +260,25 @@ export default function HomeScreen(): React.JSX.Element {
 
           {/* Leave Balance Section */}
           <View style={styles.leaveSection}>
-            <View style={styles.leaveHeaderBanner}>
+            <TouchableOpacity
+              style={styles.leaveHeaderBanner}
+              onPress={handleRequestLeave}
+              activeOpacity={0.8}
+            >
               <View style={styles.leaveHeaderLeft}>
                 <Feather name="calendar" size={16} color="#1D4ED8" />
                 <Text style={styles.leaveHeaderTitle}>Leave balance</Text>
               </View>
-              <TouchableOpacity onPress={handleRequestLeave} activeOpacity={0.7}>
+              <View>
                 <Text style={styles.leaveRequestLink}>Request leave &gt;</Text>
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
 
-            <View style={styles.leaveMetricsRow}>
+            <TouchableOpacity
+              style={styles.leaveMetricsRow}
+              onPress={handleRequestLeave}
+              activeOpacity={0.85}
+            >
               {/* Days Remaining */}
               <View style={styles.leaveMetricCol}>
                 <Text style={[styles.leaveMetricNumber, styles.leaveMetricBlue]}>14</Text>
@@ -292,7 +300,7 @@ export default function HomeScreen(): React.JSX.Element {
                 <Text style={styles.leaveMetricNumber}>4</Text>
                 <Text style={styles.leaveMetricLabel}>days taken</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           </View>
 
           {/* Shortcuts & Diagnostics Tray */}

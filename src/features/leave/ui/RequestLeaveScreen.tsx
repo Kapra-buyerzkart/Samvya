@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { FontFamily } from '@/shared/theme';
 import {
   Alert,
   Keyboard,
@@ -16,6 +15,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { FontFamily } from '@/shared/theme';
 
 type DurationType = 'full' | 'half';
 
@@ -43,12 +43,15 @@ const MONTH_NAMES = [
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function RequestLeaveScreen(): React.JSX.Element {
-  // Default to November 2026 to match client reference design
+  // Calendar month/year navigation state - defaults to November 2026
   const [currentYear, setCurrentYear] = useState(2026);
-  const [currentMonth, setCurrentMonth] = useState(10); // 0-indexed, 10 = November
+  const [currentMonth, setCurrentMonth] = useState(10); // 0-indexed: 10 = November
+
+  // Today reference key (12 Nov 2026 as per reference design)
+  const todayKey = '2026-11-12';
 
   const [durationType, setDurationType] = useState<DurationType>('full');
-  const [startDate, setStartDate] = useState<string | null>('2026-11-12');
+  const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,7 +75,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
     }
   };
 
-  // Build calendar matrix
+  // Build calendar matrix dynamically for the active month & year
   const calendarDays = useMemo<CalendarDay[]>(() => {
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -88,7 +91,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
       });
     }
 
-    // Actual month days
+    // Days in current month
     for (let d = 1; d <= daysInMonth; d++) {
       const padM = String(currentMonth + 1).padStart(2, '0');
       const padD = String(d).padStart(2, '0');
@@ -102,55 +105,25 @@ export function RequestLeaveScreen(): React.JSX.Element {
     return days;
   }, [currentYear, currentMonth]);
 
-  // Date selection handler
+  // Interactive date selection
   const handleSelectDay = (dateKey: string) => {
     if (!startDate || (startDate && endDate)) {
+      // First selection or resetting range
       setStartDate(dateKey);
       setEndDate(null);
     } else if (startDate && !endDate) {
+      // Second selection
       if (dateKey < startDate) {
         setEndDate(startDate);
         setStartDate(dateKey);
       } else if (dateKey === startDate) {
-        // Tapped same date again -> 1 day selection
+        // Tapped same date again -> 1 day leave
         setEndDate(dateKey);
       } else {
         setEndDate(dateKey);
       }
     }
   };
-
-  // Calculate requested duration
-  const requestedDuration = useMemo(() => {
-    if (!startDate) return { days: 0, label: '—', subtitle: 'Select dates to view duration.' };
-
-    const effectiveEnd = endDate || startDate;
-    const startMs = new Date(startDate).getTime();
-    const endMs = new Date(effectiveEnd).getTime();
-    const diffDays = Math.round(Math.abs(endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
-
-    const total = durationType === 'half' ? diffDays * 0.5 : diffDays;
-    const unit = total === 1 ? 'day' : 'days';
-
-    const fmtDate = (dStr: string) => {
-      const parts = dStr.split('-');
-      const y = parts[0] ?? '2026';
-      const m = parseInt(parts[1] ?? '11', 10) - 1;
-      const d = parseInt(parts[2] ?? '1', 10);
-      return `${d} ${MONTH_NAMES[m]?.slice(0, 3) ?? ''} ${y}`;
-    };
-
-    const subtitle =
-      startDate === effectiveEnd
-        ? `${fmtDate(startDate)}`
-        : `${fmtDate(startDate)} to ${fmtDate(effectiveEnd)}`;
-
-    return {
-      days: total,
-      label: `${total} ${unit}`,
-      subtitle,
-    };
-  }, [startDate, endDate, durationType]);
 
   const formatDateDisplay = (dateStr: string | null) => {
     if (!dateStr) return 'Select date';
@@ -160,6 +133,44 @@ export function RequestLeaveScreen(): React.JSX.Element {
     const d = parseInt(parts[2] ?? '1', 10);
     return `${d} ${MONTH_NAMES[m]?.slice(0, 3) ?? ''} ${y}`;
   };
+
+  // Calculate duration summary
+  const requestedDuration = useMemo(() => {
+    if (!startDate) {
+      return {
+        days: 0,
+        label: '—',
+        subtitle: 'Select dates to view duration.',
+      };
+    }
+
+    const effectiveEnd = endDate || startDate;
+    const startMs = new Date(startDate).getTime();
+    const endMs = new Date(effectiveEnd).getTime();
+    const diffDays = Math.round(Math.abs(endMs - startMs) / (1000 * 60 * 60 * 24)) + 1;
+
+    const total = durationType === 'half' ? diffDays * 0.5 : diffDays;
+    const unit = total === 1 ? 'day' : 'days';
+
+    const fmt = (dStr: string) => {
+      const parts = dStr.split('-');
+      const y = parts[0] ?? '2026';
+      const m = parseInt(parts[1] ?? '11', 10) - 1;
+      const d = parseInt(parts[2] ?? '1', 10);
+      return `${d} ${MONTH_NAMES[m]?.slice(0, 3) ?? ''} ${y}`;
+    };
+
+    const subtitle =
+      startDate === effectiveEnd
+        ? `${fmt(startDate)}`
+        : `${fmt(startDate)} to ${fmt(effectiveEnd)}`;
+
+    return {
+      days: total,
+      label: `${total} ${unit}`,
+      subtitle,
+    };
+  }, [startDate, endDate, durationType]);
 
   const handleSubmit = () => {
     if (!startDate) {
@@ -200,14 +211,14 @@ export function RequestLeaveScreen(): React.JSX.Element {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Top Navigation Bar */}
+            {/* 1. Header Row */}
             <View style={styles.navBar}>
               <View style={styles.navLeft}>
                 <TouchableOpacity
                   onPress={() => router.back()}
                   style={styles.backButton}
                   activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 >
                   <Feather name="chevron-left" size={26} color="#0F172A" />
                 </TouchableOpacity>
@@ -219,7 +230,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </View>
             </View>
 
-            {/* Allocated / Taken / Pending Summary Card */}
+            {/* 2. Leave Summary Card (Allocated / Taken / Pending) */}
             <View style={styles.summaryCard}>
               <View style={styles.summaryCol}>
                 <Text style={styles.summaryLabel}>Allocated</Text>
@@ -241,7 +252,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </View>
             </View>
 
-            {/* Duration Selector */}
+            {/* 3. Duration Selector (Full Day / Half Day) */}
             <View style={styles.durationRow}>
               <Text style={styles.sectionTitle}>Duration</Text>
               <View style={styles.durationToggleContainer}>
@@ -283,9 +294,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </View>
             </View>
 
-            {/* Date Pickers Row */}
+            {/* 4. Start Date & End Date Row */}
             <View style={styles.datesRowCard}>
-              {/* Start Date */}
+              {/* Start Date Column */}
               <TouchableOpacity
                 style={styles.datePickerCol}
                 onPress={() => {
@@ -303,7 +314,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
 
               <View style={styles.datesVerticalDivider} />
 
-              {/* End Date */}
+              {/* End Date Column */}
               <TouchableOpacity
                 style={styles.datePickerCol}
                 onPress={() => {
@@ -316,18 +327,16 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 <Feather name="calendar" size={18} color="#2563EB" />
                 <View style={styles.datePickerTextCol}>
                   <Text style={styles.datePickerLabel}>End date</Text>
-                  <Text style={styles.datePickerValue}>
-                    {formatDateDisplay(endDate || (startDate ? startDate : null))}
-                  </Text>
+                  <Text style={styles.datePickerValue}>{formatDateDisplay(endDate)}</Text>
                 </View>
               </TouchableOpacity>
             </View>
 
             <View style={styles.sectionSeparator} />
 
-            {/* Month Calendar Card */}
+            {/* 5. Month Calendar Grid */}
             <View style={styles.calendarContainer}>
-              {/* Month Header with Arrows */}
+              {/* Month Header with Navigation Arrows */}
               <View style={styles.calendarHeaderRow}>
                 <Text style={styles.calendarMonthTitle}>
                   {MONTH_NAMES[currentMonth]} {currentYear}
@@ -339,7 +348,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                     activeOpacity={0.7}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Feather name="chevron-left" size={20} color="#2563EB" />
+                    <Feather name="chevron-left" size={22} color="#2563EB" />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleNextMonth}
@@ -347,12 +356,12 @@ export function RequestLeaveScreen(): React.JSX.Element {
                     activeOpacity={0.7}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
-                    <Feather name="chevron-right" size={20} color="#2563EB" />
+                    <Feather name="chevron-right" size={22} color="#2563EB" />
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Day of Week Headers */}
+              {/* Day of Week Labels */}
               <View style={styles.weekdaysRow}>
                 {WEEKDAY_NAMES.map((name) => (
                   <Text key={name} style={styles.weekdayLabel}>
@@ -361,7 +370,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 ))}
               </View>
 
-              {/* Days Grid */}
+              {/* Days Matrix */}
               <View style={styles.daysGrid}>
                 {calendarDays.map((item, index) => {
                   if (!item.isCurrentMonth) {
@@ -377,6 +386,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                     item.dateKey < endDate;
 
                   const isSingleSelected = isStart && (!endDate || startDate === endDate);
+                  const isToday = item.dateKey === todayKey && !startDate;
 
                   return (
                     <TouchableOpacity
@@ -386,6 +396,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                         isInRange && styles.daySlotInRange,
                         (isStart || isEnd) && !isSingleSelected && styles.daySlotEndpoint,
                         isSingleSelected && styles.daySlotSingleBorder,
+                        isToday && styles.daySlotTodayBorder,
                       ]}
                       onPress={() => handleSelectDay(item.dateKey)}
                       activeOpacity={0.7}
@@ -395,6 +406,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                           styles.dayText,
                           (isStart || isEnd) && !isSingleSelected && styles.dayTextEndpoint,
                           isSingleSelected && styles.dayTextSingle,
+                          isToday && styles.dayTextToday,
                         ]}
                       >
                         {item.dayNumber}
@@ -405,7 +417,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </View>
             </View>
 
-            {/* Reason Section */}
+            {/* 6. Reason Section */}
             <View style={styles.reasonSection}>
               <Text style={styles.sectionTitle}>Reason</Text>
               <View style={styles.reasonInputContainer}>
@@ -422,7 +434,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </View>
             </View>
 
-            {/* Requested Duration Summary */}
+            {/* 7. Requested Duration Summary */}
             <View style={styles.durationSummaryRow}>
               <View style={styles.durationSummaryLeft}>
                 <Feather name="clock" size={20} color="#0F172A" />
@@ -436,7 +448,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
               <Text style={styles.durationSummaryValue}>{requestedDuration.label}</Text>
             </View>
 
-            {/* Submit Request Button */}
+            {/* 8. Submit Request Button */}
             <TouchableOpacity
               style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
               onPress={handleSubmit}
@@ -466,7 +478,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 36,
+    paddingBottom: 40,
   },
   navBar: {
     flexDirection: 'row',
@@ -663,6 +675,13 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#1D4ED8',
     borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+  },
+  daySlotTodayBorder: {
+    borderWidth: 2,
+    borderColor: '#1D4ED8',
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
   },
   daySlotEndpoint: {
     backgroundColor: '#1D4ED8',
@@ -678,6 +697,10 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   dayTextSingle: {
+    fontFamily: FontFamily.semiBold,
+    color: '#0F172A',
+  },
+  dayTextToday: {
     fontFamily: FontFamily.semiBold,
     color: '#0F172A',
   },
