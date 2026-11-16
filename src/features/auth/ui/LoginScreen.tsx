@@ -231,8 +231,8 @@ export function LoginScreen(): React.JSX.Element {
                 <Text style={styles.cardTitle}>Log in to your account</Text>
                 <Text style={styles.cardSubtitle}>
                   {method === 'phone'
-                    ? "Use the phone number registered with HR.We'll send your code by SMS."
-                    : "Use your work email or employee code registered with HR.We'll send your code to your registered work email."}
+                    ? "Use the phone number registered with HR. We'll send your code by SMS."
+                    : "Use your work email or employee code registered with HR. We'll send your code to your registered work email."}
                 </Text>
 
                 {/* Input Container */}
@@ -419,18 +419,9 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   card: {
-    backgroundColor: 'rgba(0, 0, 0, 0)',
-    borderRadius: 30,
+    borderRadius: 28,
     padding: 24,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    shadowColor: '#19326cff',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    elevation: 1,
     marginBottom: 24,
-    overflow: 'hidden',
   },
   logoContainer: {
     alignItems: 'center',
@@ -513,6 +504,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#0F172A',
     fontVariant: ['tabular-nums'],
+    padding: 0,
+    includeFontPadding: false,
   },
   otpBoxFocused: {
     borderColor: '#1D4ED8',
