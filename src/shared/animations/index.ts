@@ -1,4 +1,3 @@
 export { TactilePressable } from './TactilePressable';
 export { PulsingStatusDot } from './PulsingStatusDot';
-export { SkiaDialAura } from './SkiaDialAura';
-
+export { AmbientDialAura } from './AmbientDialAura';

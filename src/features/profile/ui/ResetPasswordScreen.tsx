@@ -1,3 +1,7 @@
+import { TactilePressable } from '@/shared/animations';
+import { FontFamily } from '@/shared/theme';
+import { Feather } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
@@ -19,10 +23,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { FontFamily } from '@/shared/theme';
-import { TactilePressable } from '@/shared/animations';
 
 function AnimatedStrengthBar({
   filled,
@@ -47,13 +47,7 @@ function AnimatedStrengthBar({
   }));
 
   return (
-    <Animated.View
-      style={[
-        styles.strengthBar,
-        filled && { backgroundColor: color },
-        animStyle,
-      ]}
-    />
+    <Animated.View style={[styles.strengthBar, filled && { backgroundColor: color }, animStyle]} />
   );
 }
 
@@ -87,9 +81,7 @@ function AnimatedCheckItem({
           color={checked ? '#16A34A' : '#94A3B8'}
         />
       </Animated.View>
-      <Text style={[styles.checkText, checked && styles.checkTextActive]}>
-        {label}
-      </Text>
+      <Text style={[styles.checkText, checked && styles.checkTextActive]}>{label}</Text>
     </View>
   );
 }
@@ -189,7 +181,8 @@ export function ResetPasswordScreen(): React.JSX.Element {
               <View style={styles.bannerTextCol}>
                 <Text style={styles.bannerTitle}>Security Requirement</Text>
                 <Text style={styles.bannerText}>
-                  Choose a strong password with at least 8 characters, combining uppercase, numbers, and symbols.
+                  Choose a strong password with at least 8 characters, combining uppercase, numbers,
+                  and symbols.
                 </Text>
               </View>
             </View>
@@ -215,11 +208,7 @@ export function ResetPasswordScreen(): React.JSX.Element {
                     style={styles.eyeBtn}
                     activeOpacity={0.7}
                   >
-                    <Feather
-                      name={showCurrent ? 'eye' : 'eye-off'}
-                      size={18}
-                      color="#64748B"
-                    />
+                    <Feather name={showCurrent ? 'eye' : 'eye-off'} size={18} color="#64748B" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -243,11 +232,7 @@ export function ResetPasswordScreen(): React.JSX.Element {
                     style={styles.eyeBtn}
                     activeOpacity={0.7}
                   >
-                    <Feather
-                      name={showNew ? 'eye' : 'eye-off'}
-                      size={18}
-                      color="#64748B"
-                    />
+                    <Feather name={showNew ? 'eye' : 'eye-off'} size={18} color="#64748B" />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -292,29 +277,16 @@ export function ResetPasswordScreen(): React.JSX.Element {
                     style={styles.eyeBtn}
                     activeOpacity={0.7}
                   >
-                    <Feather
-                      name={showConfirm ? 'eye' : 'eye-off'}
-                      size={18}
-                      color="#64748B"
-                    />
+                    <Feather name={showConfirm ? 'eye' : 'eye-off'} size={18} color="#64748B" />
                   </TouchableOpacity>
                 </View>
               </View>
 
               {/* Verification Checklist with Bouncy Micro-Animations */}
               <View style={styles.checklist}>
-                <AnimatedCheckItem
-                  checked={hasMinLength}
-                  label="At least 8 characters"
-                />
-                <AnimatedCheckItem
-                  checked={hasNumberOrSymbol}
-                  label="Contains number or symbol"
-                />
-                <AnimatedCheckItem
-                  checked={isMatching}
-                  label="Passwords match"
-                />
+                <AnimatedCheckItem checked={hasMinLength} label="At least 8 characters" />
+                <AnimatedCheckItem checked={hasNumberOrSymbol} label="Contains number or symbol" />
+                <AnimatedCheckItem checked={isMatching} label="Passwords match" />
               </View>
             </View>
 
@@ -521,4 +493,3 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
-

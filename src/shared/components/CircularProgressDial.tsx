@@ -7,7 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { SkiaDialAura } from '@/shared/animations/SkiaDialAura';
+import { AmbientDialAura } from '@/shared/animations/AmbientDialAura';
 
 interface CircularProgressDialProps {
   size?: number;
@@ -88,10 +88,10 @@ export function CircularProgressDial({
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      {/* 0. Ambient Skia Radial Aura Glow */}
+      {/* 0. Ambient Radial Aura Glow */}
       {showAura && (
         <View style={styles.auraWrapper}>
-          <SkiaDialAura size={size + 32} isActive={isActive} />
+          <AmbientDialAura size={size + 32} isActive={isActive} />
         </View>
       )}
 
