@@ -16,6 +16,14 @@ export interface UserProfile {
   emergencyContact?: string;
   location?: string;
   dpdpConsentGiven: boolean;
+  firstName?: string;
+  lastName?: string;
+  middleName?: string;
+  dob?: string;
+  gender?: string;
+  otherEmail?: string;
+  otherPhone?: string;
+  address?: string;
 }
 
 export interface AuthState {

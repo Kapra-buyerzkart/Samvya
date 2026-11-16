@@ -1,61 +1,50 @@
-import React from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useAuthStore } from '@/features/auth';
+import { TactilePressable } from '@/shared/animations';
 import { FontFamily } from '@/shared/theme';
-import { PulsingStatusDot, TactilePressable } from '@/shared/animations';
+import { Feather } from '@expo/vector-icons';
+import { Image, ImageBackground } from 'expo-image';
+import { router } from 'expo-router';
+import React from 'react';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export function ProfileScreen(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
 
-  const displayName = user?.name || 'Aarav Sharma';
-  const displayEmail = user?.email || 'aarav.sharma@samavya.internal';
-  const displayPhone = user?.phone || '+91 98765 43210';
-  const displayEmpCode = user?.employeeCode || 'EMP-2026';
-  const displayDepartment = user?.department || 'Field Operations';
-  const displayDesignation = user?.designation || 'Operations Specialist';
-  const displayJoiningDate = user?.joiningDate || '15 Jan 2024';
-  const displayEmergency = user?.emergencyContact || '+91 91234 56789';
-  const displayLocation = user?.location || 'Work from home';
+  // Parse display values with fallback to the reference design ("Peter S")
+  const displayName = user?.name || 'Peter S';
+  const nameParts = displayName.trim().split(/\s+/);
+  const firstName =
+    user?.firstName || (nameParts.length > 0 && nameParts[0] ? nameParts[0] : 'Peter');
+  const lastName = user?.lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : 'S');
+  const middleName = user?.middleName;
+  const dob = user?.dob;
+  const gender = user?.gender;
 
-  // Initials for avatar
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  const displayEmail = user?.email || 'peter@gmail.com';
+  const displayPhone = user?.phone || '9567-767-8768';
+  const otherEmail = user?.otherEmail;
+  const otherPhone = user?.otherPhone;
+  const address = user?.address;
 
-  const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of Samavya HRMS?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: () => {
-          logout();
-          router.replace('/(auth)/login');
-        },
-      },
-    ]);
+  // Initials for avatar circle (e.g. "PS")
+  const initials = `${firstName[0] ?? 'P'}${lastName[0] ?? 'S'}`.toUpperCase();
+
+  const handleCopy = (text: string, label: string) => {
+    Alert.alert('Copied', `${label} copied: ${text}`);
+  };
+
+  const handleEdit = () => {
+    router.push('/(app)/profile/edit');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <ImageBackground
+      source={require('../../../../assets/images/background.png')}
+      style={styles.backgroundImage}
+      contentFit="fill"
+    >
+      <SafeAreaView style={styles.safeArea}>
         {/* Navigation Bar */}
         <View style={styles.navBar}>
           <TouchableOpacity
@@ -64,239 +53,273 @@ export function ProfileScreen(): React.JSX.Element {
             activeOpacity={0.7}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Feather name="chevron-left" size={26} color="#0F172A" />
+            <Feather name="chevron-left" size={28} color="#0F172A" />
           </TouchableOpacity>
-          <Text style={styles.navTitle}>My Profile</Text>
-          <TactilePressable
-            onPress={() => router.push('/(app)/profile/edit')}
-            style={styles.editHeaderBtn}
-            activeScale={0.92}
-          >
-            <Feather name="edit-2" size={18} color="#1D4ED8" />
-          </TactilePressable>
+          <Text style={styles.navTitle}>Profile</Text>
         </View>
 
-        {/* Hero Profile Card */}
-        <View style={styles.heroCard}>
-          <View style={styles.avatarWrapper}>
-            <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>{initials}</Text>
-            </View>
-            <TactilePressable
-              style={styles.avatarBadge}
-              onPress={() => router.push('/(app)/profile/edit')}
-              activeScale={0.88}
-            >
-              <Feather name="camera" size={12} color="#FFFFFF" />
-            </TactilePressable>
-          </View>
-
-          <Text style={styles.heroName}>{displayName}</Text>
-          <Text style={styles.heroSubtitle}>
-            {displayDesignation} • {displayDepartment}
-          </Text>
-
-          <View style={styles.badgeRow}>
-            <View style={styles.statusPill}>
-              <PulsingStatusDot color="#10B981" size={7} />
-              <Text style={styles.statusText}>Active Employee</Text>
-            </View>
-            <View style={styles.empIdPill}>
-              <Text style={styles.empIdText}>{displayEmpCode}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Quick Highlights Row */}
-        <View style={styles.highlightsCard}>
-          <View style={styles.highlightCol}>
-            <Text style={styles.highlightNumber}>14</Text>
-            <Text style={styles.highlightLabel}>Days Leave</Text>
-          </View>
-          <View style={styles.highlightDivider} />
-          <View style={styles.highlightCol}>
-            <Text style={styles.highlightNumber}>9h</Text>
-            <Text style={styles.highlightLabel}>Daily Shift</Text>
-          </View>
-          <View style={styles.highlightDivider} />
-          <View style={styles.highlightCol}>
-            <Text style={styles.highlightNumber}>WFH</Text>
-            <Text style={styles.highlightLabel}>Work Mode</Text>
-          </View>
-        </View>
-
-        {/* Personal & Work Details Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Employee Information</Text>
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Feather name="mail" size={16} color="#1D4ED8" />
-              </View>
-              <View style={styles.infoTextCol}>
-                <Text style={styles.infoLabel}>Email Address</Text>
-                <Text style={styles.infoValue}>{displayEmail}</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardSeparator} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Feather name="phone" size={16} color="#1D4ED8" />
-              </View>
-              <View style={styles.infoTextCol}>
-                <Text style={styles.infoLabel}>Mobile Phone</Text>
-                <Text style={styles.infoValue}>{displayPhone}</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardSeparator} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Feather name="shield" size={16} color="#1D4ED8" />
-              </View>
-              <View style={styles.infoTextCol}>
-                <Text style={styles.infoLabel}>Emergency Contact</Text>
-                <Text style={styles.infoValue}>{displayEmergency}</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardSeparator} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Feather name="calendar" size={16} color="#1D4ED8" />
-              </View>
-              <View style={styles.infoTextCol}>
-                <Text style={styles.infoLabel}>Date Joined</Text>
-                <Text style={styles.infoValue}>{displayJoiningDate}</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardSeparator} />
-
-            <View style={styles.infoRow}>
-              <View style={styles.infoIconWrapper}>
-                <Feather name="map-pin" size={16} color="#1D4ED8" />
-              </View>
-              <View style={styles.infoTextCol}>
-                <Text style={styles.infoLabel}>Work Location</Text>
-                <Text style={styles.infoValue}>{displayLocation}</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Security & Settings Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionHeader}>Account &amp; Security</Text>
-          <View style={styles.menuCard}>
-            <TactilePressable
-              style={styles.menuRow}
-              onPress={() => router.push('/(app)/profile/edit')}
-              activeScale={0.98}
-            >
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIconContainer}>
-                  <Feather name="user" size={18} color="#1D4ED8" />
-                </View>
-                <Text style={styles.menuText}>Edit Profile</Text>
-              </View>
-              <Feather name="chevron-right" size={18} color="#94A3B8" />
-            </TactilePressable>
-
-            <View style={styles.cardSeparator} />
-
-            <TactilePressable
-              style={styles.menuRow}
-              onPress={() => router.push('/(app)/profile/reset-password')}
-              activeScale={0.98}
-            >
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIconContainer}>
-                  <Feather name="lock" size={18} color="#1D4ED8" />
-                </View>
-                <Text style={styles.menuText}>Reset Password</Text>
-              </View>
-              <Feather name="chevron-right" size={18} color="#94A3B8" />
-            </TactilePressable>
-
-            <View style={styles.cardSeparator} />
-
-            <TactilePressable
-              style={styles.menuRow}
-              onPress={() => router.push('/(app)/attendance/face-verify')}
-              activeScale={0.98}
-            >
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIconContainer}>
-                  <Feather name="camera" size={18} color="#1D4ED8" />
-                </View>
-                <View>
-                  <Text style={styles.menuText}>Face Biometric Status</Text>
-                  <Text style={styles.menuSubtext}>Enrolled &amp; Active</Text>
-                </View>
-              </View>
-              <Feather name="check-circle" size={18} color="#16A34A" />
-            </TactilePressable>
-
-            <View style={styles.cardSeparator} />
-
-            <View style={styles.menuRow}>
-              <View style={styles.menuLeft}>
-                <View style={styles.menuIconContainer}>
-                  <Feather name="shield" size={18} color="#1D4ED8" />
-                </View>
-                <View>
-                  <Text style={styles.menuText}>DPDP Privacy Consent</Text>
-                  <Text style={styles.menuSubtext}>Verified compliant</Text>
-                </View>
-              </View>
-              <Feather name="check" size={18} color="#16A34A" />
-            </View>
-          </View>
-        </View>
-
-        {/* Sign Out Button */}
-        <TactilePressable
-          style={styles.signOutButton}
-          onPress={handleSignOut}
-          activeScale={0.96}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
         >
-          <Feather name="log-out" size={18} color="#DC2626" />
-          <Text style={styles.signOutText}>Sign out of account</Text>
-        </TactilePressable>
+          {/* 1. Header Profile Card */}
+          <View style={styles.heroCard}>
+            <View style={styles.avatarWrapper}>
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
+              <TactilePressable
+                style={styles.cameraBadge}
+                onPress={handleEdit}
+                activeScale={0.88}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="camera" size={11} color="#2563EB" />
+              </TactilePressable>
+            </View>
 
-        {/* Version Footer */}
-        <Text style={styles.versionFooter}>
-          Samavya HRMS Enterprise Edition • v1.0.0
-        </Text>
-      </ScrollView>
-    </SafeAreaView>
+            <View style={styles.heroTextCol}>
+              <Text style={styles.heroName}>{displayName}</Text>
+              <Text style={styles.heroSubtitle}>Personal and contact details</Text>
+            </View>
+          </View>
+
+          {/* 2. Personal Information Card */}
+          <View style={styles.card}>
+            {/* Header */}
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderLeft}>
+                <View style={styles.headerIconBox}>
+                  <Feather name="user" size={18} color="#2563EB" />
+                </View>
+                <Text style={styles.cardTitle}>Personal Information</Text>
+              </View>
+              <TactilePressable
+                onPress={handleEdit}
+                style={styles.editIconBtn}
+                activeScale={0.88}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="edit-3" size={18} color="#2563EB" />
+              </TactilePressable>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            {/* Names 2-Column Row */}
+            <View style={styles.twoColumnRow}>
+              <View style={styles.columnHalf}>
+                <Text style={styles.fieldLabel}>First name</Text>
+                <Text style={styles.fieldValueBold}>{firstName}</Text>
+              </View>
+              <View style={styles.verticalDivider} />
+              <View style={styles.columnHalf}>
+                <Text style={styles.fieldLabel}>Last name</Text>
+                <Text style={styles.fieldValueBold}>{lastName}</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            {/* Middle name */}
+            <View style={styles.middleNameSection}>
+              <Text style={styles.fieldLabel}>Middle name</Text>
+              {middleName ? (
+                <Text style={styles.fieldValueBold}>{middleName}</Text>
+              ) : (
+                <TouchableOpacity onPress={handleEdit} activeOpacity={0.7}>
+                  <Text style={styles.addText}>+ Add</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Sub-cards Row (Date of birth & Gender) */}
+            <View style={styles.subCardsRow}>
+              <TouchableOpacity style={styles.subCard} onPress={handleEdit} activeOpacity={0.7}>
+                <View style={styles.subCardIconBox}>
+                  <Feather name="calendar" size={16} color="#2563EB" />
+                </View>
+                <View style={styles.subCardTextCol}>
+                  <Text style={styles.subCardLabel}>Date of birth</Text>
+                  <Text style={styles.subCardActionText}>{dob || '+ Add'}</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.subCard} onPress={handleEdit} activeOpacity={0.7}>
+                <View style={styles.subCardIconBox}>
+                  <Feather name="user" size={16} color="#2563EB" />
+                </View>
+                <View style={styles.subCardTextCol}>
+                  <Text style={styles.subCardLabel}>Gender</Text>
+                  <Text style={styles.subCardActionText}>{gender || '+ Add'}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* 3. Contact Information Card */}
+          <View style={styles.card}>
+            {/* Header */}
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderLeft}>
+                <View style={styles.headerIconBox}>
+                  <Feather name="mail" size={18} color="#2563EB" />
+                </View>
+                <Text style={styles.cardTitle}>Contact Information</Text>
+              </View>
+              <TactilePressable
+                onPress={handleEdit}
+                style={styles.editIconBtn}
+                activeScale={0.88}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="edit-3" size={18} color="#2563EB" />
+              </TactilePressable>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            {/* Work Email Row */}
+            <View style={styles.contactRow}>
+              <View style={styles.rowIconBox}>
+                <Feather name="mail" size={16} color="#2563EB" />
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.fieldLabel}>Work email</Text>
+                <Text style={styles.fieldValueContact}>{displayEmail}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleCopy(displayEmail, 'Work email')}
+                style={styles.copyBtn}
+                activeOpacity={0.6}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="copy" size={18} color="#2563EB" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            {/* Primary Phone Row */}
+            <View style={styles.contactRow}>
+              <View style={styles.rowIconBox}>
+                <Feather name="phone" size={16} color="#2563EB" />
+              </View>
+              <View style={styles.rowContent}>
+                <Text style={styles.fieldLabel}>Primary phone</Text>
+                <Text style={styles.fieldValueContact}>{displayPhone}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => handleCopy(displayPhone, 'Primary phone')}
+                style={styles.copyBtn}
+                activeOpacity={0.6}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Feather name="copy" size={18} color="#2563EB" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            {/* Sub-container for Other email & Other phone */}
+            <View style={styles.subContainerRow}>
+              <TouchableOpacity
+                style={styles.subContainerHalf}
+                onPress={handleEdit}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.subCardLabel}>Other email</Text>
+                <Text style={styles.subCardActionText}>{otherEmail || '+ Add'}</Text>
+              </TouchableOpacity>
+              <View style={styles.verticalDividerSub} />
+              <TouchableOpacity
+                style={styles.subContainerHalf}
+                onPress={handleEdit}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.subCardLabel}>Other phone</Text>
+                <Text style={styles.subCardActionText}>{otherPhone || '+ Add'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* 4. Address Card */}
+          <View style={styles.card}>
+            {/* Header */}
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderLeft}>
+                <View style={styles.headerIconBox}>
+                  <Feather name="map-pin" size={18} color="#2563EB" />
+                </View>
+                <Text style={styles.cardTitle}>Address</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardDivider} />
+
+            {/* Body */}
+            <View style={styles.addressBody}>
+              <View style={styles.addressIllustrationWrapper}>
+                <Image
+                  source={require('../../../../assets/images/address_illustration.png')}
+                  style={styles.addressIllustration}
+                  contentFit="contain"
+                />
+              </View>
+
+              <View style={styles.addressVerticalDivider} />
+
+              <View style={styles.addressContent}>
+                <Text style={styles.addressEmptyTitle}>
+                  {address ? 'Current address' : 'No address added'}
+                </Text>
+                <Text style={styles.addressEmptySubtitle}>
+                  {address || 'Add your street, city and postal code'}
+                </Text>
+                <TouchableOpacity
+                  style={styles.addAddressBtn}
+                  onPress={handleEdit}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.addAddressBtnText}>
+                    {address ? 'Edit address' : '+ Add address'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* 5. Bottom Action Button */}
+          <TactilePressable style={styles.bottomEditBtn} onPress={handleEdit} activeScale={0.98}>
+            <Text style={styles.bottomEditBtnText}>Edit Profile</Text>
+            <Feather name="arrow-right" size={18} color="#FFFFFF" />
+          </TactilePressable>
+        </ScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 40,
+    backgroundColor: 'transparent',
   },
   navBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    paddingTop: 6,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   backButton: {
     padding: 2,
+    marginRight: 6,
     marginLeft: -4,
   },
   navTitle: {
@@ -305,275 +328,327 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     letterSpacing: -0.3,
   },
-  editHeaderBtn: {
-    padding: 8,
-    borderRadius: 10,
-    backgroundColor: '#EFF6FF',
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 28,
   },
+  // 1. Hero Card
   heroCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(238, 242, 255, 0.7)',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    paddingVertical: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    paddingVertical: 14,
     paddingHorizontal: 16,
     marginBottom: 16,
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#1E40AF',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 0,
+      },
+    }),
   },
   avatarWrapper: {
     position: 'relative',
-    marginBottom: 14,
   },
-  avatarContainer: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
-    backgroundColor: '#1D4ED8',
+  avatarCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#DBEAFE',
+    borderWidth: 1.5,
+    borderColor: '#3B82F6',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
   },
   avatarText: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 30,
-    color: '#FFFFFF',
-    letterSpacing: 1,
+    fontSize: 22,
+    color: '#1D4ED8',
+    letterSpacing: 0.5,
   },
-  avatarBadge: {
+  cameraBadge: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#2563EB',
+    bottom: -1,
+    right: -1,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#93C5FD',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
+  },
+  heroTextCol: {
+    marginLeft: 14,
+    flex: 1,
   },
   heroName: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 22,
-    color: '#0F172A',
-    letterSpacing: -0.3,
-    marginBottom: 4,
-  },
-  heroSubtitle: {
-    fontFamily: FontFamily.medium,
-    fontSize: 13,
-    color: '#475569',
-    marginBottom: 14,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#16A34A',
-  },
-  statusText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 12,
-    color: '#166534',
-  },
-  empIdPill: {
-    backgroundColor: '#EFF6FF',
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  empIdText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 12,
-    color: '#1D4ED8',
-  },
-  highlightsCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    marginBottom: 20,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  highlightCol: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  highlightNumber: {
-    fontFamily: FontFamily.headingBold,
     fontSize: 20,
     color: '#0F172A',
-    marginBottom: 2,
-    fontVariant: ['tabular-nums'],
+    letterSpacing: -0.3,
   },
-  highlightLabel: {
+  heroSubtitle: {
     fontFamily: FontFamily.regular,
-    fontSize: 12,
+    fontSize: 13,
     color: '#64748B',
+    marginTop: 3,
   },
-  highlightDivider: {
-    width: 1,
-    height: 28,
-    backgroundColor: '#E2E8F0',
+  // General Card Styles
+  card: {
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: '#DBEAFE',
+    padding: 16,
+    marginBottom: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#1E40AF',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 0,
+      },
+    }),
   },
-  section: {
-    marginBottom: 22,
-  },
-  sectionHeader: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 16,
-    color: '#0F172A',
-    marginBottom: 10,
-  },
-  infoCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 4,
-    paddingHorizontal: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    gap: 12,
-  },
-  infoIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#EFF6FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  infoTextCol: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-    color: '#64748B',
-    marginBottom: 2,
-  },
-  infoValue: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 14,
-    color: '#0F172A',
-  },
-  cardSeparator: {
-    height: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  menuCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 4,
-    paddingHorizontal: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  menuRow: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
   },
-  menuLeft: {
+  cardHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
-  menuIconContainer: {
+  headerIconBox: {
     width: 36,
     height: 36,
     borderRadius: 10,
     backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 14,
+  cardTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 18,
     color: '#0F172A',
+    marginLeft: 12,
+    letterSpacing: -0.2,
   },
-  menuSubtext: {
+  editIconBtn: {
+    padding: 6,
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginVertical: 14,
+  },
+  // Two Column Row
+  twoColumnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  columnHalf: {
+    flex: 1,
+  },
+  verticalDivider: {
+    width: 1,
+    height: 36,
+    backgroundColor: '#CBD5E1',
+    marginHorizontal: 14,
+  },
+  fieldLabel: {
     fontFamily: FontFamily.regular,
     fontSize: 12,
     color: '#64748B',
-    marginTop: 1,
   },
-  signOutButton: {
+  fieldValueBold: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 18,
+    color: '#0F172A',
+    marginTop: 4,
+  },
+  middleNameSection: {
+    marginBottom: 14,
+  },
+  addText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 14,
+    color: '#2563EB',
+    marginTop: 4,
+  },
+  // Sub-cards Row
+  subCardsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  subCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    padding: 12,
+  },
+  subCardIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  subCardTextCol: {
+    marginLeft: 10,
+    flex: 1,
+  },
+  subCardLabel: {
+    fontFamily: FontFamily.regular,
+    fontSize: 11,
+    color: '#64748B',
+  },
+  subCardActionText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 13,
+    color: '#2563EB',
+    marginTop: 2,
+  },
+  // Contact Rows
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  fieldValueContact: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 14,
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  copyBtn: {
+    padding: 6,
+  },
+  subContainerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    padding: 12,
+  },
+  subContainerHalf: {
+    flex: 1,
+    paddingLeft: 4,
+  },
+  verticalDividerSub: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#CBD5E1',
+    marginHorizontal: 12,
+  },
+  // Address Card
+  addressBody: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  addressIllustrationWrapper: {
+    width: 96,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addressIllustration: {
+    width: 80,
+    height: 74,
+  },
+  addressVerticalDivider: {
+    width: 1,
+    height: 80,
+    backgroundColor: '#E2E8F0',
+    marginRight: 14,
+  },
+  addressContent: {
+    flex: 1,
+  },
+  addressEmptyTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 14,
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  addressEmptySubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 15,
+    marginBottom: 10,
+  },
+  addAddressBtn: {
+    borderWidth: 1.5,
+    borderColor: '#2563EB',
+    borderRadius: 18,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  addAddressBtnText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 12,
+    color: '#2563EB',
+  },
+  // Bottom Action Button
+  bottomEditBtn: {
+    backgroundColor: '#1D4ED8',
+    borderRadius: 14,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#FEF2F2',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    borderRadius: 16,
-    height: 52,
-    marginBottom: 20,
+    marginTop: 4,
+    marginBottom: 28,
+    shadowColor: '#1D4ED8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  signOutText: {
-    fontFamily: FontFamily.semiBold,
+  bottomEditBtnText: {
+    fontFamily: FontFamily.headingBold,
     fontSize: 15,
-    color: '#DC2626',
-  },
-  versionFooter: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-    color: '#94A3B8',
-    textAlign: 'center',
-    marginBottom: 12,
+    color: '#FFFFFF',
   },
 });
-
