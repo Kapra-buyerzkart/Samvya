@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
   },
   pillContainer: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ffffff',
     borderRadius: 999,
     padding: 4,
     borderWidth: 1,
