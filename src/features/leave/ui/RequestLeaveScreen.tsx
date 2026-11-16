@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { FontFamily } from '@/shared/theme';
+import { TactilePressable } from '@/shared/animations';
 
 type DurationType = 'full' | 'half';
 
@@ -256,13 +257,13 @@ export function RequestLeaveScreen(): React.JSX.Element {
             <View style={styles.durationRow}>
               <Text style={styles.sectionTitle}>Duration</Text>
               <View style={styles.durationToggleContainer}>
-                <TouchableOpacity
+                <TactilePressable
                   style={[
                     styles.durationToggleBtn,
                     durationType === 'full' && styles.durationToggleBtnActive,
                   ]}
                   onPress={() => setDurationType('full')}
-                  activeOpacity={0.8}
+                  activeScale={0.95}
                 >
                   <Text
                     style={[
@@ -272,15 +273,15 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   >
                     Full day
                   </Text>
-                </TouchableOpacity>
+                </TactilePressable>
 
-                <TouchableOpacity
+                <TactilePressable
                   style={[
                     styles.durationToggleBtn,
                     durationType === 'half' && styles.durationToggleBtnActive,
                   ]}
                   onPress={() => setDurationType('half')}
-                  activeOpacity={0.8}
+                  activeScale={0.95}
                 >
                   <Text
                     style={[
@@ -290,7 +291,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   >
                     Half day
                   </Text>
-                </TouchableOpacity>
+                </TactilePressable>
               </View>
             </View>
 
@@ -342,22 +343,22 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   {MONTH_NAMES[currentMonth]} {currentYear}
                 </Text>
                 <View style={styles.calendarArrowsRow}>
-                  <TouchableOpacity
+                  <TactilePressable
                     onPress={handlePrevMonth}
                     style={styles.arrowButton}
-                    activeOpacity={0.7}
+                    activeScale={0.88}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
                     <Feather name="chevron-left" size={22} color="#2563EB" />
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </TactilePressable>
+                  <TactilePressable
                     onPress={handleNextMonth}
                     style={styles.arrowButton}
-                    activeOpacity={0.7}
+                    activeScale={0.88}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   >
                     <Feather name="chevron-right" size={22} color="#2563EB" />
-                  </TouchableOpacity>
+                  </TactilePressable>
                 </View>
               </View>
 
@@ -370,7 +371,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 ))}
               </View>
 
-              {/* Days Matrix */}
+              {/* Days Matrix with Tactile Bouncy Cells */}
               <View style={styles.daysGrid}>
                 {calendarDays.map((item, index) => {
                   if (!item.isCurrentMonth) {
@@ -389,7 +390,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   const isToday = item.dateKey === todayKey && !startDate;
 
                   return (
-                    <TouchableOpacity
+                    <TactilePressable
                       key={item.dateKey}
                       style={[
                         styles.daySlot,
@@ -399,7 +400,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                         isToday && styles.daySlotTodayBorder,
                       ]}
                       onPress={() => handleSelectDay(item.dateKey)}
-                      activeOpacity={0.7}
+                      activeScale={0.88}
                     >
                       <Text
                         style={[
@@ -411,7 +412,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                       >
                         {item.dayNumber}
                       </Text>
-                    </TouchableOpacity>
+                    </TactilePressable>
                   );
                 })}
               </View>
@@ -449,17 +450,17 @@ export function RequestLeaveScreen(): React.JSX.Element {
             </View>
 
             {/* 8. Submit Request Button */}
-            <TouchableOpacity
+            <TactilePressable
               style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
               onPress={handleSubmit}
               disabled={isSubmitting}
-              activeOpacity={0.85}
+              activeScale={0.96}
             >
               <Text style={styles.submitButtonText}>
                 {isSubmitting ? 'Submitting...' : 'Submit request'}
               </Text>
               <Feather name="arrow-right" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            </TactilePressable>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

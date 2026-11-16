@@ -17,6 +17,7 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/features/auth';
 import { FontFamily } from '@/shared/theme';
+import { TactilePressable } from '@/shared/animations';
 
 export function EditProfileScreen(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
@@ -117,17 +118,17 @@ export function EditProfileScreen(): React.JSX.Element {
                 <View style={styles.avatarContainer}>
                   <Text style={styles.avatarText}>{initials}</Text>
                 </View>
-                <TouchableOpacity
+                <TactilePressable
                   style={styles.cameraBtn}
                   onPress={handleChangePhoto}
-                  activeOpacity={0.8}
+                  activeScale={0.88}
                 >
                   <Feather name="camera" size={14} color="#FFFFFF" />
-                </TouchableOpacity>
+                </TactilePressable>
               </View>
-              <TouchableOpacity onPress={handleChangePhoto} activeOpacity={0.7}>
+              <TactilePressable onPress={handleChangePhoto} activeScale={0.95}>
                 <Text style={styles.changePhotoText}>Change photo</Text>
-              </TouchableOpacity>
+              </TactilePressable>
             </View>
 
             {/* Form Fields */}
@@ -244,17 +245,17 @@ export function EditProfileScreen(): React.JSX.Element {
             </View>
 
             {/* Save Button */}
-            <TouchableOpacity
+            <TactilePressable
               style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
               onPress={handleSave}
               disabled={isSaving}
-              activeOpacity={0.85}
+              activeScale={0.96}
             >
               <Text style={styles.saveButtonText}>
                 {isSaving ? 'Saving Changes...' : 'Save Changes'}
               </Text>
               <Feather name="check" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            </TactilePressable>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

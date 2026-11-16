@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -12,10 +12,87 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { FontFamily } from '@/shared/theme';
+import { TactilePressable } from '@/shared/animations';
+
+function AnimatedStrengthBar({
+  filled,
+  color,
+}: {
+  filled: boolean;
+  color: string;
+}): React.JSX.Element {
+  const scaleY = useSharedValue(1);
+
+  useEffect(() => {
+    if (filled) {
+      scaleY.value = withSpring(1.25, { damping: 12, stiffness: 300 }, () => {
+        scaleY.value = withSpring(1);
+      });
+    }
+  }, [filled, scaleY]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleY: scaleY.value }],
+    opacity: withTiming(filled ? 1 : 0.35, { duration: 200 }),
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.strengthBar,
+        filled && { backgroundColor: color },
+        animStyle,
+      ]}
+    />
+  );
+}
+
+function AnimatedCheckItem({
+  checked,
+  label,
+}: {
+  checked: boolean;
+  label: string;
+}): React.JSX.Element {
+  const scale = useSharedValue(1);
+
+  useEffect(() => {
+    if (checked) {
+      scale.value = withSpring(1.25, { damping: 10, stiffness: 350 }, () => {
+        scale.value = withSpring(1);
+      });
+    }
+  }, [checked, scale]);
+
+  const iconAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <View style={styles.checkItem}>
+      <Animated.View style={iconAnimStyle}>
+        <Feather
+          name={checked ? 'check-circle' : 'circle'}
+          size={15}
+          color={checked ? '#16A34A' : '#94A3B8'}
+        />
+      </Animated.View>
+      <Text style={[styles.checkText, checked && styles.checkTextActive]}>
+        {label}
+      </Text>
+    </View>
+  );
+}
 
 export function ResetPasswordScreen(): React.JSX.Element {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -186,12 +263,10 @@ export function ResetPasswordScreen(): React.JSX.Element {
                   </View>
                   <View style={styles.strengthBarsRow}>
                     {[1, 2, 3, 4].map((bar) => (
-                      <View
+                      <AnimatedStrengthBar
                         key={bar}
-                        style={[
-                          styles.strengthBar,
-                          bar <= strength.score && { backgroundColor: strength.color },
-                        ]}
+                        filled={bar <= strength.score}
+                        color={strength.color}
                       />
                     ))}
                   </View>
@@ -226,73 +301,38 @@ export function ResetPasswordScreen(): React.JSX.Element {
                 </View>
               </View>
 
-              {/* Verification Checklist */}
+              {/* Verification Checklist with Bouncy Micro-Animations */}
               <View style={styles.checklist}>
-                <View style={styles.checkItem}>
-                  <Feather
-                    name={hasMinLength ? 'check-circle' : 'circle'}
-                    size={15}
-                    color={hasMinLength ? '#16A34A' : '#94A3B8'}
-                  />
-                  <Text
-                    style={[
-                      styles.checkText,
-                      hasMinLength && styles.checkTextActive,
-                    ]}
-                  >
-                    At least 8 characters
-                  </Text>
-                </View>
-
-                <View style={styles.checkItem}>
-                  <Feather
-                    name={hasNumberOrSymbol ? 'check-circle' : 'circle'}
-                    size={15}
-                    color={hasNumberOrSymbol ? '#16A34A' : '#94A3B8'}
-                  />
-                  <Text
-                    style={[
-                      styles.checkText,
-                      hasNumberOrSymbol && styles.checkTextActive,
-                    ]}
-                  >
-                    Contains number or symbol
-                  </Text>
-                </View>
-
-                <View style={styles.checkItem}>
-                  <Feather
-                    name={isMatching ? 'check-circle' : 'circle'}
-                    size={15}
-                    color={isMatching ? '#16A34A' : '#94A3B8'}
-                  />
-                  <Text
-                    style={[
-                      styles.checkText,
-                      isMatching && styles.checkTextActive,
-                    ]}
-                  >
-                    Passwords match
-                  </Text>
-                </View>
+                <AnimatedCheckItem
+                  checked={hasMinLength}
+                  label="At least 8 characters"
+                />
+                <AnimatedCheckItem
+                  checked={hasNumberOrSymbol}
+                  label="Contains number or symbol"
+                />
+                <AnimatedCheckItem
+                  checked={isMatching}
+                  label="Passwords match"
+                />
               </View>
             </View>
 
             {/* Update Password Button */}
-            <TouchableOpacity
+            <TactilePressable
               style={[
                 styles.submitButton,
                 (!hasMinLength || !isMatching || isUpdating) && styles.submitButtonDisabled,
               ]}
               onPress={handleUpdatePassword}
               disabled={!hasMinLength || !isMatching || isUpdating}
-              activeOpacity={0.85}
+              activeScale={0.96}
             >
               <Text style={styles.submitButtonText}>
                 {isUpdating ? 'Updating Password...' : 'Update Password'}
               </Text>
               <Feather name="arrow-right" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            </TactilePressable>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

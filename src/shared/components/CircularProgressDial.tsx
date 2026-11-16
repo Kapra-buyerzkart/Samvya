@@ -1,5 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
+import { SkiaDialAura } from '@/shared/animations/SkiaDialAura';
 
 interface CircularProgressDialProps {
   size?: number;
@@ -10,6 +18,8 @@ interface CircularProgressDialProps {
   knobColor?: string;
   knobBorderColor?: string;
   knobSize?: number;
+  isActive?: boolean;
+  showAura?: boolean;
   children?: React.ReactNode;
 }
 
@@ -22,6 +32,8 @@ export function CircularProgressDial({
   knobColor = '#FFFFFF',
   knobBorderColor = '#1D4ED8',
   knobSize = 16,
+  isActive = true,
+  showAura = true,
   children,
 }: CircularProgressDialProps): React.JSX.Element {
   const radius = size / 2;
@@ -35,17 +47,54 @@ export function CircularProgressDial({
   const knobTop = radius + trackRadius * Math.sin(knobRad) - knobSize / 2;
 
   // Semicircle rotation angles
-  // With base rotation of -45°, at angleDeg = 0 the colored half is strictly in [180°, 360°] (outside right container).
-  // Rotating clockwise by angleDeg brings exactly [0°, rightAngle] into the right container.
   const rightAngle = Math.min(180, angleDeg) - 45;
-  // Left half sweeps from 180 to 360 deg
   const leftAngle = Math.max(0, angleDeg - 180) - 45;
 
   const innerDiscSize = size - strokeWidth * 2 - 16;
   const innerDiscRadius = innerDiscSize / 2;
 
+  // Micro-animation: knob halo breathing glow
+  const haloScale = useSharedValue(1);
+  const haloOpacity = useSharedValue(0.7);
+
+  useEffect(() => {
+    if (isActive) {
+      haloScale.value = withRepeat(
+        withTiming(1.65, {
+          duration: 1500,
+          easing: Easing.out(Easing.ease),
+        }),
+        -1,
+        false,
+      );
+      haloOpacity.value = withRepeat(
+        withTiming(0, {
+          duration: 1500,
+          easing: Easing.out(Easing.ease),
+        }),
+        -1,
+        false,
+      );
+    } else {
+      haloScale.value = withTiming(1);
+      haloOpacity.value = withTiming(0);
+    }
+  }, [isActive, haloOpacity, haloScale]);
+
+  const animatedHaloStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: haloScale.value }],
+    opacity: haloOpacity.value,
+  }));
+
   return (
     <View style={[styles.container, { width: size, height: size }]}>
+      {/* 0. Ambient Skia Radial Aura Glow */}
+      {showAura && (
+        <View style={styles.auraWrapper}>
+          <SkiaDialAura size={size + 32} isActive={isActive} />
+        </View>
+      )}
+
       {/* 1. Full Track Circle */}
       <View
         style={[
@@ -137,7 +186,23 @@ export function CircularProgressDial({
         />
       )}
 
-      {/* 5. Interactive Knob at Progress End Point */}
+      {/* 5. Interactive Knob Halo Breathing Glow & Knob */}
+      {isActive && (
+        <Animated.View
+          style={[
+            styles.knobHalo,
+            {
+              left: knobLeft,
+              top: knobTop,
+              width: knobSize,
+              height: knobSize,
+              borderRadius: knobSize / 2,
+              backgroundColor: progressColor,
+            },
+            animatedHaloStyle,
+          ]}
+        />
+      )}
       <View
         style={[
           styles.knob,
@@ -162,6 +227,8 @@ export function CircularProgressDial({
             width: innerDiscSize,
             height: innerDiscSize,
             borderRadius: innerDiscRadius,
+            top: radius - innerDiscRadius,
+            left: radius - innerDiscRadius,
           },
         ]}
       >
@@ -177,9 +244,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  auraWrapper: {
+    position: 'absolute',
+    top: -16,
+    left: -16,
+    zIndex: 0,
+  },
   circle: {
     position: 'absolute',
     top: 0,
+    left: 0,
   },
   halfContainer: {
     position: 'absolute',
@@ -190,25 +264,29 @@ const styles = StyleSheet.create({
     position: 'absolute',
     zIndex: 2,
   },
+  knobHalo: {
+    position: 'absolute',
+    zIndex: 2,
+  },
   knob: {
     position: 'absolute',
-    zIndex: 5,
+    zIndex: 3,
     shadowColor: '#1D4ED8',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 4,
   },
   centerDisc: {
+    position: 'absolute',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
+    shadowColor: '#0F1E36',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    shadowRadius: 10,
+    elevation: 3,
     zIndex: 1,
   },
 });
-

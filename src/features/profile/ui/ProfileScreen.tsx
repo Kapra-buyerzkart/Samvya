@@ -12,6 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/features/auth';
 import { FontFamily } from '@/shared/theme';
+import { PulsingStatusDot, TactilePressable } from '@/shared/animations';
 
 export function ProfileScreen(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
@@ -66,13 +67,13 @@ export function ProfileScreen(): React.JSX.Element {
             <Feather name="chevron-left" size={26} color="#0F172A" />
           </TouchableOpacity>
           <Text style={styles.navTitle}>My Profile</Text>
-          <TouchableOpacity
+          <TactilePressable
             onPress={() => router.push('/(app)/profile/edit')}
             style={styles.editHeaderBtn}
-            activeOpacity={0.7}
+            activeScale={0.92}
           >
             <Feather name="edit-2" size={18} color="#1D4ED8" />
-          </TouchableOpacity>
+          </TactilePressable>
         </View>
 
         {/* Hero Profile Card */}
@@ -81,13 +82,13 @@ export function ProfileScreen(): React.JSX.Element {
             <View style={styles.avatarContainer}>
               <Text style={styles.avatarText}>{initials}</Text>
             </View>
-            <TouchableOpacity
+            <TactilePressable
               style={styles.avatarBadge}
               onPress={() => router.push('/(app)/profile/edit')}
-              activeOpacity={0.8}
+              activeScale={0.88}
             >
               <Feather name="camera" size={12} color="#FFFFFF" />
-            </TouchableOpacity>
+            </TactilePressable>
           </View>
 
           <Text style={styles.heroName}>{displayName}</Text>
@@ -97,7 +98,7 @@ export function ProfileScreen(): React.JSX.Element {
 
           <View style={styles.badgeRow}>
             <View style={styles.statusPill}>
-              <View style={styles.statusDot} />
+              <PulsingStatusDot color="#10B981" size={7} />
               <Text style={styles.statusText}>Active Employee</Text>
             </View>
             <View style={styles.empIdPill}>
@@ -192,10 +193,10 @@ export function ProfileScreen(): React.JSX.Element {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Account &amp; Security</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity
+            <TactilePressable
               style={styles.menuRow}
               onPress={() => router.push('/(app)/profile/edit')}
-              activeOpacity={0.7}
+              activeScale={0.98}
             >
               <View style={styles.menuLeft}>
                 <View style={styles.menuIconContainer}>
@@ -204,14 +205,14 @@ export function ProfileScreen(): React.JSX.Element {
                 <Text style={styles.menuText}>Edit Profile</Text>
               </View>
               <Feather name="chevron-right" size={18} color="#94A3B8" />
-            </TouchableOpacity>
+            </TactilePressable>
 
             <View style={styles.cardSeparator} />
 
-            <TouchableOpacity
+            <TactilePressable
               style={styles.menuRow}
               onPress={() => router.push('/(app)/profile/reset-password')}
-              activeOpacity={0.7}
+              activeScale={0.98}
             >
               <View style={styles.menuLeft}>
                 <View style={styles.menuIconContainer}>
@@ -220,14 +221,14 @@ export function ProfileScreen(): React.JSX.Element {
                 <Text style={styles.menuText}>Reset Password</Text>
               </View>
               <Feather name="chevron-right" size={18} color="#94A3B8" />
-            </TouchableOpacity>
+            </TactilePressable>
 
             <View style={styles.cardSeparator} />
 
-            <TouchableOpacity
+            <TactilePressable
               style={styles.menuRow}
               onPress={() => router.push('/(app)/attendance/face-verify')}
-              activeOpacity={0.7}
+              activeScale={0.98}
             >
               <View style={styles.menuLeft}>
                 <View style={styles.menuIconContainer}>
@@ -239,7 +240,7 @@ export function ProfileScreen(): React.JSX.Element {
                 </View>
               </View>
               <Feather name="check-circle" size={18} color="#16A34A" />
-            </TouchableOpacity>
+            </TactilePressable>
 
             <View style={styles.cardSeparator} />
 
@@ -259,14 +260,14 @@ export function ProfileScreen(): React.JSX.Element {
         </View>
 
         {/* Sign Out Button */}
-        <TouchableOpacity
+        <TactilePressable
           style={styles.signOutButton}
           onPress={handleSignOut}
-          activeOpacity={0.8}
+          activeScale={0.96}
         >
           <Feather name="log-out" size={18} color="#DC2626" />
           <Text style={styles.signOutText}>Sign out of account</Text>
-        </TouchableOpacity>
+        </TactilePressable>
 
         {/* Version Footer */}
         <Text style={styles.versionFooter}>

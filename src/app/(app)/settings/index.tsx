@@ -12,6 +12,7 @@ import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/features/auth';
 import { FontFamily } from '@/shared/theme';
+import { TactilePressable } from '@/shared/animations';
 
 export default function SettingsRoute(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
@@ -61,10 +62,10 @@ export default function SettingsRoute(): React.JSX.Element {
         </View>
 
         {/* Profile Card Summary */}
-        <TouchableOpacity
+        <TactilePressable
           style={styles.profileSummaryCard}
           onPress={() => router.push('/(app)/profile')}
-          activeOpacity={0.75}
+          activeScale={0.98}
         >
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
@@ -75,16 +76,16 @@ export default function SettingsRoute(): React.JSX.Element {
             <Text style={styles.viewProfileText}>View & manage profile →</Text>
           </View>
           <Feather name="chevron-right" size={20} color="#94A3B8" />
-        </TouchableOpacity>
+        </TactilePressable>
 
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>Account & Security</Text>
           <View style={styles.menuCard}>
-            <TouchableOpacity
+            <TactilePressable
               style={styles.menuItem}
               onPress={() => router.push('/(app)/profile/edit')}
-              activeOpacity={0.7}
+              activeScale={0.98}
             >
               <View style={[styles.menuIconWrapper, { backgroundColor: '#EFF6FF' }]}>
                 <Feather name="user-check" size={18} color="#1D4ED8" />
@@ -94,14 +95,14 @@ export default function SettingsRoute(): React.JSX.Element {
                 <Text style={styles.menuSubtitle}>Name, designation, emergency contact</Text>
               </View>
               <Feather name="chevron-right" size={18} color="#CBD5E1" />
-            </TouchableOpacity>
+            </TactilePressable>
 
             <View style={styles.cardSeparator} />
 
-            <TouchableOpacity
+            <TactilePressable
               style={styles.menuItem}
               onPress={() => router.push('/(app)/profile/reset-password')}
-              activeOpacity={0.7}
+              activeScale={0.98}
             >
               <View style={[styles.menuIconWrapper, { backgroundColor: '#FEF3C7' }]}>
                 <Feather name="key" size={18} color="#D97706" />
@@ -111,7 +112,7 @@ export default function SettingsRoute(): React.JSX.Element {
                 <Text style={styles.menuSubtitle}>Update your login credentials</Text>
               </View>
               <Feather name="chevron-right" size={18} color="#CBD5E1" />
-            </TouchableOpacity>
+            </TactilePressable>
           </View>
         </View>
 
@@ -162,14 +163,14 @@ export default function SettingsRoute(): React.JSX.Element {
         </View>
 
         {/* Sign Out Button */}
-        <TouchableOpacity
+        <TactilePressable
           style={styles.signOutButton}
           onPress={handleSignOut}
-          activeOpacity={0.8}
+          activeScale={0.96}
         >
           <Feather name="log-out" size={18} color="#DC2626" />
           <Text style={styles.signOutText}>Sign Out of Samavya</Text>
-        </TouchableOpacity>
+        </TactilePressable>
       </ScrollView>
     </SafeAreaView>
   );

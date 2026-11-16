@@ -1,5 +1,6 @@
 import { usePersistentShiftTimer } from '@/features/attendance';
 import { CircularProgressDial } from '@/shared/components';
+import { PulsingStatusDot, TactilePressable } from '@/shared/animations';
 import { FontFamily } from '@/shared/theme';
 import {
   getActiveTrackingSession,
@@ -96,32 +97,29 @@ export default function HomeScreen(): React.JSX.Element {
             <Text style={styles.brandTitle}>Samavya</Text>
             <View style={styles.headerRight}>
               <Text style={styles.headerDate}>Thu 12 Nov 2026</Text>
-              <TouchableOpacity
+              <TactilePressable
                 onPress={() => router.push('/(app)/profile')}
                 style={styles.settingsIconBtn}
-                activeOpacity={0.7}
                 accessibilityLabel="My Profile"
               >
                 <Feather name="user" size={18} color="#1D4ED8" />
-              </TouchableOpacity>
-              <TouchableOpacity
+              </TactilePressable>
+              <TactilePressable
                 onPress={() => router.push('/(app)/settings')}
                 style={styles.settingsIconBtn}
-                activeOpacity={0.7}
                 accessibilityLabel="Settings"
               >
                 <Feather name="settings" size={18} color="#475569" />
-              </TouchableOpacity>
+              </TactilePressable>
             </View>
           </View>
 
           {/* Top Dropdowns: Hours & Location */}
           <View style={styles.dropdownsRow}>
             {/* Hours Selector */}
-            <TouchableOpacity
+            <TactilePressable
               style={styles.dropdownCard}
               onPress={() => setShowHoursModal(true)}
-              activeOpacity={0.8}
             >
               <View style={styles.dropdownIconContainer}>
                 <Feather name="clock" size={20} color="#0F172A" />
@@ -131,13 +129,12 @@ export default function HomeScreen(): React.JSX.Element {
                 <Text style={styles.dropdownValue}>{timer.hoursType}</Text>
               </View>
               <Feather name="chevron-down" size={18} color="#64748B" />
-            </TouchableOpacity>
+            </TactilePressable>
 
             {/* Location Selector */}
-            <TouchableOpacity
+            <TactilePressable
               style={styles.dropdownCard}
               onPress={() => setShowLocationModal(true)}
-              activeOpacity={0.8}
             >
               <View style={styles.dropdownIconContainer}>
                 <Feather name="home" size={20} color="#0F172A" />
@@ -149,7 +146,7 @@ export default function HomeScreen(): React.JSX.Element {
                 </Text>
               </View>
               <Feather name="chevron-down" size={18} color="#64748B" />
-            </TouchableOpacity>
+            </TactilePressable>
           </View>
 
           {/* Shift Banner */}
@@ -162,12 +159,11 @@ export default function HomeScreen(): React.JSX.Element {
             <Text style={styles.shiftTime}>09:00 AM - 06 : 00 PM</Text>
           </View>
 
-          {/* Working Status Indicator */}
+          {/* Working Status Indicator with Pulsing Micro-Animation */}
           <View style={styles.statusIndicatorRow}>
-            <Feather
-              name="clock"
-              size={18}
+            <PulsingStatusDot
               color={timer.isOnBreak ? '#D97706' : timer.isWorking ? '#2563EB' : '#64748B'}
+              size={8}
             />
             <Text
               style={[
@@ -183,7 +179,7 @@ export default function HomeScreen(): React.JSX.Element {
             </Text>
           </View>
 
-          {/* Circular Progress Hero Dial */}
+          {/* Circular Progress Hero Dial with Skia Aura & Breathing Knob */}
           <View style={styles.dialWrapper}>
             <CircularProgressDial
               size={220}
@@ -192,6 +188,8 @@ export default function HomeScreen(): React.JSX.Element {
               trackColor="#DDEBFC"
               progressColor="#1D4ED8"
               knobSize={18}
+              isActive={timer.isWorking}
+              showAura={true}
             >
               <Text style={styles.workedLabel}>Worked today</Text>
               <Text style={styles.workedTime} numberOfLines={1} adjustsFontSizeToFit>
@@ -216,9 +214,9 @@ export default function HomeScreen(): React.JSX.Element {
             </View>
           </View>
 
-          {/* Action Buttons: Start Break & Punch Out */}
+          {/* Action Buttons with Spring Micro-Interactions */}
           <View style={styles.actionsRow}>
-            <TouchableOpacity
+            <TactilePressable
               style={[
                 styles.breakButton,
                 timer.isOnBreak && styles.breakButtonActive,
@@ -226,18 +224,18 @@ export default function HomeScreen(): React.JSX.Element {
               ]}
               onPress={handleToggleBreak}
               disabled={timer.isPunchedOut}
-              activeOpacity={0.85}
+              activeScale={0.95}
             >
               <Feather name={timer.isOnBreak ? 'play' : 'pause'} size={18} color="#FFFFFF" />
               <Text style={styles.breakButtonText}>
                 {timer.isOnBreak ? 'Resume work' : 'Start break'}
               </Text>
-            </TouchableOpacity>
+            </TactilePressable>
 
-            <TouchableOpacity
+            <TactilePressable
               style={[styles.punchOutButton, timer.isPunchedOut && styles.punchInStyle]}
               onPress={timer.isPunchedOut ? handlePunchIn : handlePunchOut}
-              activeOpacity={0.85}
+              activeScale={0.95}
             >
               <Feather
                 name={timer.isPunchedOut ? 'log-in' : 'log-out'}
@@ -247,7 +245,7 @@ export default function HomeScreen(): React.JSX.Element {
               <Text style={[styles.punchOutButtonText, timer.isPunchedOut && styles.punchInText]}>
                 {timer.isPunchedOut ? 'Punch in' : 'Punch out'}
               </Text>
-            </TouchableOpacity>
+            </TactilePressable>
           </View>
 
           {/* Helper Subtext */}
@@ -269,10 +267,10 @@ export default function HomeScreen(): React.JSX.Element {
 
           {/* Leave Balance Section */}
           <View style={styles.leaveSection}>
-            <TouchableOpacity
+            <TactilePressable
               style={styles.leaveHeaderBanner}
               onPress={handleRequestLeave}
-              activeOpacity={0.8}
+              activeScale={0.97}
             >
               <View style={styles.leaveHeaderLeft}>
                 <Feather name="calendar" size={16} color="#1D4ED8" />
@@ -281,12 +279,12 @@ export default function HomeScreen(): React.JSX.Element {
               <View>
                 <Text style={styles.leaveRequestLink}>Request leave &gt;</Text>
               </View>
-            </TouchableOpacity>
+            </TactilePressable>
 
-            <TouchableOpacity
+            <TactilePressable
               style={styles.leaveMetricsRow}
               onPress={handleRequestLeave}
-              activeOpacity={0.85}
+              activeScale={0.98}
             >
               {/* Days Remaining */}
               <View style={styles.leaveMetricCol}>
@@ -309,39 +307,39 @@ export default function HomeScreen(): React.JSX.Element {
                 <Text style={styles.leaveMetricNumber}>4</Text>
                 <Text style={styles.leaveMetricLabel}>days taken</Text>
               </View>
-            </TouchableOpacity>
+            </TactilePressable>
           </View>
 
           {/* Shortcuts & Diagnostics Tray */}
           <View style={styles.shortcutsCard}>
             <Text style={styles.shortcutsTitle}>Quick Verification & Logs</Text>
             <View style={styles.shortcutsGrid}>
-              <TouchableOpacity
+              <TactilePressable
                 style={styles.shortcutBtn}
                 onPress={() => router.push('/(app)/attendance/face-verify')}
-                activeOpacity={0.8}
+                activeScale={0.94}
               >
                 <Feather name="camera" size={16} color="#1D4ED8" />
                 <Text style={styles.shortcutBtnText}>Biometric Face</Text>
-              </TouchableOpacity>
+              </TactilePressable>
 
-              <TouchableOpacity
+              <TactilePressable
                 style={styles.shortcutBtn}
                 onPress={() => router.push('/(app)/attendance/manual-entry')}
-                activeOpacity={0.8}
+                activeScale={0.94}
               >
                 <Feather name="map-pin" size={16} color="#1D4ED8" />
                 <Text style={styles.shortcutBtnText}>Manual GPS</Text>
-              </TouchableOpacity>
+              </TactilePressable>
 
-              <TouchableOpacity
+              <TactilePressable
                 style={styles.shortcutBtn}
                 onPress={() => router.push('/(app)/attendance/history')}
-                activeOpacity={0.8}
+                activeScale={0.94}
               >
                 <Feather name="activity" size={16} color="#1D4ED8" />
                 <Text style={styles.shortcutBtnText}>Sync Queue</Text>
-              </TouchableOpacity>
+              </TactilePressable>
             </View>
           </View>
         </ScrollView>
