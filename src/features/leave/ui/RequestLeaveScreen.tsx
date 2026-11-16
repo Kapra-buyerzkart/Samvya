@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ImageBackground } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { FontFamily } from '@/shared/theme';
@@ -201,17 +202,22 @@ export function RequestLeaveScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flexOne}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+    <ImageBackground
+      source={require('../../../../assets/images/background_home.png')}
+      style={styles.backgroundImage}
+      contentFit="cover"
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.flexOne}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <ScrollView
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
             {/* 1. Header Row */}
             <View style={styles.navBar}>
               <View style={styles.navLeft}>
@@ -465,13 +471,19 @@ export function RequestLeaveScreen(): React.JSX.Element {
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
+  </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
   flexOne: {
     flex: 1,
