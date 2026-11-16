@@ -67,6 +67,9 @@ export function LoginScreen(): React.JSX.Element {
         });
       }, 1000);
 
+      // Pre-fill demo OTP code for convenient testing
+      setOtpDigits(['1', '2', '3', '4', '5']);
+
       Alert.alert(
         'OTP Sent Successfully',
         method === 'phone'
@@ -292,7 +295,7 @@ export function LoginScreen(): React.JSX.Element {
                           digit ? styles.otpBoxFilled : null,
                         ]}
                         keyboardType="number-pad"
-                        maxLength={1}
+                        maxLength={index === 0 ? 5 : 1}
                         value={digit}
                         onChangeText={(val) => handleOtpChange(val, index)}
                         onKeyPress={(e) => handleOtpKeyPress(e, index)}

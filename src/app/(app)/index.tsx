@@ -97,9 +97,18 @@ export default function HomeScreen(): React.JSX.Element {
             <View style={styles.headerRight}>
               <Text style={styles.headerDate}>Thu 12 Nov 2026</Text>
               <TouchableOpacity
+                onPress={() => router.push('/(app)/profile')}
+                style={styles.settingsIconBtn}
+                activeOpacity={0.7}
+                accessibilityLabel="My Profile"
+              >
+                <Feather name="user" size={18} color="#1D4ED8" />
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => router.push('/(app)/settings')}
                 style={styles.settingsIconBtn}
                 activeOpacity={0.7}
+                accessibilityLabel="Settings"
               >
                 <Feather name="settings" size={18} color="#475569" />
               </TouchableOpacity>

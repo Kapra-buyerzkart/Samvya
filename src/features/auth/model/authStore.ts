@@ -11,6 +11,10 @@ export interface UserProfile {
   phone?: string;
   employeeCode: string;
   department: string;
+  designation?: string;
+  joiningDate?: string;
+  emergencyContact?: string;
+  location?: string;
   dpdpConsentGiven: boolean;
 }
 
@@ -20,6 +24,7 @@ export interface AuthState {
   login: (credentials: { identifier: string; method: 'phone' | 'email'; otp: string }) => Promise<void>;
   logout: () => void;
   setUser: (user: UserProfile) => void;
+  updateProfile: (updated: Partial<UserProfile>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,11 +35,15 @@ export const useAuthStore = create<AuthState>()(
       login: async ({ identifier, method }) => {
         const dummyUser: UserProfile = {
           id: `usr_${Date.now()}`,
-          name: method === 'phone' ? 'Employee User' : identifier.split('@')[0] || 'Employee User',
-          email: method === 'email' ? identifier : 'employee@samavya.internal',
+          name: method === 'phone' ? 'Aarav Sharma' : identifier.split('@')[0] || 'Aarav Sharma',
+          email: method === 'email' ? identifier : 'aarav.sharma@samavya.internal',
           phone: method === 'phone' ? identifier : '+91 98765 43210',
           employeeCode: 'EMP-2026',
           department: 'Field Operations',
+          designation: 'Operations Specialist',
+          joiningDate: '15 Jan 2024',
+          emergencyContact: '+91 91234 56789',
+          location: 'Work from home',
           dpdpConsentGiven: true,
         };
         set({
@@ -49,6 +58,10 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       setUser: (user) => set({ user }),
+      updateProfile: (updated) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, ...updated } : null,
+        })),
     }),
     {
       name: 'hrms-auth-storage',
