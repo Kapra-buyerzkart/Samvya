@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     borderWidth: 1,
     borderColor: '#CBD5E1',
     borderRadius: 14,
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#CBD5E1',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
     textAlign: 'center',
     fontFamily: FontFamily.headingBold,
     fontSize: 22,

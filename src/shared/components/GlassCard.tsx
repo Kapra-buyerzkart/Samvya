@@ -27,17 +27,6 @@ export function GlassCard({
   tint = 'light',
   ...props
 }: GlassCardProps): React.JSX.Element {
-  // On Android, native BlurView has severe padding-inset and clipping artifacts.
-  // A clean, semi-transparent frosted card provides a consistent, high-performance aesthetic.
-  if (Platform.OS === 'android' || !isNativeBlurAvailable) {
-    return (
-      <View style={[styles.androidGlassCard, style]} {...props}>
-        {children}
-      </View>
-    );
-  }
-
-  // On iOS, BlurView renders beautifully with absolute positioning so padding does not inset the blur canvas
   const flattenedStyle = StyleSheet.flatten(style) || {};
   const {
     padding,
@@ -51,7 +40,7 @@ export function GlassCard({
   } = flattenedStyle as ViewStyle;
 
   const contentPaddingStyle: ViewStyle = {
-    padding,
+    padding: padding ?? 24,
     paddingTop,
     paddingBottom,
     paddingLeft,
@@ -60,41 +49,45 @@ export function GlassCard({
     paddingVertical,
   };
 
+  if (Platform.OS === 'android') {
+    // On Android, elevation causes dark shadows to bleed through semi-transparent views.
+    // A clean, translucent white surface (rgba(255, 255, 255, 0.68)) with high-contrast
+    // white border delivers the exact frosted glass aesthetic from the reference design.
+    return (
+      <View style={[styles.androidGlassCard, containerStyle]} {...props}>
+        <View style={contentPaddingStyle}>{children}</View>
+      </View>
+    );
+  }
+
+  // On iOS, BlurView renders native frosted blur behind content
   return (
     <View style={[styles.iosContainer, containerStyle]} {...props}>
-      <BlurView intensity={intensity} tint={tint} style={StyleSheet.absoluteFill} />
-      <View style={[styles.contentContainer, contentPaddingStyle]}>
-        {children}
-      </View>
+      {isNativeBlurAvailable ? (
+        <BlurView intensity={intensity} tint={tint} style={StyleSheet.absoluteFill} />
+      ) : null}
+      <View style={contentPaddingStyle}>{children}</View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   androidGlassCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.68)',
     borderRadius: 28,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#1E293B',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 3,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
     overflow: 'hidden',
   },
   iosContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+    backgroundColor: 'rgba(255, 255, 255, 0.65)',
     borderRadius: 28,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255, 255, 255, 0.85)',
-    shadowColor: '#19326C',
-    shadowOffset: { width: 0, height: 8 },
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#1E3A8A',
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 20,
     overflow: 'hidden',
-  },
-  contentContainer: {
-    width: '100%',
   },
 });
