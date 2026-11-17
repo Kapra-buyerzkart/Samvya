@@ -103,25 +103,20 @@ const styles = StyleSheet.create({
   },
   card: {
     padding: 20,
-    backgroundColor: '#0F172A',
   },
   title: {
     marginBottom: 16,
-    color: '#F8FAFC',
   },
   sectionHeader: {
     fontWeight: '700',
-    color: '#E2E8F0',
     marginTop: 12,
     marginBottom: 4,
   },
   notice: {
     lineHeight: 20,
-    color: '#94A3B8',
     marginBottom: 8,
   },
   officer: {
-    color: '#64748B',
     marginTop: 12,
     fontStyle: 'italic',
   },

@@ -24,6 +24,12 @@ export interface UserProfile {
   otherEmail?: string;
   otherPhone?: string;
   address?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
 }
 
 export interface AuthState {

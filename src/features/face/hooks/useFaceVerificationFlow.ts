@@ -92,8 +92,8 @@ export function useFaceVerificationFlow({
 
       try {
         let currentStatus: PermissionStatus =
-          VisionCamera?.cameraPermissionStatus ?? 'denied';
-        if (currentStatus === 'not-determined') {
+          VisionCamera?.cameraPermissionStatus ?? 'not-determined';
+        if (currentStatus !== 'authorized') {
           setStep('requesting_permission');
           const granted = await VisionCamera?.requestCameraPermission?.();
           currentStatus = granted ? 'authorized' : 'denied';

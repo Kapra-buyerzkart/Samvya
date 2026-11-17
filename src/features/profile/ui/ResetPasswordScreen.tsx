@@ -1,19 +1,15 @@
 import { TactilePressable } from '@/shared/animations';
-import { FontFamily } from '@/shared/theme';
+import { KeyboardAvoidingScrollView } from '@/shared/components';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import Animated, {
@@ -54,9 +50,11 @@ function AnimatedStrengthBar({
 function AnimatedCheckItem({
   checked,
   label,
+  isDark = false,
 }: {
   checked: boolean;
   label: string;
+  isDark?: boolean;
 }): React.JSX.Element {
   const scale = useSharedValue(1);
 
@@ -78,15 +76,25 @@ function AnimatedCheckItem({
         <Feather
           name={checked ? 'check-circle' : 'circle'}
           size={15}
-          color={checked ? '#16A34A' : '#94A3B8'}
+          color={checked ? (isDark ? '#4ADE80' : '#16A34A') : isDark ? '#64748B' : '#94A3B8'}
         />
       </Animated.View>
-      <Text style={[styles.checkText, checked && styles.checkTextActive]}>{label}</Text>
+      <Text
+        style={[
+          styles.checkText,
+          isDark && { color: '#94A3B8' },
+          checked && (isDark ? { color: '#4ADE80' } : styles.checkTextActive),
+        ]}
+      >
+        {label}
+      </Text>
     </View>
   );
 }
 
 export function ResetPasswordScreen(): React.JSX.Element {
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -148,169 +156,158 @@ export function ResetPasswordScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flexOne}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}>
+      <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.navBar}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            {/* Header */}
-            <View style={styles.navBar}>
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={styles.backButton}
-                activeOpacity={0.7}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              >
-                <Feather name="chevron-left" size={26} color="#0F172A" />
-              </TouchableOpacity>
-              <Text style={styles.navTitle}>Reset Password</Text>
-              <View style={styles.placeholderRight} />
-            </View>
+            <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F172A'} />
+          </TouchableOpacity>
+          <Text style={[styles.navTitle, isDark && { color: '#F8FAFC' }]}>Reset Password</Text>
+          <View style={styles.placeholderRight} />
+        </View>
 
-            {/* Instruction Banner */}
-            <View style={styles.bannerCard}>
-              <View style={styles.bannerIconContainer}>
-                <Feather name="lock" size={20} color="#1D4ED8" />
-              </View>
-              <View style={styles.bannerTextCol}>
-                <Text style={styles.bannerTitle}>Security Requirement</Text>
-                <Text style={styles.bannerText}>
-                  Choose a strong password with at least 8 characters, combining uppercase, numbers,
-                  and symbols.
+        {/* Instruction Banner */}
+        <View style={[styles.bannerCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View style={[styles.bannerIconContainer, isDark && { backgroundColor: '#1E3A8A' }]}>
+            <Feather name="lock" size={20} color={isDark ? '#93C5FD' : '#1D4ED8'} />
+          </View>
+          <View style={styles.bannerTextCol}>
+            <Text style={[styles.bannerTitle, isDark && { color: '#F8FAFC' }]}>Security Requirement</Text>
+            <Text style={[styles.bannerText, isDark && { color: '#94A3B8' }]}>
+              Choose a strong password with at least 8 characters, combining uppercase, numbers,
+              and symbols.
+            </Text>
+          </View>
+        </View>
+
+        {/* Password Form Card */}
+        <View style={[styles.formCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          {/* Current Password */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Current Password</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="key" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                placeholder="Enter current password"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                secureTextEntry={!showCurrent}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                onPress={() => setShowCurrent(!showCurrent)}
+                style={styles.eyeBtn}
+                activeOpacity={0.7}
+              >
+                <Feather name={showCurrent ? 'eye' : 'eye-off'} size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* New Password */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>New Password</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="lock" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="Enter new password"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                secureTextEntry={!showNew}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                onPress={() => setShowNew(!showNew)}
+                style={styles.eyeBtn}
+                activeOpacity={0.7}
+              >
+                <Feather name={showNew ? 'eye' : 'eye-off'} size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Password Strength Meter */}
+          {newPassword.length > 0 && (
+            <View style={styles.strengthContainer}>
+              <View style={styles.strengthHeader}>
+                <Text style={[styles.strengthLabel, isDark && { color: '#94A3B8' }]}>Password Strength</Text>
+                <Text style={[styles.strengthValue, { color: strength.color }]}>
+                  {strength.label}
                 </Text>
               </View>
-            </View>
-
-            {/* Password Form Card */}
-            <View style={styles.formCard}>
-              {/* Current Password */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Current Password</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="key" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={currentPassword}
-                    onChangeText={setCurrentPassword}
-                    placeholder="Enter current password"
-                    placeholderTextColor="#94A3B8"
-                    secureTextEntry={!showCurrent}
-                    autoCapitalize="none"
+              <View style={styles.strengthBarsRow}>
+                {[1, 2, 3, 4].map((bar) => (
+                  <AnimatedStrengthBar
+                    key={bar}
+                    filled={bar <= strength.score}
+                    color={strength.color}
                   />
-                  <TouchableOpacity
-                    onPress={() => setShowCurrent(!showCurrent)}
-                    style={styles.eyeBtn}
-                    activeOpacity={0.7}
-                  >
-                    <Feather name={showCurrent ? 'eye' : 'eye-off'} size={18} color="#64748B" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* New Password */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>New Password</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="lock" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                    placeholder="Enter new password"
-                    placeholderTextColor="#94A3B8"
-                    secureTextEntry={!showNew}
-                    autoCapitalize="none"
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowNew(!showNew)}
-                    style={styles.eyeBtn}
-                    activeOpacity={0.7}
-                  >
-                    <Feather name={showNew ? 'eye' : 'eye-off'} size={18} color="#64748B" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Password Strength Meter */}
-              {newPassword.length > 0 && (
-                <View style={styles.strengthContainer}>
-                  <View style={styles.strengthHeader}>
-                    <Text style={styles.strengthLabel}>Password Strength</Text>
-                    <Text style={[styles.strengthValue, { color: strength.color }]}>
-                      {strength.label}
-                    </Text>
-                  </View>
-                  <View style={styles.strengthBarsRow}>
-                    {[1, 2, 3, 4].map((bar) => (
-                      <AnimatedStrengthBar
-                        key={bar}
-                        filled={bar <= strength.score}
-                        color={strength.color}
-                      />
-                    ))}
-                  </View>
-                </View>
-              )}
-
-              {/* Confirm New Password */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Confirm New Password</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="check-circle" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    placeholder="Re-enter new password"
-                    placeholderTextColor="#94A3B8"
-                    secureTextEntry={!showConfirm}
-                    autoCapitalize="none"
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowConfirm(!showConfirm)}
-                    style={styles.eyeBtn}
-                    activeOpacity={0.7}
-                  >
-                    <Feather name={showConfirm ? 'eye' : 'eye-off'} size={18} color="#64748B" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Verification Checklist with Bouncy Micro-Animations */}
-              <View style={styles.checklist}>
-                <AnimatedCheckItem checked={hasMinLength} label="At least 8 characters" />
-                <AnimatedCheckItem checked={hasNumberOrSymbol} label="Contains number or symbol" />
-                <AnimatedCheckItem checked={isMatching} label="Passwords match" />
+                ))}
               </View>
             </View>
+          )}
 
-            {/* Update Password Button */}
-            <TactilePressable
-              style={[
-                styles.submitButton,
-                (!hasMinLength || !isMatching || isUpdating) && styles.submitButtonDisabled,
-              ]}
-              onPress={handleUpdatePassword}
-              disabled={!hasMinLength || !isMatching || isUpdating}
-              activeScale={0.96}
-            >
-              <Text style={styles.submitButtonText}>
-                {isUpdating ? 'Updating Password...' : 'Update Password'}
-              </Text>
-              <Feather name="arrow-right" size={20} color="#FFFFFF" />
-            </TactilePressable>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+          {/* Confirm New Password */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Confirm New Password</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="check-circle" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Re-enter new password"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                secureTextEntry={!showConfirm}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                onPress={() => setShowConfirm(!showConfirm)}
+                style={styles.eyeBtn}
+                activeOpacity={0.7}
+              >
+                <Feather name={showConfirm ? 'eye' : 'eye-off'} size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Verification Checklist with Bouncy Micro-Animations */}
+          <View style={styles.checklist}>
+            <AnimatedCheckItem checked={hasMinLength} label="At least 8 characters" isDark={isDark} />
+            <AnimatedCheckItem checked={hasNumberOrSymbol} label="Contains number or symbol" isDark={isDark} />
+            <AnimatedCheckItem checked={isMatching} label="Passwords match" isDark={isDark} />
+          </View>
+        </View>
+
+        {/* Update Password Button */}
+        <TactilePressable
+          style={[
+            styles.submitButton,
+            (!hasMinLength || !isMatching || isUpdating) && styles.submitButtonDisabled,
+          ]}
+          onPress={handleUpdatePassword}
+          disabled={!hasMinLength || !isMatching || isUpdating}
+          activeScale={0.96}
+        >
+          <Text style={styles.submitButtonText}>
+            {isUpdating ? 'Updating Password...' : 'Update Password'}
+          </Text>
+          <Feather name="arrow-right" size={20} color="#FFFFFF" />
+        </TactilePressable>
+      </KeyboardAvoidingScrollView>
     </SafeAreaView>
   );
-}
+    }
 
 const styles = StyleSheet.create({
   safeArea: {

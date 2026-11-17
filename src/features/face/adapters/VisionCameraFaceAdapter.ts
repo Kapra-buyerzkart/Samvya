@@ -9,14 +9,9 @@ export class VisionCameraFaceAdapter implements FaceDetectionPort {
   async checkReadiness(): Promise<ModelReadinessState> {
     try {
       // 1. Check camera permission
-      const cameraPermission: PermissionStatus = VisionCamera?.cameraPermissionStatus ?? 'denied';
-      if (cameraPermission === 'denied' || cameraPermission === 'restricted') {
+      const cameraPermission: PermissionStatus = VisionCamera?.cameraPermissionStatus ?? 'not-determined';
+      if (cameraPermission === 'restricted') {
         return 'camera_denied';
-      }
-
-      if (cameraPermission === 'not-determined') {
-        // Must be requested on screen
-        return 'ready';
       }
 
       // 2. Platform-specific ML model readiness check

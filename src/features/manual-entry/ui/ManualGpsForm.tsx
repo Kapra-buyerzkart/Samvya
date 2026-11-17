@@ -3,14 +3,14 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  ScrollView,
   StyleSheet,
   TextInput,
   View,
 } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Card, ThemedText } from '@/shared/components';
+import { Button, Card, KeyboardAvoidingScrollView, ThemedText } from '@/shared/components';
+import { useAppTheme } from '@/shared/theme';
 import {
   ManualGpsPolicyConfig,
   OriginalDeviceFix,
@@ -40,6 +40,9 @@ export function ManualGpsForm({
   onSuccess,
   onCancel,
 }: ManualGpsFormProps): React.JSX.Element {
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoAttachment, setPhotoAttachment] = useState<string | null>(null);
 
@@ -140,7 +143,7 @@ export function ManualGpsForm({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContent}>
+    <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
       {/* Distinct Manual Source Banner */}
       <View style={styles.distinctSourceBadge}>
         <ThemedText variant="caption" style={styles.badgeText}>
@@ -148,17 +151,39 @@ export function ManualGpsForm({
         </ThemedText>
       </View>
 
-      <Card style={styles.card}>
-        <ThemedText variant="heading" style={styles.sectionTitle}>
+      <Card
+        style={[
+          styles.card,
+          {
+            backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+            borderColor: isDark ? '#334155' : '#E2E8F0',
+          },
+        ]}
+      >
+        <ThemedText
+          variant="heading"
+          style={[styles.sectionTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+        >
           Manual Coordinates
         </ThemedText>
-        <ThemedText variant="caption" style={styles.hint}>
+        <ThemedText
+          variant="caption"
+          style={[styles.hint, { color: isDark ? '#94A3B8' : '#64748B' }]}
+        >
           Specify worksite coordinates with at least 4 decimal places (e.g., 28.6139, 77.2090).
         </ThemedText>
 
         {originalDeviceFix ? (
-          <View style={styles.originalFixBox}>
-            <ThemedText variant="caption" style={styles.originalFixText}>
+          <View
+            style={[
+              styles.originalFixBox,
+              { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+            ]}
+          >
+            <ThemedText
+              variant="caption"
+              style={[styles.originalFixText, { color: isDark ? '#CBD5E1' : '#475569' }]}
+            >
               Device GPS was ±{Math.round(originalDeviceFix.accuracy)}m ({originalDeviceFix.latitude.toFixed(4)}, {originalDeviceFix.longitude.toFixed(4)})
             </ThemedText>
           </View>
@@ -166,7 +191,10 @@ export function ManualGpsForm({
 
         {/* Latitude */}
         <View style={styles.inputGroup}>
-          <ThemedText variant="body" style={styles.label}>
+          <ThemedText
+            variant="body"
+            style={[styles.label, { color: isDark ? '#E2E8F0' : '#334155' }]}
+          >
             Latitude:
           </ThemedText>
           <Controller
@@ -174,9 +202,17 @@ export function ManualGpsForm({
             name="latitude"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.input, errors.latitude && styles.inputError]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                    borderColor: isDark ? '#334155' : '#CBD5E1',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                  },
+                  errors.latitude && styles.inputError,
+                ]}
                 placeholder="e.g. 28.613900"
-                placeholderTextColor="#64748B"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 keyboardType="numeric"
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -193,7 +229,10 @@ export function ManualGpsForm({
 
         {/* Longitude */}
         <View style={styles.inputGroup}>
-          <ThemedText variant="body" style={styles.label}>
+          <ThemedText
+            variant="body"
+            style={[styles.label, { color: isDark ? '#E2E8F0' : '#334155' }]}
+          >
             Longitude:
           </ThemedText>
           <Controller
@@ -201,9 +240,17 @@ export function ManualGpsForm({
             name="longitude"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.input, errors.longitude && styles.inputError]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                    borderColor: isDark ? '#334155' : '#CBD5E1',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                  },
+                  errors.longitude && styles.inputError,
+                ]}
                 placeholder="e.g. 77.209000"
-                placeholderTextColor="#64748B"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 keyboardType="numeric"
                 onBlur={onBlur}
                 onChangeText={onChange}
@@ -228,7 +275,10 @@ export function ManualGpsForm({
 
         {/* Reason */}
         <View style={styles.inputGroup}>
-          <ThemedText variant="body" style={styles.label}>
+          <ThemedText
+            variant="body"
+            style={[styles.label, { color: isDark ? '#E2E8F0' : '#334155' }]}
+          >
             Justification Reason (Required):
           </ThemedText>
           <Controller
@@ -236,9 +286,17 @@ export function ManualGpsForm({
             name="reason"
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
-                style={[styles.textArea, errors.reason && styles.inputError]}
+                style={[
+                  styles.textArea,
+                  {
+                    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                    borderColor: isDark ? '#334155' : '#CBD5E1',
+                    color: isDark ? '#F8FAFC' : '#0F172A',
+                  },
+                  errors.reason && styles.inputError,
+                ]}
                 placeholder="Explain why hardware GPS fix was unavailable (e.g., basement facility, signal loss)..."
-                placeholderTextColor="#64748B"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 multiline
                 numberOfLines={4}
                 onBlur={onBlur}
@@ -256,12 +314,23 @@ export function ManualGpsForm({
 
         {/* Optional Photo Attachment */}
         <View style={styles.photoSection}>
-          <ThemedText variant="body" style={styles.label}>
+          <ThemedText
+            variant="body"
+            style={[styles.label, { color: isDark ? '#E2E8F0' : '#334155' }]}
+          >
             Worksite Proof Photo (Optional):
           </ThemedText>
           {photoAttachment ? (
-            <View style={styles.photoAttachedBox}>
-              <ThemedText variant="caption" style={styles.photoAttachedText}>
+            <View
+              style={[
+                styles.photoAttachedBox,
+                { backgroundColor: isDark ? '#064E3B' : '#D1FAE5' },
+              ]}
+            >
+              <ThemedText
+                variant="caption"
+                style={[styles.photoAttachedText, { color: isDark ? '#A7F3D0' : '#065F46' }]}
+              >
                 ✓ Worksite photo attached (compressed 60%)
               </ThemedText>
               <Button
@@ -301,7 +370,7 @@ export function ManualGpsForm({
           <ActivityIndicator size="small" color="#0066cc" style={styles.loader} />
         ) : null}
       </Card>
-    </ScrollView>
+    </KeyboardAvoidingScrollView>
   );
 }
 

@@ -20,6 +20,7 @@ interface CircularProgressDialProps {
   knobSize?: number;
   isActive?: boolean;
   showAura?: boolean;
+  centerDiscColor?: string;
   children?: React.ReactNode;
 }
 
@@ -34,6 +35,7 @@ export function CircularProgressDial({
   knobSize = 16,
   isActive = true,
   showAura = true,
+  centerDiscColor,
   children,
 }: CircularProgressDialProps): React.JSX.Element {
   const radius = size / 2;
@@ -229,6 +231,7 @@ export function CircularProgressDial({
             borderRadius: innerDiscRadius,
             top: radius - innerDiscRadius,
             left: radius - innerDiscRadius,
+            backgroundColor: centerDiscColor ?? '#FFFFFF',
           },
         ]}
       >

@@ -1,136 +1,142 @@
-import { Button, Card, ThemedText } from '@/shared/components';
-import { TactilePressable } from '@/shared/animations';
+import { Button, ThemedText } from '@/shared/components';
+import { useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { LivenessChallengeType } from '../domain/types';
 import { VerificationFlowStep } from '../hooks/useFaceVerificationFlow';
 
 export interface FaceVerifyCameraViewProps {
-  step: VerificationFlowStep;
-  instruction: string;
-  challengeType: LivenessChallengeType;
   actionText?: string;
-  onFallbackToManual: () => void;
-  onViewConsent: () => void;
-  onRetry: () => void;
+  isCameraActive?: boolean;
+  isPunching?: boolean;
+  onPunch?: () => void | Promise<void>;
+  // Backwards-compatible optional props for existing references
+  step?: VerificationFlowStep;
+  instruction?: string;
+  challengeType?: LivenessChallengeType;
+  onFacesDetected?: (faces: unknown) => void;
+  onFallbackToManual?: () => void;
+  onViewConsent?: () => void;
+  onRetry?: () => void;
   onSimulateVerification?: () => void;
 }
 
 export function FaceVerifyCameraView({
-  step,
-  instruction,
-  challengeType,
   actionText = 'Punch In',
-  onFallbackToManual,
-  onViewConsent,
-  onRetry,
+  isCameraActive = true,
+  isPunching = false,
+  onPunch,
   onSimulateVerification,
 }: FaceVerifyCameraViewProps): React.JSX.Element {
-  const isChallenging = step === 'challenging';
-  const isCapturing = step === 'capturing';
-  const isCompleted = step === 'completed';
-  const isError = step === 'error';
-  const isProcessing = isChallenging || isCapturing;
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
 
-  const getRingColor = (): string => {
-    if (isCompleted) return '#10B981'; // Green on success
-    if (isChallenging) return '#F59E0B'; // Amber during challenge
-    if (isCapturing) return '#6366F1'; // Indigo during photo capture
-    if (isError) return '#EF4444'; // Red on error
-    return '#3B82F6'; // Blue neutral
+  // Exclusively lock to the front camera
+  const frontDevice = useCameraDevice('front');
+  const { hasPermission, requestPermission } = useCameraPermission();
+
+  const handlePunchPress = (): void => {
+    if (onPunch) {
+      void onPunch();
+    } else if (onSimulateVerification) {
+      onSimulateVerification();
+    }
   };
 
-  const getStatusIcon = (): keyof typeof Feather.glyphMap => {
-    if (isCompleted) return 'check-circle';
-    if (isError) return 'alert-circle';
-    if (isProcessing) return 'loader';
-    return 'camera';
-  };
+  // If permission is not yet granted, render permission request card
+  if (!hasPermission) {
+    return (
+      <View style={styles.container}>
+        <View
+          style={[
+            styles.permissionCard,
+            {
+              backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+              borderColor: isDark ? '#334155' : '#E2E8F0',
+            },
+          ]}
+        >
+          <View style={styles.permissionIconCircle}>
+            <Feather name="camera-off" size={36} color="#EF4444" />
+          </View>
+          <ThemedText
+            variant="heading"
+            style={[
+              styles.permissionTitle,
+              { color: isDark ? '#F8FAFC' : '#0F172A' },
+            ]}
+          >
+            Camera Permission Required
+          </ThemedText>
+          <ThemedText
+            variant="body"
+            style={[
+              styles.permissionDescription,
+              { color: isDark ? '#94A3B8' : '#64748B' },
+            ]}
+          >
+            HRMS needs front camera access to capture your attendance photo when checking in or out.
+          </ThemedText>
+          <Button
+            title="Grant Camera Access"
+            variant="primary"
+            onPress={requestPermission}
+            style={styles.actionBtn}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Top Instruction Banner */}
-      <Card style={styles.instructionCard}>
-        <View style={styles.instructionHeader}>
-          <Feather name={getStatusIcon()} size={20} color={getRingColor()} />
-          <ThemedText variant="heading" style={styles.instructionTitle}>
-            {instruction}
+      {/* Viewfinder Window (Front Camera Only) */}
+      <View style={styles.viewfinderContainer}>
+        {frontDevice && isCameraActive ? (
+          <Camera
+            style={StyleSheet.absoluteFill}
+            device={frontDevice}
+            isActive={isCameraActive}
+          />
+        ) : (
+          <View style={styles.noCameraPlaceholder}>
+            <Feather name="video-off" size={48} color="#64748B" />
+            <ThemedText variant="heading" style={styles.noCameraTitle}>
+              Front Camera Viewfinder
+            </ThemedText>
+            <ThemedText variant="caption" style={styles.noCameraSubtitle}>
+              {!frontDevice
+                ? 'No front camera detected on this device/simulator. Tap punch below to proceed.'
+                : 'Front camera is currently paused.'}
+            </ThemedText>
+          </View>
+        )}
+
+        {/* Viewfinder Overlay Guide */}
+        <View style={styles.overlay} pointerEvents="box-none">
+          <View style={styles.faceOvalGuide}>
+            <View style={styles.crosshairH} />
+            <View style={styles.crosshairV} />
+          </View>
+        </View>
+
+        {/* Framing guidance */}
+        <View style={styles.hintBadge}>
+          <ThemedText variant="caption" style={styles.hintText}>
+            Align face in front camera & tap button below
           </ThemedText>
         </View>
-        {isChallenging ? (
-          <ThemedText variant="caption" style={styles.challengeBadge}>
-            Active Challenge: {challengeType.toUpperCase().replace('_', ' ')}
-          </ThemedText>
-        ) : null}
-      </Card>
-
-      {/* Center Face Oval Guide */}
-      <View style={styles.cameraPlaceholder}>
-        <TactilePressable
-          onPress={onSimulateVerification}
-          disabled={isProcessing || isCompleted}
-          style={[styles.faceGuideRing, { borderColor: getRingColor() }]}
-          accessibilityLabel="Face alignment oval. Tap to verify face."
-        >
-          <View style={styles.crosshairH} />
-          <View style={styles.crosshairV} />
-
-          <View style={styles.ringCenterContent}>
-            <Feather
-              name={isCompleted ? 'check' : isProcessing ? 'refresh-cw' : 'smile'}
-              size={48}
-              color={getRingColor()}
-            />
-            {onSimulateVerification && !isCompleted && !isProcessing ? (
-              <ThemedText variant="caption" style={styles.tapToScanText}>
-                Tap to Scan Face
-              </ThemedText>
-            ) : null}
-          </View>
-        </TactilePressable>
-
-        <ThemedText variant="caption" style={styles.privacyGuarantee}>
-          No biometric templates are stored on device (DPDP Act, 2023)
-        </ThemedText>
       </View>
 
-      {/* Bottom Controls */}
-      <View style={styles.bottomControls}>
-        {onSimulateVerification && !isCompleted ? (
-          <Button
-            title={
-              isProcessing
-                ? 'Verifying Liveness...'
-                : `Verify Face & ${actionText}`
-            }
-            variant="primary"
-            loading={isProcessing}
-            onPress={onSimulateVerification}
-            style={styles.actionBtn}
-          />
-        ) : null}
-
-        {isError ? (
-          <Button
-            title="Retry Face Scan"
-            variant="secondary"
-            onPress={onRetry}
-            style={styles.actionBtn}
-          />
-        ) : null}
-
+      {/* Bottom Punch Controls */}
+      <View style={styles.bottomBar}>
         <Button
-          title="Use Supervisor Approval (Manual GPS)"
-          variant="outline"
-          onPress={onFallbackToManual}
-          style={styles.actionBtn}
-        />
-
-        <Button
-          title="Biometric Notice & Privacy Rights"
-          variant="outline"
-          onPress={onViewConsent}
+          title={isPunching ? 'Recording Punch...' : actionText}
+          variant="primary"
+          loading={isPunching}
+          onPress={handlePunchPress}
           style={styles.actionBtn}
         />
       </View>
@@ -144,74 +150,107 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
   },
-  instructionCard: {
-    backgroundColor: '#0F172A',
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  instructionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  instructionTitle: {
-    color: '#F8FAFC',
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  challengeBadge: {
-    color: '#FDE68A',
-    marginTop: 6,
-    fontWeight: '700',
-  },
-  cameraPlaceholder: {
+  permissionCard: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+  },
+  permissionIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  permissionTitle: {
+    textAlign: 'center',
+    fontSize: 20,
+    marginBottom: 12,
+  },
+  permissionDescription: {
+    textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  viewfinderContainer: {
+    flex: 1,
+    backgroundColor: '#0B0F19',
+    borderRadius: 24,
+    overflow: 'hidden',
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 16,
+    borderWidth: 1,
+    borderColor: '#1E293B',
   },
-  faceGuideRing: {
-    width: 240,
-    height: 310,
-    borderRadius: 120,
-    borderWidth: 3,
+  noCameraPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  noCameraTitle: {
+    color: '#F8FAFC',
+    fontSize: 18,
+    marginTop: 8,
+  },
+  noCameraSubtitle: {
+    color: '#94A3B8',
+    textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  faceOvalGuide: {
+    width: 250,
+    height: 330,
+    borderRadius: 125,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.45)',
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-  },
-  ringCenterContent: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  tapToScanText: {
-    color: '#94A3B8',
-    fontSize: 12,
-    fontWeight: '600',
   },
   crosshairH: {
     position: 'absolute',
-    width: 40,
+    width: 32,
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   crosshairV: {
     position: 'absolute',
     width: 1,
-    height: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    height: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
-  privacyGuarantee: {
-    color: '#94A3B8',
-    marginTop: 16,
-    fontSize: 11,
-    textAlign: 'center',
+  hintBadge: {
+    position: 'absolute',
+    bottom: 16,
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#334155',
   },
-  bottomControls: {
-    gap: 8,
-    marginBottom: 8,
+  hintText: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  bottomBar: {
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   actionBtn: {
     width: '100%',

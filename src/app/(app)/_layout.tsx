@@ -12,6 +12,7 @@ export default function AppLayout(): React.JSX.Element {
       <Stack.Screen name="profile/index" options={{ headerShown: false }} />
       <Stack.Screen name="profile/edit" options={{ headerShown: false }} />
       <Stack.Screen name="profile/reset-password" options={{ headerShown: false }} />
+      <Stack.Screen name="employment/index" options={{ headerShown: false }} />
       <Stack.Screen name="settings/index" options={{ headerShown: false }} />
     </Stack>
   );

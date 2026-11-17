@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BottomSheetProvider } from '@swmansion/react-native-bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
@@ -66,13 +67,15 @@ export default function RootLayout(): React.JSX.Element | null {
   return (
     <AppErrorBoundary>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <StatusBar style={theme.isDark ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(app)" options={{ headerShown: false }} />
-          </Stack>
-        </QueryClientProvider>
+        <BottomSheetProvider>
+          <QueryClientProvider client={queryClient}>
+            <StatusBar style={theme.isDark ? 'light' : 'dark'} />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(app)" options={{ headerShown: false }} />
+            </Stack>
+          </QueryClientProvider>
+        </BottomSheetProvider>
       </SafeAreaProvider>
     </AppErrorBoundary>
   );

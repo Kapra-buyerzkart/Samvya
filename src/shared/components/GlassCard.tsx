@@ -73,7 +73,7 @@ export function GlassCard({
 
 const styles = StyleSheet.create({
   androidGlassCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0)',
+    backgroundColor: 'rgba(255, 255, 255, 0.17)',
     borderRadius: 28,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.95)',

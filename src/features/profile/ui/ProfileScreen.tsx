@@ -1,15 +1,19 @@
 import { useAuthStore } from '@/features/auth';
 import { TactilePressable } from '@/shared/animations';
-import { FontFamily } from '@/shared/theme';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { Image, ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AddressBottomSheet } from './AddressBottomSheet';
 
 export function ProfileScreen(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   // Parse display values with fallback to the reference design ("Peter S")
   const displayName = user?.name || 'Peter S';
@@ -41,10 +45,14 @@ export function ProfileScreen(): React.JSX.Element {
   return (
     <ImageBackground
       source={require('../../../../assets/images/background.png')}
-      style={styles.backgroundImage}
+      style={[
+        styles.backgroundImage,
+        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
+      ]}
+      imageStyle={{ opacity: isDark ? 0.05 : 1 }}
       contentFit="fill"
     >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}>
         {/* Navigation Bar */}
         <View style={styles.navBar}>
           <TouchableOpacity
@@ -53,9 +61,9 @@ export function ProfileScreen(): React.JSX.Element {
             activeOpacity={0.7}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <Feather name="chevron-left" size={28} color="#0F172A" />
+            <Feather name="chevron-left" size={28} color={isDark ? '#F8FAFC' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={styles.navTitle}>Profile</Text>
+          <Text style={[styles.navTitle, isDark && { color: '#F8FAFC' }]}>Profile</Text>
         </View>
 
         <ScrollView
@@ -63,36 +71,36 @@ export function ProfileScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* 1. Header Profile Card */}
-          <View style={styles.heroCard}>
+          <View style={[styles.heroCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
             <View style={styles.avatarWrapper}>
-              <View style={styles.avatarCircle}>
-                <Text style={styles.avatarText}>{initials}</Text>
+              <View style={[styles.avatarCircle, isDark && { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' }]}>
+                <Text style={[styles.avatarText, isDark && { color: '#93C5FD' }]}>{initials}</Text>
               </View>
               <TactilePressable
-                style={styles.cameraBadge}
+                style={[styles.cameraBadge, isDark && { backgroundColor: '#0F172A', borderColor: '#3B82F6' }]}
                 onPress={handleEdit}
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Feather name="camera" size={11} color="#2563EB" />
+                <Feather name="camera" size={11} color={isDark ? '#60A5FA' : '#2563EB'} />
               </TactilePressable>
             </View>
 
             <View style={styles.heroTextCol}>
-              <Text style={styles.heroName}>{displayName}</Text>
-              <Text style={styles.heroSubtitle}>Personal and contact details</Text>
+              <Text style={[styles.heroName, isDark && { color: '#F8FAFC' }]}>{displayName}</Text>
+              <Text style={[styles.heroSubtitle, isDark && { color: '#94A3B8' }]}>Personal and contact details</Text>
             </View>
           </View>
 
           {/* 2. Personal Information Card */}
-          <View style={styles.card}>
+          <View style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
-                <View style={styles.headerIconBox}>
-                  <Feather name="user" size={18} color="#2563EB" />
+                <View style={[styles.headerIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                  <Feather name="user" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
-                <Text style={styles.cardTitle}>Personal Information</Text>
+                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>Personal Information</Text>
               </View>
               <TactilePressable
                 onPress={handleEdit}
@@ -100,72 +108,80 @@ export function ProfileScreen(): React.JSX.Element {
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Feather name="edit-3" size={18} color="#2563EB" />
+                <Feather name="edit-3" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
               </TactilePressable>
             </View>
 
-            <View style={styles.cardDivider} />
+            <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Names 2-Column Row */}
             <View style={styles.twoColumnRow}>
               <View style={styles.columnHalf}>
-                <Text style={styles.fieldLabel}>First name</Text>
-                <Text style={styles.fieldValueBold}>{firstName}</Text>
+                <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>First name</Text>
+                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>{firstName}</Text>
               </View>
-              <View style={styles.verticalDivider} />
+              <View style={[styles.verticalDivider, isDark && { backgroundColor: '#1E293B' }]} />
               <View style={styles.columnHalf}>
-                <Text style={styles.fieldLabel}>Last name</Text>
-                <Text style={styles.fieldValueBold}>{lastName}</Text>
+                <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Last name</Text>
+                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>{lastName}</Text>
               </View>
             </View>
 
-            <View style={styles.cardDivider} />
+            <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Middle name */}
             <View style={styles.middleNameSection}>
-              <Text style={styles.fieldLabel}>Middle name</Text>
+              <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Middle name</Text>
               {middleName ? (
-                <Text style={styles.fieldValueBold}>{middleName}</Text>
+                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>{middleName}</Text>
               ) : (
                 <TouchableOpacity onPress={handleEdit} activeOpacity={0.7}>
-                  <Text style={styles.addText}>+ Add</Text>
+                  <Text style={[styles.addText, isDark && { color: '#60A5FA' }]}>+ Add</Text>
                 </TouchableOpacity>
               )}
             </View>
 
             {/* Sub-cards Row (Date of birth & Gender) */}
             <View style={styles.subCardsRow}>
-              <TouchableOpacity style={styles.subCard} onPress={handleEdit} activeOpacity={0.7}>
-                <View style={styles.subCardIconBox}>
-                  <Feather name="calendar" size={16} color="#2563EB" />
+              <TouchableOpacity
+                style={[styles.subCard, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+                onPress={handleEdit}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.subCardIconBox, isDark && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                  <Feather name="calendar" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
                 <View style={styles.subCardTextCol}>
-                  <Text style={styles.subCardLabel}>Date of birth</Text>
-                  <Text style={styles.subCardActionText}>{dob || '+ Add'}</Text>
+                  <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Date of birth</Text>
+                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{dob || '+ Add'}</Text>
                 </View>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.subCard} onPress={handleEdit} activeOpacity={0.7}>
-                <View style={styles.subCardIconBox}>
-                  <Feather name="user" size={16} color="#2563EB" />
+              <TouchableOpacity
+                style={[styles.subCard, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+                onPress={handleEdit}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.subCardIconBox, isDark && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                  <Feather name="user" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
                 <View style={styles.subCardTextCol}>
-                  <Text style={styles.subCardLabel}>Gender</Text>
-                  <Text style={styles.subCardActionText}>{gender || '+ Add'}</Text>
+                  <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Gender</Text>
+                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{gender || '+ Add'}</Text>
                 </View>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* 3. Contact Information Card */}
-          <View style={styles.card}>
+          <View style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
-                <View style={styles.headerIconBox}>
-                  <Feather name="mail" size={18} color="#2563EB" />
+                <View style={[styles.headerIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                  <Feather name="mail" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
-                <Text style={styles.cardTitle}>Contact Information</Text>
+                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>Contact Information</Text>
               </View>
               <TactilePressable
                 onPress={handleEdit}
@@ -173,20 +189,20 @@ export function ProfileScreen(): React.JSX.Element {
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Feather name="edit-3" size={18} color="#2563EB" />
+                <Feather name="edit-3" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
               </TactilePressable>
             </View>
 
-            <View style={styles.cardDivider} />
+            <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Work Email Row */}
             <View style={styles.contactRow}>
-              <View style={styles.rowIconBox}>
-                <Feather name="mail" size={16} color="#2563EB" />
+              <View style={[styles.rowIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                <Feather name="mail" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
               </View>
               <View style={styles.rowContent}>
-                <Text style={styles.fieldLabel}>Work email</Text>
-                <Text style={styles.fieldValueContact}>{displayEmail}</Text>
+                <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Work email</Text>
+                <Text style={[styles.fieldValueContact, isDark && { color: '#F8FAFC' }]}>{displayEmail}</Text>
               </View>
               <TouchableOpacity
                 onPress={() => handleCopy(displayEmail, 'Work email')}
@@ -194,20 +210,20 @@ export function ProfileScreen(): React.JSX.Element {
                 activeOpacity={0.6}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Feather name="copy" size={18} color="#2563EB" />
+                <Feather name="copy" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.cardDivider} />
+            <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Primary Phone Row */}
             <View style={styles.contactRow}>
-              <View style={styles.rowIconBox}>
-                <Feather name="phone" size={16} color="#2563EB" />
+              <View style={[styles.rowIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                <Feather name="phone" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
               </View>
               <View style={styles.rowContent}>
-                <Text style={styles.fieldLabel}>Primary phone</Text>
-                <Text style={styles.fieldValueContact}>{displayPhone}</Text>
+                <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Primary phone</Text>
+                <Text style={[styles.fieldValueContact, isDark && { color: '#F8FAFC' }]}>{displayPhone}</Text>
               </View>
               <TouchableOpacity
                 onPress={() => handleCopy(displayPhone, 'Primary phone')}
@@ -215,47 +231,47 @@ export function ProfileScreen(): React.JSX.Element {
                 activeOpacity={0.6}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Feather name="copy" size={18} color="#2563EB" />
+                <Feather name="copy" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
               </TouchableOpacity>
             </View>
 
-            <View style={styles.cardDivider} />
+            <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Sub-container for Other email & Other phone */}
-            <View style={styles.subContainerRow}>
+            <View style={[styles.subContainerRow, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
               <TouchableOpacity
                 style={styles.subContainerHalf}
                 onPress={handleEdit}
                 activeOpacity={0.7}
               >
-                <Text style={styles.subCardLabel}>Other email</Text>
-                <Text style={styles.subCardActionText}>{otherEmail || '+ Add'}</Text>
+                <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Other email</Text>
+                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{otherEmail || '+ Add'}</Text>
               </TouchableOpacity>
-              <View style={styles.verticalDividerSub} />
+              <View style={[styles.verticalDividerSub, isDark && { backgroundColor: '#334155' }]} />
               <TouchableOpacity
                 style={styles.subContainerHalf}
                 onPress={handleEdit}
                 activeOpacity={0.7}
               >
-                <Text style={styles.subCardLabel}>Other phone</Text>
-                <Text style={styles.subCardActionText}>{otherPhone || '+ Add'}</Text>
+                <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Other phone</Text>
+                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{otherPhone || '+ Add'}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* 4. Address Card */}
-          <View style={styles.card}>
+          <View style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
-                <View style={styles.headerIconBox}>
-                  <Feather name="map-pin" size={18} color="#2563EB" />
+                <View style={[styles.headerIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                  <Feather name="map-pin" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
-                <Text style={styles.cardTitle}>Address</Text>
+                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>Address</Text>
               </View>
             </View>
 
-            <View style={styles.cardDivider} />
+            <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Body */}
             <View style={styles.addressBody}>
@@ -267,21 +283,21 @@ export function ProfileScreen(): React.JSX.Element {
                 />
               </View>
 
-              <View style={styles.addressVerticalDivider} />
+              <View style={[styles.addressVerticalDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
               <View style={styles.addressContent}>
-                <Text style={styles.addressEmptyTitle}>
+                <Text style={[styles.addressEmptyTitle, isDark && { color: '#F8FAFC' }]}>
                   {address ? 'Current address' : 'No address added'}
                 </Text>
-                <Text style={styles.addressEmptySubtitle}>
+                <Text style={[styles.addressEmptySubtitle, isDark && { color: '#94A3B8' }]}>
                   {address || 'Add your street, city and postal code'}
                 </Text>
                 <TouchableOpacity
-                  style={styles.addAddressBtn}
-                  onPress={handleEdit}
+                  style={[styles.addAddressBtn, isDark && { borderColor: '#3B82F6', backgroundColor: '#1E293B' }]}
+                  onPress={() => setIsAddressModalOpen(true)}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.addAddressBtnText}>
+                  <Text style={[styles.addAddressBtnText, isDark && { color: '#60A5FA' }]}>
                     {address ? 'Edit address' : '+ Add address'}
                   </Text>
                 </TouchableOpacity>
@@ -295,6 +311,11 @@ export function ProfileScreen(): React.JSX.Element {
             <Feather name="arrow-right" size={18} color="#FFFFFF" />
           </TactilePressable>
         </ScrollView>
+
+        <AddressBottomSheet
+          isOpen={isAddressModalOpen}
+          onClose={() => setIsAddressModalOpen(false)}
+        />
       </SafeAreaView>
     </ImageBackground>
   );

@@ -1,5 +1,5 @@
-import { GlassCard } from '@/shared/components';
-import { FontFamily } from '@/shared/theme';
+import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
@@ -9,16 +9,12 @@ import {
   Alert,
   Image,
   Keyboard,
-  KeyboardAvoidingView,
   type NativeSyntheticEvent,
-  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,6 +23,9 @@ import { useAuthStore } from '../model/authStore';
 type AuthMethod = 'phone' | 'email';
 
 export function LoginScreen(): React.JSX.Element {
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
+
   const [method, setMethod] = useState<AuthMethod>('phone');
   const [identifier, setIdentifier] = useState('');
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '']);
@@ -146,189 +145,221 @@ export function LoginScreen(): React.JSX.Element {
   return (
     <ImageBackground
       source={require('../../../../assets/images/background.png')}
-      style={styles.backgroundImage}
+      style={[
+        styles.backgroundImage,
+        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
+      ]}
+      imageStyle={{ opacity: isDark ? 0.05 : 1 }}
       resizeMode="cover"
     >
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.flexOne}
-        >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
+        <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Header Title & Subtitle */}
+          <View style={styles.header}>
+            <Text style={[styles.brandTitle, { color: isDark ? '#F8FAFC' : '#0F1E36' }]}>
+              Samavya
+            </Text>
+            <Text style={[styles.brandSubtitle, { color: isDark ? '#94A3B8' : '#475569' }]}>
+              Human Resource Management System
+            </Text>
+          </View>
+
+          {/* Method Switcher Pill */}
+          <View style={styles.switcherWrapper}>
+            <View
+              style={[
+                styles.pillContainer,
+                {
+                  backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
+                },
+              ]}
             >
-              {/* Header Title & Subtitle */}
-              <View style={styles.header}>
-                <Text style={styles.brandTitle}>Samavya</Text>
-                <Text style={styles.brandSubtitle}>Human Resource Management System</Text>
-              </View>
-
-              {/* Method Switcher Pill */}
-              <View style={styles.switcherWrapper}>
-                <View style={styles.pillContainer}>
-                  <Pressable
-                    style={[
-                      styles.pillTab,
-                      method === 'phone' ? styles.pillTabActive : styles.pillTabInactive,
-                    ]}
-                    onPress={() => {
-                      setMethod('phone');
-                      setIdentifier('');
-                      setOtpDigits(['', '', '', '', '']);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.pillText,
-                        method === 'phone' ? styles.pillTextActive : styles.pillTextInactive,
-                      ]}
-                    >
-                      Mobile number
-                    </Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={[
-                      styles.pillTab,
-                      method === 'email' ? styles.pillTabActive : styles.pillTabInactive,
-                    ]}
-                    onPress={() => {
-                      setMethod('email');
-                      setIdentifier('');
-                      setOtpDigits(['', '', '', '', '']);
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.pillText,
-                        method === 'email' ? styles.pillTextActive : styles.pillTextInactive,
-                      ]}
-                    >
-                      Email / EMP code
-                    </Text>
-                  </Pressable>
-                </View>
-                <Text style={styles.switcherHint}>
-                  Switch between mobile number and email / employee code
-                </Text>
-              </View>
-
-              {/* Card Container */}
-              <GlassCard intensity={50} tint="light" style={styles.card}>
-                {/* Logo */}
-                <View style={styles.logoContainer}>
-                  <Image
-                    source={require('@/../assets/images/samavya-logo.png')}
-                    style={styles.logoImage}
-                    resizeMode="contain"
-                  />
-                </View>
-
-                {/* Card Title & Instructions */}
-                <Text style={styles.cardTitle}>Log in to your account</Text>
-                <Text style={styles.cardSubtitle}>
-                  {method === 'phone'
-                    ? "Use the phone number registered with HR. We'll send your code by SMS."
-                    : "Use your work email or employee code registered with HR. We'll send your code to your registered work email."}
-                </Text>
-
-                {/* Input Container */}
-                <View style={styles.inputContainer}>
-                  <View style={styles.inputIcon}>
-                    <Feather
-                      name={method === 'phone' ? 'phone' : 'mail'}
-                      size={18}
-                      color="#64748B"
-                    />
-                  </View>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder={
-                      method === 'phone' ? 'Enter phone number' : 'Enter Email / employee code'
-                    }
-                    placeholderTextColor="#94A3B8"
-                    value={identifier}
-                    onChangeText={setIdentifier}
-                    keyboardType={method === 'phone' ? 'phone-pad' : 'email-address'}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
-                </View>
-
-                {/* Send OTP button row (below input box, right-aligned) */}
-                <View style={styles.sendOtpRow}>
-                  <TouchableOpacity
-                    onPress={handleSendOtp}
-                    disabled={isSendingOtp || countdown > 0}
-                    style={styles.sendOtpButton}
-                    activeOpacity={0.7}
-                  >
-                    {isSendingOtp ? (
-                      <ActivityIndicator size="small" color="#1D4ED8" />
-                    ) : (
-                      <Text style={styles.sendOtpText}>
-                        {countdown > 0 ? `Resend in ${countdown}s` : 'Send OTP >'}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-
-                {/* 5-digit code Label */}
-                <Text style={styles.otpLabel}>5-digit code</Text>
-
-                {/* 5 OTP Boxes */}
-                <View style={styles.otpRow}>
-                  {otpDigits.map((digit, index) => {
-                    const isFocused = focusedOtpIndex === index;
-                    return (
-                      <TextInput
-                        key={index}
-                        ref={(ref) => {
-                          otpInputsRef.current[index] = ref;
-                        }}
-                        style={[
-                          styles.otpBox,
-                          isFocused && styles.otpBoxFocused,
-                          digit ? styles.otpBoxFilled : null,
-                        ]}
-                        keyboardType="number-pad"
-                        maxLength={index === 0 ? 5 : 1}
-                        value={digit}
-                        onChangeText={(val) => handleOtpChange(val, index)}
-                        onKeyPress={(e) => handleOtpKeyPress(e, index)}
-                        onFocus={() => setFocusedOtpIndex(index)}
-                        onBlur={() => setFocusedOtpIndex(null)}
-                        selectTextOnFocus
-                      />
-                    );
-                  })}
-                </View>
-
-                {/* Verify & sign in Button */}
-                <TouchableOpacity
-                  style={[styles.verifyButton, isVerifying && styles.buttonDisabled]}
-                  onPress={handleVerify}
-                  disabled={isVerifying}
-                  activeOpacity={0.85}
+              <Pressable
+                style={[
+                  styles.pillTab,
+                  method === 'phone' ? styles.pillTabActive : styles.pillTabInactive,
+                ]}
+                onPress={() => {
+                  setMethod('phone');
+                  setIdentifier('');
+                  setOtpDigits(['', '', '', '', '']);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    method === 'phone'
+                      ? styles.pillTextActive
+                      : [styles.pillTextInactive, { color: isDark ? '#94A3B8' : '#475569' }],
+                  ]}
                 >
-                  {isVerifying ? (
-                    <ActivityIndicator color="#FFFFFF" />
-                  ) : (
-                    <Text style={styles.verifyButtonText}>Verify & sign in →</Text>
-                  )}
-                </TouchableOpacity>
-              </GlassCard>
+                  Mobile number
+                </Text>
+              </Pressable>
 
-              {/* Bottom HR Note */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>Your account is created by HR.</Text>
+              <Pressable
+                style={[
+                  styles.pillTab,
+                  method === 'email' ? styles.pillTabActive : styles.pillTabInactive,
+                ]}
+                onPress={() => {
+                  setMethod('email');
+                  setIdentifier('');
+                  setOtpDigits(['', '', '', '', '']);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.pillText,
+                    method === 'email'
+                      ? styles.pillTextActive
+                      : [styles.pillTextInactive, { color: isDark ? '#94A3B8' : '#475569' }],
+                  ]}
+                >
+                  Email / EMP code
+                </Text>
+              </Pressable>
+            </View>
+            <Text style={styles.switcherHint}>
+              Switch between mobile number and email / employee code
+            </Text>
+          </View>
+
+          {/* Card Container */}
+          <GlassCard
+            intensity={50}
+            tint={isDark ? 'dark' : 'light'}
+            style={[
+              styles.card,
+              isDark && {
+                backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                borderColor: 'rgba(51, 65, 85, 0.8)',
+              },
+            ]}
+          >
+            {/* Logo */}
+            <View style={styles.logoContainer}>
+              <Image
+                source={require('@/../assets/images/samavya-logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </View>
+
+            {/* Card Title & Instructions */}
+            <Text style={[styles.cardTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              Log in to your account
+            </Text>
+            <Text style={[styles.cardSubtitle, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              {method === 'phone'
+                ? "Use the phone number registered with HR. We'll send your code by SMS."
+                : "Use your work email or employee code registered with HR. We'll send your code to your registered work email."}
+            </Text>
+
+            {/* Input Container */}
+            <View
+              style={[
+                styles.inputContainer,
+                isDark && {
+                  backgroundColor: '#1E293B',
+                  borderColor: '#334155',
+                },
+              ]}
+            >
+              <View style={styles.inputIcon}>
+                <Feather
+                  name={method === 'phone' ? 'phone' : 'mail'}
+                  size={18}
+                  color={isDark ? '#94A3B8' : '#64748B'}
+                />
               </View>
-            </ScrollView>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                placeholder={
+                  method === 'phone' ? 'Enter phone number' : 'Enter Email / employee code'
+                }
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                value={identifier}
+                onChangeText={setIdentifier}
+                keyboardType={method === 'phone' ? 'phone-pad' : 'email-address'}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+
+            {/* Send OTP button row (below input box, right-aligned) */}
+            <View style={styles.sendOtpRow}>
+              <TouchableOpacity
+                onPress={handleSendOtp}
+                disabled={isSendingOtp || countdown > 0}
+                style={styles.sendOtpButton}
+                activeOpacity={0.7}
+              >
+                {isSendingOtp ? (
+                  <ActivityIndicator size="small" color={isDark ? '#60A5FA' : '#1D4ED8'} />
+                ) : (
+                  <Text style={[styles.sendOtpText, isDark && { color: '#60A5FA' }]}>
+                    {countdown > 0 ? `Resend in ${countdown}s` : 'Send OTP >'}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* 5-digit code Label */}
+            <Text style={[styles.otpLabel, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              5-digit code
+            </Text>
+
+            {/* 5 OTP Boxes */}
+            <View style={styles.otpRow}>
+              {otpDigits.map((digit, index) => {
+                const isFocused = focusedOtpIndex === index;
+                return (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => {
+                      otpInputsRef.current[index] = ref;
+                    }}
+                    style={[
+                      styles.otpBox,
+                      isDark && styles.otpBoxDark,
+                      isFocused && (isDark ? styles.otpBoxFocusedDark : styles.otpBoxFocused),
+                      digit && !isFocused && (isDark ? styles.otpBoxFilledDark : styles.otpBoxFilled),
+                    ]}
+                    keyboardType="number-pad"
+                    maxLength={index === 0 ? 5 : 1}
+                    value={digit}
+                    onChangeText={(val) => handleOtpChange(val, index)}
+                    onKeyPress={(e) => handleOtpKeyPress(e, index)}
+                    onFocus={() => setFocusedOtpIndex(index)}
+                    onBlur={() => setFocusedOtpIndex(null)}
+                    selectTextOnFocus
+                  />
+                );
+              })}
+            </View>
+
+            {/* Verify & sign in Button */}
+            <TouchableOpacity
+              style={[styles.verifyButton, isVerifying && styles.buttonDisabled]}
+              onPress={handleVerify}
+              disabled={isVerifying}
+              activeOpacity={0.85}
+            >
+              {isVerifying ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <Text style={styles.verifyButtonText}>Verify & sign in →</Text>
+              )}
+            </TouchableOpacity>
+          </GlassCard>
+
+          {/* Bottom HR Note */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Your account is created by HR.</Text>
+          </View>
+        </KeyboardAvoidingScrollView>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -514,6 +545,19 @@ const styles = StyleSheet.create({
   otpBoxFilled: {
     borderColor: '#93C5FD',
     backgroundColor: '#FFFFFF',
+  },
+  otpBoxDark: {
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    color: '#F8FAFC',
+  },
+  otpBoxFocusedDark: {
+    borderColor: '#3B82F6',
+    backgroundColor: '#1E3A5F',
+  },
+  otpBoxFilledDark: {
+    borderColor: '#60A5FA',
+    backgroundColor: '#1E293B',
   },
   verifyButton: {
     backgroundColor: '#1D4ED8',

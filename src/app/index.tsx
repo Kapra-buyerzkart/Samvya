@@ -12,9 +12,11 @@ import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '@/features/auth';
-import { FontFamily } from '@/shared/theme';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 
 export default function SplashScreen(): React.JSX.Element {
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   // Stable animation values without ref-in-render violations (React 19 / Compiler compliant)
@@ -108,10 +110,22 @@ export default function SplashScreen(): React.JSX.Element {
 
   return (
     <Pressable style={styles.pressableRoot} onPress={handleSkipPress}>
-      <Animated.View style={[styles.rootContainer, { opacity: screenFadeOut }]}>
+      <Animated.View
+        style={[
+          styles.rootContainer,
+          {
+            opacity: screenFadeOut,
+            backgroundColor: isDark ? '#020617' : '#FFFFFF',
+          },
+        ]}
+      >
         <ImageBackground
           source={require('../../assets/images/background.png')}
-          style={styles.backgroundImage}
+          style={[
+            styles.backgroundImage,
+            { backgroundColor: isDark ? '#020617' : '#FFFFFF' },
+          ]}
+          imageStyle={{ opacity: isDark ? 0.05 : 1 }}
           resizeMode="cover"
         >
           <SafeAreaView style={styles.safeArea}>
@@ -123,6 +137,12 @@ export default function SplashScreen(): React.JSX.Element {
                   {
                     opacity: logoOpacity,
                     transform: [{ scale: logoScale }],
+                    backgroundColor: isDark
+                      ? 'rgba(15, 23, 42, 0.95)'
+                      : 'rgba(255, 255, 255, 0.95)',
+                    borderColor: isDark
+                      ? 'rgba(51, 65, 85, 0.6)'
+                      : 'rgba(255, 255, 255, 0.9)',
                   },
                 ]}
               >
@@ -143,8 +163,20 @@ export default function SplashScreen(): React.JSX.Element {
                   },
                 ]}
               >
-                <Text style={styles.brandTitle}>Samavya</Text>
-                <Text style={styles.brandSubtitle}>
+                <Text
+                  style={[
+                    styles.brandTitle,
+                    { color: isDark ? '#F8FAFC' : '#0F1E36' },
+                  ]}
+                >
+                  Samavya
+                </Text>
+                <Text
+                  style={[
+                    styles.brandSubtitle,
+                    { color: isDark ? '#94A3B8' : '#475569' },
+                  ]}
+                >
                   Human Resource Management System
                 </Text>
               </Animated.View>
@@ -152,11 +184,33 @@ export default function SplashScreen(): React.JSX.Element {
 
             {/* Bottom Footer Details */}
             <Animated.View style={[styles.footer, { opacity: footerOpacity }]}>
-              <View style={styles.badgePill}>
+              <View
+                style={[
+                  styles.badgePill,
+                  {
+                    backgroundColor: isDark
+                      ? '#1E293B'
+                      : 'rgba(255, 255, 255, 0.85)',
+                    borderColor: isDark ? '#334155' : '#BFDBFE',
+                  },
+                ]}
+              >
                 <View style={styles.statusDot} />
-                <Text style={styles.footerBadgeText}>Enterprise Edition</Text>
+                <Text
+                  style={[
+                    styles.footerBadgeText,
+                    { color: isDark ? '#60A5FA' : '#1D4ED8' },
+                  ]}
+                >
+                  Enterprise Edition
+                </Text>
               </View>
-              <Text style={styles.copyrightText}>
+              <Text
+                style={[
+                  styles.copyrightText,
+                  { color: isDark ? '#64748B' : '#64748B' },
+                ]}
+              >
                 Secure Biometric &amp; Attendance System
               </Text>
             </Animated.View>

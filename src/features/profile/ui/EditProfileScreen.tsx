@@ -1,27 +1,26 @@
 import React, { useState } from 'react';
 import {
   Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '@/features/auth';
-import { FontFamily } from '@/shared/theme';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 import { TactilePressable } from '@/shared/animations';
+import { KeyboardAvoidingScrollView } from '@/shared/components';
+import { AddressBottomSheet } from './AddressBottomSheet';
 
 export function EditProfileScreen(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
   const updateProfile = useAuthStore((s) => s.updateProfile);
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
 
   const [name, setName] = useState(user?.name || 'Aarav Sharma');
   const [email, setEmail] = useState(user?.email || 'aarav.sharma@samavya.internal');
@@ -31,6 +30,7 @@ export function EditProfileScreen(): React.JSX.Element {
   const [emergencyContact, setEmergencyContact] = useState(user?.emergencyContact || '+91 91234 56789');
   const [location, setLocation] = useState(user?.location || 'Work from home');
   const [isSaving, setIsSaving] = useState(false);
+  const [isAddressSheetOpen, setIsAddressSheetOpen] = useState(false);
 
   // Initials
   const initials = name
@@ -87,181 +87,200 @@ export function EditProfileScreen(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flexOne}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}>
+      <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.navBar}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+            activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            {/* Header */}
-            <View style={styles.navBar}>
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={styles.backButton}
-                activeOpacity={0.7}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              >
-                <Feather name="chevron-left" size={26} color="#0F172A" />
-              </TouchableOpacity>
-              <Text style={styles.navTitle}>Edit Profile</Text>
-              <View style={styles.placeholderRight} />
+            <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F172A'} />
+          </TouchableOpacity>
+          <Text style={[styles.navTitle, isDark && { color: '#F8FAFC' }]}>Edit Profile</Text>
+          <View style={styles.placeholderRight} />
+        </View>
+
+        {/* Avatar Section */}
+        <View style={styles.avatarSection}>
+          <View style={styles.avatarWrapper}>
+            <View style={[styles.avatarContainer, isDark && { backgroundColor: '#1E3A8A' }]}>
+              <Text style={[styles.avatarText, isDark && { color: '#93C5FD' }]}>{initials}</Text>
             </View>
-
-            {/* Avatar Section */}
-            <View style={styles.avatarSection}>
-              <View style={styles.avatarWrapper}>
-                <View style={styles.avatarContainer}>
-                  <Text style={styles.avatarText}>{initials}</Text>
-                </View>
-                <TactilePressable
-                  style={styles.cameraBtn}
-                  onPress={handleChangePhoto}
-                  activeScale={0.88}
-                >
-                  <Feather name="camera" size={14} color="#FFFFFF" />
-                </TactilePressable>
-              </View>
-              <TactilePressable onPress={handleChangePhoto} activeScale={0.95}>
-                <Text style={styles.changePhotoText}>Change photo</Text>
-              </TactilePressable>
-            </View>
-
-            {/* Form Fields */}
-            <View style={styles.formCard}>
-              {/* Full Name */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Full Name</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="user" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={name}
-                    onChangeText={setName}
-                    placeholder="Enter full name"
-                    placeholderTextColor="#94A3B8"
-                    autoCapitalize="words"
-                  />
-                </View>
-              </View>
-
-              {/* Email Address */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Email Address</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="mail" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={email}
-                    onChangeText={setEmail}
-                    placeholder="name@samavya.internal"
-                    placeholderTextColor="#94A3B8"
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
-                </View>
-              </View>
-
-              {/* Mobile Phone */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Mobile Phone</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="phone" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={phone}
-                    onChangeText={setPhone}
-                    placeholder="+91 98765 43210"
-                    placeholderTextColor="#94A3B8"
-                    keyboardType="phone-pad"
-                  />
-                </View>
-              </View>
-
-              {/* Department */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Department</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="briefcase" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={department}
-                    onChangeText={setDepartment}
-                    placeholder="Department"
-                    placeholderTextColor="#94A3B8"
-                  />
-                </View>
-              </View>
-
-              {/* Designation */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Designation / Role</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="award" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={designation}
-                    onChangeText={setDesignation}
-                    placeholder="e.g. Operations Specialist"
-                    placeholderTextColor="#94A3B8"
-                  />
-                </View>
-              </View>
-
-              {/* Emergency Contact */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Emergency Contact</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="shield" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={emergencyContact}
-                    onChangeText={setEmergencyContact}
-                    placeholder="+91 91234 56789"
-                    placeholderTextColor="#94A3B8"
-                    keyboardType="phone-pad"
-                  />
-                </View>
-              </View>
-
-              {/* Work Location */}
-              <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>Default Work Location</Text>
-                <View style={styles.inputWrapper}>
-                  <Feather name="map-pin" size={18} color="#64748B" style={styles.inputIcon} />
-                  <TextInput
-                    style={styles.textInput}
-                    value={location}
-                    onChangeText={setLocation}
-                    placeholder="e.g. Work from home / Head Office"
-                    placeholderTextColor="#94A3B8"
-                  />
-                </View>
-              </View>
-            </View>
-
-            {/* Save Button */}
             <TactilePressable
-              style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-              onPress={handleSave}
-              disabled={isSaving}
-              activeScale={0.96}
+              style={styles.cameraBtn}
+              onPress={handleChangePhoto}
+              activeScale={0.88}
             >
-              <Text style={styles.saveButtonText}>
-                {isSaving ? 'Saving Changes...' : 'Save Changes'}
-              </Text>
-              <Feather name="check" size={20} color="#FFFFFF" />
+              <Feather name="camera" size={14} color="#FFFFFF" />
             </TactilePressable>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+          </View>
+          <TactilePressable onPress={handleChangePhoto} activeScale={0.95}>
+            <Text style={[styles.changePhotoText, isDark && { color: '#60A5FA' }]}>Change photo</Text>
+          </TactilePressable>
+        </View>
+
+        {/* Form Fields */}
+        <View style={[styles.formCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          {/* Full Name */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Full Name</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="user" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={name}
+                onChangeText={setName}
+                placeholder="Enter full name"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                autoCapitalize="words"
+              />
+            </View>
+          </View>
+
+          {/* Email Address */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Email Address</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="mail" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="name@samavya.internal"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+
+          {/* Mobile Phone */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Mobile Phone</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="phone" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="+91 98765 43210"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          {/* Department */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Department</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="briefcase" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={department}
+                onChangeText={setDepartment}
+                placeholder="Department"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              />
+            </View>
+          </View>
+
+          {/* Designation */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Designation / Role</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="award" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={designation}
+                onChangeText={setDesignation}
+                placeholder="e.g. Operations Specialist"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              />
+            </View>
+          </View>
+
+          {/* Emergency Contact */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Emergency Contact</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="shield" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={emergencyContact}
+                onChangeText={setEmergencyContact}
+                placeholder="+91 91234 56789"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          {/* Work Location */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Default Work Location</Text>
+            <View style={[styles.inputWrapper, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <Feather name="map-pin" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+              <TextInput
+                style={[styles.textInput, isDark && { color: '#F8FAFC' }]}
+                value={location}
+                onChangeText={setLocation}
+                placeholder="e.g. Work from home / Head Office"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              />
+            </View>
+          </View>
+
+          {/* Address */}
+          <View style={styles.fieldGroup}>
+            <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Residential Address</Text>
+            <TouchableOpacity
+              style={[styles.addressBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+              onPress={() => setIsAddressSheetOpen(true)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.addressBoxContent}>
+                <Feather name="home" size={18} color={isDark ? '#94A3B8' : '#64748B'} style={styles.inputIcon} />
+                <Text
+                  style={[
+                    styles.addressBoxText,
+                    isDark && { color: '#F8FAFC' },
+                    !user?.address && styles.addressBoxPlaceholder,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {user?.address || 'Tap to enter address'}
+                </Text>
+              </View>
+              <Feather name="edit-2" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Save Button */}
+        <TactilePressable
+          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+          onPress={handleSave}
+          disabled={isSaving}
+          activeScale={0.96}
+        >
+          <Text style={styles.saveButtonText}>
+            {isSaving ? 'Saving Changes...' : 'Save Changes'}
+          </Text>
+          <Feather name="check" size={20} color="#FFFFFF" />
+        </TactilePressable>
+      </KeyboardAvoidingScrollView>
+
+      <AddressBottomSheet
+        isOpen={isAddressSheetOpen}
+        onClose={() => setIsAddressSheetOpen(false)}
+      />
     </SafeAreaView>
   );
-}
+    }
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -384,6 +403,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0F172A',
     paddingVertical: 8,
+  },
+  addressBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    minHeight: 48,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  addressBoxContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
+  },
+  addressBoxText: {
+    flex: 1,
+    fontFamily: FontFamily.regular,
+    fontSize: 14,
+    color: '#0F172A',
+    lineHeight: 20,
+  },
+  addressBoxPlaceholder: {
+    color: '#94A3B8',
   },
   saveButton: {
     backgroundColor: '#1D4ED8',

@@ -1,23 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ImageBackground } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { FontFamily } from '@/shared/theme';
+import { FontFamily, useAppTheme } from '@/shared/theme';
 import { TactilePressable } from '@/shared/animations';
+import { KeyboardAvoidingScrollView } from '@/shared/components';
 
 type DurationType = 'full' | 'half';
 
@@ -45,6 +41,9 @@ const MONTH_NAMES = [
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function RequestLeaveScreen(): React.JSX.Element {
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
+
   // Calendar month/year navigation state - defaults to November 2026
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(10); // 0-indexed: 10 = November
@@ -204,276 +203,275 @@ export function RequestLeaveScreen(): React.JSX.Element {
   return (
     <ImageBackground
       source={require('../../../../assets/images/background_home.png')}
-      style={styles.backgroundImage}
+      style={[
+        styles.backgroundImage,
+        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
+      ]}
+      imageStyle={{ opacity: isDark ? 0.05 : 1 }}
       contentFit="cover"
     >
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={styles.flexOne}
-        >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-            {/* 1. Header Row */}
-            <View style={styles.navBar}>
-              <View style={styles.navLeft}>
-                <TouchableOpacity
-                  onPress={() => router.back()}
-                  style={styles.backButton}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                >
-                  <Feather name="chevron-left" size={26} color="#0F172A" />
-                </TouchableOpacity>
-                <Text style={styles.navTitle}>Request leave</Text>
-              </View>
-
-              <View style={styles.availableBadge}>
-                <Text style={styles.availableBadgeText}>14 days available</Text>
-              </View>
-            </View>
-
-            {/* 2. Leave Summary Card (Allocated / Taken / Pending) */}
-            <View style={styles.summaryCard}>
-              <View style={styles.summaryCol}>
-                <Text style={styles.summaryLabel}>Allocated</Text>
-                <Text style={styles.summaryValue}>18 days</Text>
-              </View>
-
-              <View style={styles.summaryDivider} />
-
-              <View style={styles.summaryCol}>
-                <Text style={styles.summaryLabel}>Taken</Text>
-                <Text style={styles.summaryValue}>4 days</Text>
-              </View>
-
-              <View style={styles.summaryDivider} />
-
-              <View style={styles.summaryCol}>
-                <Text style={styles.summaryLabel}>Pending</Text>
-                <Text style={styles.summaryValue}>0 days</Text>
-              </View>
-            </View>
-
-            {/* 3. Duration Selector (Full Day / Half Day) */}
-            <View style={styles.durationRow}>
-              <Text style={styles.sectionTitle}>Duration</Text>
-              <View style={styles.durationToggleContainer}>
-                <TactilePressable
-                  style={[
-                    styles.durationToggleBtn,
-                    durationType === 'full' && styles.durationToggleBtnActive,
-                  ]}
-                  onPress={() => setDurationType('full')}
-                  activeScale={0.95}
-                >
-                  <Text
-                    style={[
-                      styles.durationToggleText,
-                      durationType === 'full' && styles.durationToggleTextActive,
-                    ]}
-                  >
-                    Full day
-                  </Text>
-                </TactilePressable>
-
-                <TactilePressable
-                  style={[
-                    styles.durationToggleBtn,
-                    durationType === 'half' && styles.durationToggleBtnActive,
-                  ]}
-                  onPress={() => setDurationType('half')}
-                  activeScale={0.95}
-                >
-                  <Text
-                    style={[
-                      styles.durationToggleText,
-                      durationType === 'half' && styles.durationToggleTextActive,
-                    ]}
-                  >
-                    Half day
-                  </Text>
-                </TactilePressable>
-              </View>
-            </View>
-
-            {/* 4. Start Date & End Date Row */}
-            <View style={styles.datesRowCard}>
-              {/* Start Date Column */}
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}>
+        <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
+          {/* 1. Header Row */}
+          <View style={styles.navBar}>
+            <View style={styles.navLeft}>
               <TouchableOpacity
-                style={styles.datePickerCol}
-                onPress={() => {
-                  setStartDate(null);
-                  setEndDate(null);
-                }}
+                onPress={() => router.back()}
+                style={[
+                  styles.backButton,
+                  isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' },
+                ]}
                 activeOpacity={0.7}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Feather name="calendar" size={18} color="#2563EB" />
-                <View style={styles.datePickerTextCol}>
-                  <Text style={styles.datePickerLabel}>Start date</Text>
-                  <Text style={styles.datePickerValue}>{formatDateDisplay(startDate)}</Text>
-                </View>
+                <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F172A'} />
               </TouchableOpacity>
-
-              <View style={styles.datesVerticalDivider} />
-
-              {/* End Date Column */}
-              <TouchableOpacity
-                style={styles.datePickerCol}
-                onPress={() => {
-                  if (startDate && !endDate) {
-                    setEndDate(startDate);
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <Feather name="calendar" size={18} color="#2563EB" />
-                <View style={styles.datePickerTextCol}>
-                  <Text style={styles.datePickerLabel}>End date</Text>
-                  <Text style={styles.datePickerValue}>{formatDateDisplay(endDate)}</Text>
-                </View>
-              </TouchableOpacity>
+              <Text style={[styles.navTitle, isDark && { color: '#F8FAFC' }]}>Request leave</Text>
             </View>
 
-            <View style={styles.sectionSeparator} />
+            <View style={[styles.availableBadge, isDark && { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' }]}>
+              <Text style={[styles.availableBadgeText, isDark && { color: '#93C5FD' }]}>14 days available</Text>
+            </View>
+          </View>
 
-            {/* 5. Month Calendar Grid */}
-            <View style={styles.calendarContainer}>
-              {/* Month Header with Navigation Arrows */}
-              <View style={styles.calendarHeaderRow}>
-                <Text style={styles.calendarMonthTitle}>
-                  {MONTH_NAMES[currentMonth]} {currentYear}
+          {/* 2. Leave Summary Card (Allocated / Taken / Pending) */}
+          <View style={[styles.summaryCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+            <View style={styles.summaryCol}>
+              <Text style={[styles.summaryLabel, isDark && { color: '#94A3B8' }]}>Allocated</Text>
+              <Text style={[styles.summaryValue, isDark && { color: '#F8FAFC' }]}>18 days</Text>
+            </View>
+
+            <View style={[styles.summaryDivider, isDark && { backgroundColor: '#1E293B' }]} />
+
+            <View style={styles.summaryCol}>
+              <Text style={[styles.summaryLabel, isDark && { color: '#94A3B8' }]}>Taken</Text>
+              <Text style={[styles.summaryValue, isDark && { color: '#F8FAFC' }]}>4 days</Text>
+            </View>
+
+            <View style={[styles.summaryDivider, isDark && { backgroundColor: '#1E293B' }]} />
+
+            <View style={styles.summaryCol}>
+              <Text style={[styles.summaryLabel, isDark && { color: '#94A3B8' }]}>Pending</Text>
+              <Text style={[styles.summaryValue, isDark && { color: '#F8FAFC' }]}>0 days</Text>
+            </View>
+          </View>
+
+          {/* 3. Duration Selector (Full Day / Half Day) */}
+          <View style={styles.durationRow}>
+            <Text style={[styles.sectionTitle, isDark && { color: '#F8FAFC' }]}>Duration</Text>
+            <View style={[styles.durationToggleContainer, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+              <TactilePressable
+                style={[
+                  styles.durationToggleBtn,
+                  durationType === 'full' && styles.durationToggleBtnActive,
+                ]}
+                onPress={() => setDurationType('full')}
+                activeScale={0.95}
+              >
+                <Text
+                  style={[
+                    styles.durationToggleText,
+                    isDark && { color: '#94A3B8' },
+                    durationType === 'full' && styles.durationToggleTextActive,
+                  ]}
+                >
+                  Full day
                 </Text>
-                <View style={styles.calendarArrowsRow}>
-                  <TactilePressable
-                    onPress={handlePrevMonth}
-                    style={styles.arrowButton}
-                    activeScale={0.88}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Feather name="chevron-left" size={22} color="#2563EB" />
-                  </TactilePressable>
-                  <TactilePressable
-                    onPress={handleNextMonth}
-                    style={styles.arrowButton}
-                    activeScale={0.88}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Feather name="chevron-right" size={22} color="#2563EB" />
-                  </TactilePressable>
-                </View>
-              </View>
+              </TactilePressable>
 
-              {/* Day of Week Labels */}
-              <View style={styles.weekdaysRow}>
-                {WEEKDAY_NAMES.map((name) => (
-                  <Text key={name} style={styles.weekdayLabel}>
-                    {name}
-                  </Text>
-                ))}
-              </View>
-
-              {/* Days Matrix with Tactile Bouncy Cells */}
-              <View style={styles.daysGrid}>
-                {calendarDays.map((item, index) => {
-                  if (!item.isCurrentMonth) {
-                    return <View key={item.dateKey || `pad-${index}`} style={styles.daySlotEmpty} />;
-                  }
-
-                  const isStart = startDate === item.dateKey;
-                  const isEnd = endDate === item.dateKey;
-                  const isInRange =
-                    startDate &&
-                    endDate &&
-                    item.dateKey > startDate &&
-                    item.dateKey < endDate;
-
-                  const isSingleSelected = isStart && (!endDate || startDate === endDate);
-                  const isToday = item.dateKey === todayKey && !startDate;
-
-                  return (
-                    <TactilePressable
-                      key={item.dateKey}
-                      style={[
-                        styles.daySlot,
-                        isInRange && styles.daySlotInRange,
-                        (isStart || isEnd) && !isSingleSelected && styles.daySlotEndpoint,
-                        isSingleSelected && styles.daySlotSingleBorder,
-                        isToday && styles.daySlotTodayBorder,
-                      ]}
-                      onPress={() => handleSelectDay(item.dateKey)}
-                      activeScale={0.88}
-                    >
-                      <Text
-                        style={[
-                          styles.dayText,
-                          (isStart || isEnd) && !isSingleSelected && styles.dayTextEndpoint,
-                          isSingleSelected && styles.dayTextSingle,
-                          isToday && styles.dayTextToday,
-                        ]}
-                      >
-                        {item.dayNumber}
-                      </Text>
-                    </TactilePressable>
-                  );
-                })}
-              </View>
+              <TactilePressable
+                style={[
+                  styles.durationToggleBtn,
+                  durationType === 'half' && styles.durationToggleBtnActive,
+                ]}
+                onPress={() => setDurationType('half')}
+                activeScale={0.95}
+              >
+                <Text
+                  style={[
+                    styles.durationToggleText,
+                    isDark && { color: '#94A3B8' },
+                    durationType === 'half' && styles.durationToggleTextActive,
+                  ]}
+                >
+                  Half day
+                </Text>
+              </TactilePressable>
             </View>
+          </View>
 
-            {/* 6. Reason Section */}
-            <View style={styles.reasonSection}>
-              <Text style={styles.sectionTitle}>Reason</Text>
-              <View style={styles.reasonInputContainer}>
-                <TextInput
-                  style={styles.reasonInput}
-                  placeholder="Add a reason for your leave"
-                  placeholderTextColor="#64748B"
-                  value={reason}
-                  onChangeText={setReason}
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </View>
-            </View>
-
-            {/* 7. Requested Duration Summary */}
-            <View style={styles.durationSummaryRow}>
-              <View style={styles.durationSummaryLeft}>
-                <Feather name="clock" size={20} color="#0F172A" />
-                <View style={styles.durationSummaryTextCol}>
-                  <Text style={styles.durationSummaryTitle}>Requested duration</Text>
-                  <Text style={styles.durationSummarySubtitle}>
-                    {requestedDuration.subtitle}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.durationSummaryValue}>{requestedDuration.label}</Text>
-            </View>
-
-            {/* 8. Submit Request Button */}
-            <TactilePressable
-              style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-              activeScale={0.96}
+          {/* 4. Start Date & End Date Row */}
+          <View style={[styles.datesRowCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+            {/* Start Date Column */}
+            <TouchableOpacity
+              style={styles.datePickerCol}
+              onPress={() => {
+                setStartDate(null);
+                setEndDate(null);
+              }}
+              activeOpacity={0.7}
             >
-              <Text style={styles.submitButtonText}>
-                {isSubmitting ? 'Submitting...' : 'Submit request'}
+              <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+              <View style={styles.datePickerTextCol}>
+                <Text style={[styles.datePickerLabel, isDark && { color: '#94A3B8' }]}>Start date</Text>
+                <Text style={[styles.datePickerValue, isDark && { color: '#F8FAFC' }]}>{formatDateDisplay(startDate)}</Text>
+              </View>
+            </TouchableOpacity>
+
+            <View style={[styles.datesVerticalDivider, isDark && { backgroundColor: '#1E293B' }]} />
+
+            {/* End Date Column */}
+            <TouchableOpacity
+              style={styles.datePickerCol}
+              onPress={() => {
+                if (startDate && !endDate) {
+                  setEndDate(startDate);
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+              <View style={styles.datePickerTextCol}>
+                <Text style={[styles.datePickerLabel, isDark && { color: '#94A3B8' }]}>End date</Text>
+                <Text style={[styles.datePickerValue, isDark && { color: '#F8FAFC' }]}>{formatDateDisplay(endDate)}</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.sectionSeparator, isDark && { backgroundColor: '#1E293B' }]} />
+
+          {/* 5. Month Calendar Grid */}
+          <View style={[styles.calendarContainer, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+            {/* Month Header with Navigation Arrows */}
+            <View style={styles.calendarHeaderRow}>
+              <Text style={[styles.calendarMonthTitle, isDark && { color: '#F8FAFC' }]}>
+                {MONTH_NAMES[currentMonth]} {currentYear}
               </Text>
-              <Feather name="arrow-right" size={20} color="#FFFFFF" />
-            </TactilePressable>
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  </ImageBackground>
+              <View style={styles.calendarArrowsRow}>
+                <TactilePressable
+                  onPress={handlePrevMonth}
+                  style={styles.arrowButton}
+                  activeScale={0.88}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Feather name="chevron-left" size={22} color={isDark ? '#60A5FA' : '#2563EB'} />
+                </TactilePressable>
+                <TactilePressable
+                  onPress={handleNextMonth}
+                  style={styles.arrowButton}
+                  activeScale={0.88}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Feather name="chevron-right" size={22} color={isDark ? '#60A5FA' : '#2563EB'} />
+                </TactilePressable>
+              </View>
+            </View>
+
+            {/* Day of Week Labels */}
+            <View style={styles.weekdaysRow}>
+              {WEEKDAY_NAMES.map((name) => (
+                <Text key={name} style={[styles.weekdayLabel, isDark && { color: '#64748B' }]}>
+                  {name}
+                </Text>
+              ))}
+            </View>
+
+            {/* Days Matrix with Tactile Bouncy Cells */}
+            <View style={styles.daysGrid}>
+              {calendarDays.map((item, index) => {
+                if (!item.isCurrentMonth) {
+                  return <View key={item.dateKey || `pad-${index}`} style={styles.daySlotEmpty} />;
+                }
+
+                const isStart = startDate === item.dateKey;
+                const isEnd = endDate === item.dateKey;
+                const isInRange =
+                  startDate &&
+                  endDate &&
+                  item.dateKey > startDate &&
+                  item.dateKey < endDate;
+
+                const isSingleSelected = isStart && (!endDate || startDate === endDate);
+                const isToday = item.dateKey === todayKey && !startDate;
+
+                return (
+                  <TactilePressable
+                    key={item.dateKey}
+                    style={[
+                      styles.daySlot,
+                      isInRange && (isDark ? { backgroundColor: '#1E3A8A' } : styles.daySlotInRange),
+                      (isStart || isEnd) && !isSingleSelected && styles.daySlotEndpoint,
+                      isSingleSelected && (isDark ? { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' } : styles.daySlotSingleBorder),
+                      isToday && (isDark ? { borderColor: '#60A5FA' } : styles.daySlotTodayBorder),
+                    ]}
+                    onPress={() => handleSelectDay(item.dateKey)}
+                    activeScale={0.88}
+                  >
+                    <Text
+                      style={[
+                        styles.dayText,
+                        isDark && { color: '#F8FAFC' },
+                        (isStart || isEnd) && !isSingleSelected && styles.dayTextEndpoint,
+                        isSingleSelected && styles.dayTextSingle,
+                        isToday && styles.dayTextToday,
+                      ]}
+                    >
+                      {item.dayNumber}
+                    </Text>
+                  </TactilePressable>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 6. Reason Section */}
+          <View style={styles.reasonSection}>
+            <Text style={[styles.sectionTitle, isDark && { color: '#F8FAFC' }]}>Reason</Text>
+            <View style={[styles.reasonInputContainer, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+              <TextInput
+                style={[styles.reasonInput, isDark && { color: '#F8FAFC' }]}
+                placeholder="Add a reason for your leave"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                value={reason}
+                onChangeText={setReason}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
+          </View>
+
+          {/* 7. Requested Duration Summary */}
+          <View style={[styles.durationSummaryRow, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+            <View style={styles.durationSummaryLeft}>
+              <Feather name="clock" size={20} color={isDark ? '#60A5FA' : '#0F172A'} />
+              <View style={styles.durationSummaryTextCol}>
+                <Text style={[styles.durationSummaryTitle, isDark && { color: '#F8FAFC' }]}>Requested duration</Text>
+                <Text style={[styles.durationSummarySubtitle, isDark && { color: '#94A3B8' }]}>
+                  {requestedDuration.subtitle}
+                </Text>
+              </View>
+            </View>
+            <Text style={[styles.durationSummaryValue, isDark && { color: '#60A5FA' }]}>{requestedDuration.label}</Text>
+          </View>
+
+          {/* 8. Submit Request Button */}
+          <TactilePressable
+            style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+            activeScale={0.96}
+          >
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? 'Submitting...' : 'Submit request'}
+            </Text>
+            <Feather name="arrow-right" size={20} color="#FFFFFF" />
+          </TactilePressable>
+        </KeyboardAvoidingScrollView>
+      </SafeAreaView>
+    </ImageBackground>
   );
-}
+  }
 
 const styles = StyleSheet.create({
   backgroundImage: {

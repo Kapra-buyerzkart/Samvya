@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, ThemedText } from '@/shared/components';
+import { useAppTheme } from '@/shared/theme';
 import { TrackingSessionState } from '../domain/types';
 
 interface BackgroundTrackingBannerProps {
@@ -10,6 +11,9 @@ interface BackgroundTrackingBannerProps {
 export function BackgroundTrackingBanner({
   session,
 }: BackgroundTrackingBannerProps): React.JSX.Element | null {
+  const theme = useAppTheme();
+  const isDark = theme.isDark;
+
   if (!session || session.status !== 'tracking') {
     return null;
   }
@@ -20,22 +24,44 @@ export function BackgroundTrackingBanner({
     : 'Acquiring';
 
   return (
-    <Card style={styles.container}>
+    <Card
+      style={[
+        styles.container,
+        {
+          backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+          borderColor: isDark ? '#334155' : '#E2E8F0',
+        },
+      ]}
+    >
       <View style={styles.headerRow}>
         <View style={styles.indicatorContainer}>
           <View style={[styles.pulseDot, styles.pulseDotActive]} />
-          <ThemedText variant="body" style={styles.title}>
+          <ThemedText
+            variant="body"
+            style={[styles.title, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+          >
             Live Route Tracking Active
           </ThemedText>
         </View>
-        <View style={styles.badge}>
-          <ThemedText variant="caption" style={styles.badgeText}>
+        <View
+          style={[
+            styles.badge,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+          ]}
+        >
+          <ThemedText
+            variant="caption"
+            style={[styles.badgeText, { color: isDark ? '#94A3B8' : '#475569' }]}
+          >
             {isStationary ? 'Stationary (Power Save)' : 'Moving'}
           </ThemedText>
         </View>
       </View>
 
-      <ThemedText variant="caption" style={styles.subtext}>
+      <ThemedText
+        variant="caption"
+        style={[styles.subtext, { color: isDark ? '#94A3B8' : '#475569' }]}
+      >
         On-duty tracking • Fix accuracy: {accuracy} • {session.pointsRecorded} breadcrumbs logged
       </ThemedText>
 
@@ -53,7 +79,6 @@ const styles = StyleSheet.create({
     padding: 12,
     borderLeftWidth: 4,
     borderLeftColor: '#059669', // Emerald active
-    backgroundColor: '#0F172A',
   },
   headerRow: {
     flexDirection: 'row',
@@ -77,13 +102,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '600',
-    color: '#F8FAFC',
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
-    backgroundColor: '#1E293B',
   },
   badgeText: {
     color: '#94A3B8',
