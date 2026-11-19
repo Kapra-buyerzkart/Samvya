@@ -8,8 +8,10 @@ import {
   resumeShiftWork,
   saveShiftState,
   startShiftBreak,
+  subscribeShiftState,
   type PersistedShiftState,
 } from '../domain/shiftTimer';
+import { syncShiftForegroundService } from '../services/liveActivityService';
 
 export function usePersistentShiftTimer() {
   const [shiftState, setShiftState] = useState<PersistedShiftState>(() => loadShiftState());
@@ -24,7 +26,21 @@ export function usePersistentShiftTimer() {
     setNow(Date.now());
   }, []);
 
-  // 1. AppState listener: immediately recalculate from wall-clock when app is foregrounded
+  // 1. In-memory listener: sync immediately whenever any component changes shift state
+  useEffect(() => {
+    const unsubscribe = subscribeShiftState((latestState) => {
+      setShiftState(latestState);
+      setNow(Date.now());
+    });
+    return unsubscribe;
+  }, []);
+
+  // 2. Sync to Live Activity & Foreground Notification
+  useEffect(() => {
+    syncShiftForegroundService(metrics, shiftState).catch(() => {});
+  }, [metrics, shiftState]);
+
+  // 3. AppState listener: immediately recalculate from wall-clock when app is foregrounded
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
       if (nextAppState === 'active') {

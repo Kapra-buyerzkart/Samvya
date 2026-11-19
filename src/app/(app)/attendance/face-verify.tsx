@@ -7,12 +7,9 @@ import {
   stopBackgroundTracking,
   stopTrackingSession,
 } from '@/features/location';
-import { TactilePressable } from '@/shared/animations';
-import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
+import { Button, Card, ThemedText } from '@/shared/components';
 import { useFeatureFlag } from '@/shared/flags';
-import { useAppTheme } from '@/shared/theme';
-import { Feather } from '@expo/vector-icons';
-import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, StyleSheet, View } from 'react-native';
@@ -20,19 +17,24 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FaceVerifyRoute(): React.JSX.Element {
   const { t } = useTranslation();
-  const theme = useAppTheme();
-  const isDark = theme.isDark;
-  const navigation = useNavigation();
   const isFaceCheckInEnabled = useFeatureFlag('faceCheckIn');
-  const isFocused = navigation.isFocused();
+  const isFocused = useIsFocused();
   const timer = usePersistentShiftTimer();
   const params = useLocalSearchParams<{ action?: string }>();
   const isPunchOut = params.action === 'punch-out';
-  const actionText = isPunchOut ? 'Punch Out' : 'Punch In';
+  const actionText = isPunchOut ? 'Punch out' : 'Punch in';
   const [isPunching, setIsPunching] = useState(false);
 
+  const navigateBack = (): void => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)');
+    }
+  };
+
   const handleCancel = (): void => {
-    router.back();
+    navigateBack();
   };
 
   const handleFallbackToManual = (): void => {
@@ -65,7 +67,7 @@ export default function FaceVerifyRoute(): React.JSX.Element {
         Alert.alert(
           'Punch Out Successful',
           'Your shift has ended successfully.',
-          [{ text: 'OK', onPress: () => router.replace('/(app)') }],
+          [{ text: 'OK', onPress: navigateBack }],
         );
       } else {
         timer.punchIn();
@@ -92,14 +94,14 @@ export default function FaceVerifyRoute(): React.JSX.Element {
         Alert.alert(
           'Punch In Successful',
           'Your shift has started successfully.',
-          [{ text: 'OK', onPress: () => router.replace('/(app)') }],
+          [{ text: 'OK', onPress: navigateBack }],
         );
       }
     } catch {
       Alert.alert(
         'Punch Recorded',
         `Your ${actionText.toLowerCase()} has been recorded.`,
-        [{ text: 'OK', onPress: () => router.replace('/(app)') }],
+        [{ text: 'OK', onPress: navigateBack }],
       );
     } finally {
       setIsPunching(false);
@@ -107,92 +109,24 @@ export default function FaceVerifyRoute(): React.JSX.Element {
   };
 
   return (
-    <ThemedView
-      style={[
-        styles.container,
-        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
-      ]}
-    >
+    <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        {/* Navigation Bar */}
-        <View
-          style={[
-            styles.navBar,
-            { borderBottomColor: isDark ? '#1E293B' : '#E2E8F0' },
-          ]}
-        >
-          <TactilePressable
-            onPress={handleCancel}
-            style={[
-              styles.backBtn,
-              { backgroundColor: isDark ? '#0F172A' : '#E2E8F0' },
-            ]}
-            accessibilityLabel="Go back"
-          >
-            <Feather
-              name="arrow-left"
-              size={22}
-              color={isDark ? '#F8FAFC' : '#0F172A'}
-            />
-          </TactilePressable>
-          <View style={styles.headerTitles}>
-            <ThemedText
-              variant="heading"
-              style={[
-                styles.navTitle,
-                { color: isDark ? '#F8FAFC' : '#0F172A' },
-              ]}
-            >
-              {actionText}
-            </ThemedText>
-            <ThemedText
-              variant="caption"
-              style={[
-                styles.navSubtitle,
-                { color: isDark ? '#94A3B8' : '#64748B' },
-              ]}
-            >
-              Front Camera Viewfinder
-            </ThemedText>
-          </View>
-          <View style={styles.navPlaceholder} />
-        </View>
-
         {isFaceCheckInEnabled ? (
           <FaceVerifyCameraView
             actionText={actionText}
             isCameraActive={isFocused}
             isPunching={isPunching}
             onPunch={handlePunch}
+            onCancel={handleCancel}
             onFallbackToManual={handleFallbackToManual}
           />
         ) : (
-          <View style={styles.content}>
-            <Card
-              style={[
-                styles.disabledCard,
-                {
-                  backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-                  borderColor: isDark ? '#334155' : '#E2E8F0',
-                },
-              ]}
-            >
-              <ThemedText
-                variant="heading"
-                style={[
-                  styles.disabledTitle,
-                  { color: isDark ? '#F8FAFC' : '#0F172A' },
-                ]}
-              >
+          <View style={styles.disabledContainer}>
+            <Card style={styles.disabledCard}>
+              <ThemedText variant="heading" style={styles.disabledTitle}>
                 Camera Punch Disabled
               </ThemedText>
-              <ThemedText
-                variant="body"
-                style={[
-                  styles.disabledText,
-                  { color: isDark ? '#94A3B8' : '#64748B' },
-                ]}
-              >
+              <ThemedText variant="body" style={styles.disabledText}>
                 Camera punch is turned off by administrative policy. Please check in using
                 hardware GPS or supervisor-approved manual entry.
               </ThemedText>
@@ -212,74 +146,43 @@ export default function FaceVerifyRoute(): React.JSX.Element {
           </View>
         )}
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: '#000000',
   },
   safeArea: {
     flex: 1,
+    backgroundColor: '#000000',
   },
-  navBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E293B',
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#0F172A',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitles: {
-    alignItems: 'center',
-  },
-  navTitle: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  navSubtitle: {
-    color: '#94A3B8',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  navPlaceholder: {
-    width: 40,
-  },
-  content: {
+  disabledContainer: {
     flex: 1,
+    padding: 24,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: '#000000',
   },
   disabledCard: {
     padding: 24,
-    alignItems: 'center',
-    width: '100%',
-    backgroundColor: '#0F172A',
+    borderRadius: 20,
+    borderWidth: 1,
     borderColor: '#334155',
+    backgroundColor: '#0F172A',
+    alignItems: 'center',
   },
   disabledTitle: {
     marginBottom: 8,
-    color: '#F8FAFC',
     textAlign: 'center',
+    color: '#F8FAFC',
   },
   disabledText: {
     textAlign: 'center',
-    color: '#94A3B8',
     marginBottom: 20,
     lineHeight: 22,
+    color: '#94A3B8',
   },
   actionBtn: {
     width: '100%',

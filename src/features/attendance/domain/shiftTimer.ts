@@ -13,6 +13,13 @@ export interface PersistedShiftState {
   lastActiveTimestamp: number;
 }
 
+export interface ShiftMetrics {
+  workedSeconds: number;
+  totalBreakSeconds: number;
+  remainingSeconds: number;
+  progressFraction: number;
+}
+
 export const SHIFT_TIMER_STORAGE_KEY = 'samavya-persisted-shift-timer';
 
 export const DEFAULT_SHIFT_TARGET_SECONDS = 8 * 3600; // 8 hours
@@ -48,8 +55,25 @@ export function loadShiftState(): PersistedShiftState {
   }
 }
 
+type ShiftStateListener = (state: PersistedShiftState) => void;
+const shiftListeners = new Set<ShiftStateListener>();
+
+export function subscribeShiftState(listener: ShiftStateListener): () => void {
+  shiftListeners.add(listener);
+  return () => {
+    shiftListeners.delete(listener);
+  };
+}
+
 export function saveShiftState(state: PersistedShiftState): void {
   appStorage.set(SHIFT_TIMER_STORAGE_KEY, JSON.stringify(state));
+  shiftListeners.forEach((listener) => {
+    try {
+      listener(state);
+    } catch {
+      // safe swallow
+    }
+  });
 }
 
 export function calculateShiftMetrics(

@@ -66,7 +66,7 @@ export default function HomeScreen(): React.JSX.Element {
   const handlePunchIn = (): void => {
     Alert.alert(
       'Punch In Verification',
-      'Would you like to verify your face with liveness detection or proceed with quick punch-in?',
+      'Punch-in requires face verification and location check.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -89,7 +89,7 @@ export default function HomeScreen(): React.JSX.Element {
           },
         },
         {
-          text: 'Verify Face & Punch In',
+          text: 'Verify Face & Location',
           onPress: () => {
             router.push({
               pathname: '/(app)/attendance/face-verify',
@@ -114,7 +114,10 @@ export default function HomeScreen(): React.JSX.Element {
     >
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            !timer.isPunchedOut && { paddingTop: 46 },
+          ]}
           showsVerticalScrollIndicator={false}
         >
           {/* Header Row: Brand and Date */}
@@ -374,7 +377,9 @@ export default function HomeScreen(): React.JSX.Element {
 
           {/* Helper Subtext */}
           <Text style={[styles.punchNote, { color: isDark ? '#94A3B8' : '#64748B' }]}>
-            Punch-out requires a live photo and location.
+            {timer.isPunchedOut
+              ? 'Punch-in requires a live photo and location.'
+              : 'Punch-out requires a live photo and location.'}
           </Text>
 
           {/* Weekly Work Progress Card -> Tap to open Employment Details */}
@@ -458,6 +463,9 @@ export default function HomeScreen(): React.JSX.Element {
             </View>
             <Feather name="chevron-right" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
           </TactilePressable>
+
+          {/* Team Hybrid Presence Radar */}
+          {/* <TeamRadarCard /> */}
 
           {/* Leave Balance Section */}
           <View style={styles.leaveSection}>
@@ -564,7 +572,12 @@ export default function HomeScreen(): React.JSX.Element {
                     borderColor: '#334155',
                   },
                 ]}
-                onPress={() => router.push('/(app)/attendance/face-verify')}
+                onPress={() =>
+                  router.push({
+                    pathname: '/(app)/attendance/face-verify',
+                    params: { action: timer.isPunchedOut ? 'punch-in' : 'punch-out' },
+                  })
+                }
                 activeScale={0.94}
               >
                 <Feather name="camera" size={16} color={isDark ? '#60A5FA' : '#1D4ED8'} />

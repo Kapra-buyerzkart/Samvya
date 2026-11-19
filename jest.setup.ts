@@ -84,6 +84,15 @@ jest.mock('expo-blur', () => {
   };
 });
 
+// Mock expo-linear-gradient
+jest.mock('expo-linear-gradient', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    LinearGradient: ({ children, ...props }: any) => React.createElement(View, props, children),
+  };
+});
+
 // Mock expo-secure-store
 jest.mock('expo-secure-store', () => {
   const store = new Map<string, string>();
@@ -112,7 +121,7 @@ jest.mock('react-native-vision-camera', () => {
       cameraPermissionStatus: 'authorized',
       requestCameraPermission: jest.fn(async () => true),
     },
-    useCameraDevice: jest.fn(() => ({ id: 'front-camera', position: 'front' })),
+    useCameraDevice: jest.fn((position = 'front') => ({ id: `${position}-camera`, position })),
     useCameraPermission: jest.fn(() => ({
       hasPermission: true,
       requestPermission: jest.fn(async () => true),
@@ -121,11 +130,6 @@ jest.mock('react-native-vision-camera', () => {
     })),
   };
 });
-
-// Mock react-native-vision-camera-face-detector
-jest.mock('react-native-vision-camera-face-detector', () => ({
-  Camera: ({ children }: { children?: React.ReactNode }) => children ?? null,
-}));
 
 // Mock @swmansion/react-native-bottom-sheet
 jest.mock('@swmansion/react-native-bottom-sheet', () => {
@@ -160,6 +164,7 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
   usePathname: () => '/',
   useSegments: () => [],
+  useIsFocused: () => true,
   Link: ({ children, ...props }: any) => {
     const React = require('react');
     const { Text } = require('react-native');
