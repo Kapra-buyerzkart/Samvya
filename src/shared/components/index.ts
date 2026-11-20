@@ -7,4 +7,5 @@ export * from './CircularProgressDial';
 export * from './AppBottomSheet';
 export * from './KeyboardAvoidingScrollView';
 export * from './AppKeyboardAvoidingView';
+export * from './BottomTabBar';
 

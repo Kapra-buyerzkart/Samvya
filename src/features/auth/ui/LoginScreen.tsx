@@ -145,10 +145,7 @@ export function LoginScreen(): React.JSX.Element {
   return (
     <ImageBackground
       source={require('../../../../assets/images/background.png')}
-      style={[
-        styles.backgroundImage,
-        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
-      ]}
+      style={[styles.backgroundImage, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}
       imageStyle={{ opacity: isDark ? 0.05 : 1 }}
       resizeMode="cover"
     >
@@ -325,7 +322,9 @@ export function LoginScreen(): React.JSX.Element {
                       styles.otpBox,
                       isDark && styles.otpBoxDark,
                       isFocused && (isDark ? styles.otpBoxFocusedDark : styles.otpBoxFocused),
-                      digit && !isFocused && (isDark ? styles.otpBoxFilledDark : styles.otpBoxFilled),
+                      digit &&
+                        !isFocused &&
+                        (isDark ? styles.otpBoxFilledDark : styles.otpBoxFilled),
                     ]}
                     keyboardType="number-pad"
                     maxLength={index === 0 ? 5 : 1}

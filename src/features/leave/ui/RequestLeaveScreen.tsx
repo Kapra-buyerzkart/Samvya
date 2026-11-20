@@ -48,7 +48,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
   const [currentYear, setCurrentYear] = useState(2026);
   const [currentMonth, setCurrentMonth] = useState(10); // 0-indexed: 10 = November
 
-  // Today reference key (12 Nov 2026 as per reference design)
+  // Reference today key (12 Nov 2026 as per reference design)
   const todayKey = '2026-11-12';
 
   const [durationType, setDurationType] = useState<DurationType>('full');
@@ -76,7 +76,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
     }
   };
 
-  // Build calendar matrix dynamically for the active month & year
+  // Build calendar matrix dynamically for active month & year
   const calendarDays = useMemo<CalendarDay[]>(() => {
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -118,7 +118,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
         setEndDate(startDate);
         setStartDate(dateKey);
       } else if (dateKey === startDate) {
-        // Tapped same date again -> 1 day leave
+        // Tapped same date again -> single day selection
         setEndDate(dateKey);
       } else {
         setEndDate(dateKey);
@@ -185,19 +185,21 @@ export function RequestLeaveScreen(): React.JSX.Element {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      Alert.alert(
-        'Request Submitted',
-        `Your request for ${requestedDuration.label} (${requestedDuration.subtitle}) has been sent for approval.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ],
-      );
-    }, 400);
+    Alert.alert(
+      'Request Submitted',
+      `Your request for ${requestedDuration.label} (${requestedDuration.subtitle}) has been sent for approval.`,
+      [
+        {
+          text: 'OK',
+          onPress: () => router.back(),
+        },
+      ],
+    );
+    setIsSubmitting(false);
+  };
+
+  const handleApprovalStatus = () => {
+    router.push('/(app)/leave/status');
   };
 
   return (
@@ -212,66 +214,116 @@ export function RequestLeaveScreen(): React.JSX.Element {
     >
       <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}>
         <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
-          {/* 1. Header Row */}
+          {/* 1. Header Navigation Bar */}
           <View style={styles.navBar}>
             <View style={styles.navLeft}>
               <TouchableOpacity
                 onPress={() => router.back()}
-                style={[
-                  styles.backButton,
-                  isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' },
-                ]}
+                style={styles.backButton}
                 activeOpacity={0.7}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
               >
-                <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F172A'} />
+                <Feather name="chevron-left" size={24} color={isDark ? '#F8FAFC' : '#0F172A'} />
               </TouchableOpacity>
-              <Text style={[styles.navTitle, isDark && { color: '#F8FAFC' }]}>Request leave</Text>
+              <Text style={[styles.navTitle, { color: isDark ? '#F8FAFC' : '#0F1E36' }]}>
+                Request leave
+              </Text>
             </View>
 
-            <View style={[styles.availableBadge, isDark && { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' }]}>
-              <Text style={[styles.availableBadgeText, isDark && { color: '#93C5FD' }]}>14 days available</Text>
-            </View>
+            <TouchableOpacity
+              onPress={handleApprovalStatus}
+              style={[
+                styles.approvalStatusBtn,
+                {
+                  backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(239, 246, 255, 0.85)',
+                  borderColor: isDark ? '#334155' : '#BFDBFE',
+                },
+              ]}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Approval status"
+              testID="approval-status-btn"
+            >
+              <Text style={[styles.approvalStatusBtnText, { color: isDark ? '#93C5FD' : '#2563EB' }]}>
+                Approval status
+              </Text>
+              <Feather name="chevron-right" size={14} color={isDark ? '#93C5FD' : '#2563EB'} />
+            </TouchableOpacity>
           </View>
 
           {/* 2. Leave Summary Card (Allocated / Taken / Pending) */}
-          <View style={[styles.summaryCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View
+            style={[
+              styles.summaryCard,
+              {
+                backgroundColor: isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(219, 234, 254, 0.55)',
+                borderColor: isDark ? '#334155' : '#BFDBFE',
+              },
+            ]}
+          >
             <View style={styles.summaryCol}>
-              <Text style={[styles.summaryLabel, isDark && { color: '#94A3B8' }]}>Allocated</Text>
-              <Text style={[styles.summaryValue, isDark && { color: '#F8FAFC' }]}>18 days</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                Allocated
+              </Text>
+              <Text style={[styles.summaryValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                18 days
+              </Text>
             </View>
 
-            <View style={[styles.summaryDivider, isDark && { backgroundColor: '#1E293B' }]} />
+            <View style={[styles.summaryDivider, { backgroundColor: isDark ? '#334155' : '#BFDBFE' }]} />
 
             <View style={styles.summaryCol}>
-              <Text style={[styles.summaryLabel, isDark && { color: '#94A3B8' }]}>Taken</Text>
-              <Text style={[styles.summaryValue, isDark && { color: '#F8FAFC' }]}>4 days</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                Taken
+              </Text>
+              <Text style={[styles.summaryValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                4 days
+              </Text>
             </View>
 
-            <View style={[styles.summaryDivider, isDark && { backgroundColor: '#1E293B' }]} />
+            <View style={[styles.summaryDivider, { backgroundColor: isDark ? '#334155' : '#BFDBFE' }]} />
 
             <View style={styles.summaryCol}>
-              <Text style={[styles.summaryLabel, isDark && { color: '#94A3B8' }]}>Pending</Text>
-              <Text style={[styles.summaryValue, isDark && { color: '#F8FAFC' }]}>0 days</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                Pending
+              </Text>
+              <Text style={[styles.summaryValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                0 days
+              </Text>
             </View>
           </View>
 
-          {/* 3. Duration Selector (Full Day / Half Day) */}
+          {/* 3. Duration Segment Toggle (Full day / Half day) */}
           <View style={styles.durationRow}>
-            <Text style={[styles.sectionTitle, isDark && { color: '#F8FAFC' }]}>Duration</Text>
-            <View style={[styles.durationToggleContainer, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+            <View
+              style={[
+                styles.durationToggleContainer,
+                {
+                  backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                  borderColor: isDark ? '#334155' : '#BFDBFE',
+                },
+              ]}
+            >
               <TactilePressable
                 style={[
                   styles.durationToggleBtn,
-                  durationType === 'full' && styles.durationToggleBtnActive,
+                  durationType === 'full' && [
+                    styles.durationToggleBtnActive,
+                    { backgroundColor: '#1D4ED8' },
+                  ],
                 ]}
                 onPress={() => setDurationType('full')}
-                activeScale={0.95}
+                activeScale={0.96}
+                accessibilityRole="button"
+                accessibilityState={{ selected: durationType === 'full' }}
+                testID="duration-full-btn"
               >
                 <Text
                   style={[
                     styles.durationToggleText,
-                    isDark && { color: '#94A3B8' },
+                    { color: isDark ? '#94A3B8' : '#0F172A' },
                     durationType === 'full' && styles.durationToggleTextActive,
                   ]}
                 >
@@ -282,15 +334,21 @@ export function RequestLeaveScreen(): React.JSX.Element {
               <TactilePressable
                 style={[
                   styles.durationToggleBtn,
-                  durationType === 'half' && styles.durationToggleBtnActive,
+                  durationType === 'half' && [
+                    styles.durationToggleBtnActive,
+                    { backgroundColor: '#1D4ED8' },
+                  ],
                 ]}
                 onPress={() => setDurationType('half')}
-                activeScale={0.95}
+                activeScale={0.96}
+                accessibilityRole="button"
+                accessibilityState={{ selected: durationType === 'half' }}
+                testID="duration-half-btn"
               >
                 <Text
                   style={[
                     styles.durationToggleText,
-                    isDark && { color: '#94A3B8' },
+                    { color: isDark ? '#94A3B8' : '#0F172A' },
                     durationType === 'half' && styles.durationToggleTextActive,
                   ]}
                 >
@@ -301,7 +359,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
           </View>
 
           {/* 4. Start Date & End Date Row */}
-          <View style={[styles.datesRowCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View style={styles.datesRowCard}>
             {/* Start Date Column */}
             <TouchableOpacity
               style={styles.datePickerCol}
@@ -310,15 +368,22 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 setEndDate(null);
               }}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Select start date"
+              testID="start-date-picker"
             >
-              <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+              <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : '#2563EB'} />
               <View style={styles.datePickerTextCol}>
-                <Text style={[styles.datePickerLabel, isDark && { color: '#94A3B8' }]}>Start date</Text>
-                <Text style={[styles.datePickerValue, isDark && { color: '#F8FAFC' }]}>{formatDateDisplay(startDate)}</Text>
+                <Text style={[styles.datePickerLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                  Start date
+                </Text>
+                <Text style={[styles.datePickerValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                  {formatDateDisplay(startDate)}
+                </Text>
               </View>
             </TouchableOpacity>
 
-            <View style={[styles.datesVerticalDivider, isDark && { backgroundColor: '#1E293B' }]} />
+            <View style={[styles.datesVerticalDivider, { backgroundColor: isDark ? '#334155' : '#CBD5E1' }]} />
 
             {/* End Date Column */}
             <TouchableOpacity
@@ -329,22 +394,38 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 }
               }}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Select end date"
+              testID="end-date-picker"
             >
-              <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+              <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : '#2563EB'} />
               <View style={styles.datePickerTextCol}>
-                <Text style={[styles.datePickerLabel, isDark && { color: '#94A3B8' }]}>End date</Text>
-                <Text style={[styles.datePickerValue, isDark && { color: '#F8FAFC' }]}>{formatDateDisplay(endDate)}</Text>
+                <Text style={[styles.datePickerLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                  End date
+                </Text>
+                <Text style={[styles.datePickerValue, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                  {formatDateDisplay(endDate)}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
 
-          <View style={[styles.sectionSeparator, isDark && { backgroundColor: '#1E293B' }]} />
+          {/* Divider below Date Pickers */}
+          <View style={[styles.sectionSeparator, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]} />
 
-          {/* 5. Month Calendar Grid */}
-          <View style={[styles.calendarContainer, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          {/* 5. Month Calendar Grid Card */}
+          <View
+            style={[
+              styles.calendarContainer,
+              {
+                backgroundColor: isDark ? 'rgba(30, 41, 59, 0.65)' : 'rgba(238, 242, 255, 0.45)',
+                borderColor: isDark ? '#334155' : '#CBD5E1',
+              },
+            ]}
+          >
             {/* Month Header with Navigation Arrows */}
             <View style={styles.calendarHeaderRow}>
-              <Text style={[styles.calendarMonthTitle, isDark && { color: '#F8FAFC' }]}>
+              <Text style={[styles.calendarMonthTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
                 {MONTH_NAMES[currentMonth]} {currentYear}
               </Text>
               <View style={styles.calendarArrowsRow}>
@@ -353,16 +434,22 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   style={styles.arrowButton}
                   activeScale={0.88}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Previous month"
+                  testID="prev-month-btn"
                 >
-                  <Feather name="chevron-left" size={22} color={isDark ? '#60A5FA' : '#2563EB'} />
+                  <Feather name="chevron-left" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
                 </TactilePressable>
                 <TactilePressable
                   onPress={handleNextMonth}
                   style={styles.arrowButton}
                   activeScale={0.88}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Next month"
+                  testID="next-month-btn"
                 >
-                  <Feather name="chevron-right" size={22} color={isDark ? '#60A5FA' : '#2563EB'} />
+                  <Feather name="chevron-right" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
                 </TactilePressable>
               </View>
             </View>
@@ -370,13 +457,19 @@ export function RequestLeaveScreen(): React.JSX.Element {
             {/* Day of Week Labels */}
             <View style={styles.weekdaysRow}>
               {WEEKDAY_NAMES.map((name) => (
-                <Text key={name} style={[styles.weekdayLabel, isDark && { color: '#64748B' }]}>
+                <Text
+                  key={name}
+                  style={[
+                    styles.weekdayLabel,
+                    { color: isDark ? '#60A5FA' : '#3B82F6' },
+                  ]}
+                >
                   {name}
                 </Text>
               ))}
             </View>
 
-            {/* Days Matrix with Tactile Bouncy Cells */}
+            {/* Days Matrix */}
             <View style={styles.daysGrid}>
               {calendarDays.map((item, index) => {
                 if (!item.isCurrentMonth) {
@@ -391,29 +484,38 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   item.dateKey > startDate &&
                   item.dateKey < endDate;
 
+                // Reference selected day in design (either todayKey when unselected or explicitly picked)
                 const isSingleSelected = isStart && (!endDate || startDate === endDate);
-                const isToday = item.dateKey === todayKey && !startDate;
+                const isHighlightedRef = !startDate && item.dateKey === todayKey;
 
                 return (
                   <TactilePressable
                     key={item.dateKey}
                     style={[
                       styles.daySlot,
-                      isInRange && (isDark ? { backgroundColor: '#1E3A8A' } : styles.daySlotInRange),
+                      isInRange && [
+                        styles.daySlotInRange,
+                        { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#DBEAFE' },
+                      ],
                       (isStart || isEnd) && !isSingleSelected && styles.daySlotEndpoint,
-                      isSingleSelected && (isDark ? { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' } : styles.daySlotSingleBorder),
-                      isToday && (isDark ? { borderColor: '#60A5FA' } : styles.daySlotTodayBorder),
+                      (isSingleSelected || isHighlightedRef) && [
+                        styles.daySlotSelectedPill,
+                        {
+                          borderColor: isDark ? '#60A5FA' : '#2563EB',
+                          backgroundColor: isDark ? 'rgba(37, 99, 235, 0.35)' : '#DBEAFE',
+                        },
+                      ],
                     ]}
                     onPress={() => handleSelectDay(item.dateKey)}
-                    activeScale={0.88}
+                    activeScale={0.9}
+                    testID={`day-slot-${item.dateKey}`}
                   >
                     <Text
                       style={[
                         styles.dayText,
-                        isDark && { color: '#F8FAFC' },
+                        { color: isDark ? '#F8FAFC' : '#0F172A' },
                         (isStart || isEnd) && !isSingleSelected && styles.dayTextEndpoint,
-                        isSingleSelected && styles.dayTextSingle,
-                        isToday && styles.dayTextToday,
+                        (isSingleSelected || isHighlightedRef) && styles.dayTextSelectedPill,
                       ]}
                     >
                       {item.dayNumber}
@@ -424,43 +526,57 @@ export function RequestLeaveScreen(): React.JSX.Element {
             </View>
           </View>
 
-          {/* 6. Reason Section */}
+          {/* Divider below Calendar Card */}
+          <View style={[styles.sectionSeparator, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]} />
+
+          {/* 6. Reason Section with Days Available Badge */}
           <View style={styles.reasonSection}>
-            <Text style={[styles.sectionTitle, isDark && { color: '#F8FAFC' }]}>Reason</Text>
-            <View style={[styles.reasonInputContainer, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+            <View style={styles.reasonHeaderRow}>
+              <Text style={[styles.reasonTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                Reason
+              </Text>
+              <View
+                style={[
+                  styles.availableBadge,
+                  {
+                    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#EFF6FF',
+                    borderColor: isDark ? '#334155' : '#BFDBFE',
+                  },
+                ]}
+              >
+                <Text style={[styles.availableBadgeText, { color: isDark ? '#93C5FD' : '#1D4ED8' }]}>
+                  14 days available
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.reasonInputContainer}>
               <TextInput
-                style={[styles.reasonInput, isDark && { color: '#F8FAFC' }]}
+                style={[
+                  styles.reasonInput,
+                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                ]}
                 placeholder="Add a reason for your leave"
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                placeholderTextColor={isDark ? '#64748B' : '#3B82F6'}
                 value={reason}
                 onChangeText={setReason}
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
+                testID="reason-input"
               />
             </View>
           </View>
 
-          {/* 7. Requested Duration Summary */}
-          <View style={[styles.durationSummaryRow, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
-            <View style={styles.durationSummaryLeft}>
-              <Feather name="clock" size={20} color={isDark ? '#60A5FA' : '#0F172A'} />
-              <View style={styles.durationSummaryTextCol}>
-                <Text style={[styles.durationSummaryTitle, isDark && { color: '#F8FAFC' }]}>Requested duration</Text>
-                <Text style={[styles.durationSummarySubtitle, isDark && { color: '#94A3B8' }]}>
-                  {requestedDuration.subtitle}
-                </Text>
-              </View>
-            </View>
-            <Text style={[styles.durationSummaryValue, isDark && { color: '#60A5FA' }]}>{requestedDuration.label}</Text>
-          </View>
-
-          {/* 8. Submit Request Button */}
+          {/* 7. Submit Request Button */}
           <TactilePressable
             style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
             onPress={handleSubmit}
             disabled={isSubmitting}
             activeScale={0.96}
+            accessibilityRole="button"
+            accessibilityLabel="Submit request"
+            testID="submit-request-btn"
           >
             <Text style={styles.submitButtonText}>
               {isSubmitting ? 'Submitting...' : 'Submit request'}
@@ -471,7 +587,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
       </SafeAreaView>
     </ImageBackground>
   );
-  }
+}
 
 const styles = StyleSheet.create({
   backgroundImage: {
@@ -483,13 +599,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
-  flexOne: {
-    flex: 1,
-  },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
-    paddingBottom: 40,
+    paddingBottom: 96,
   },
   navBar: {
     flexDirection: 'row',
@@ -501,40 +614,39 @@ const styles = StyleSheet.create({
   navLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   backButton: {
     padding: 2,
-    marginLeft: -4,
+    marginLeft: -6,
   },
   navTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 22,
-    color: '#0F172A',
-    letterSpacing: -0.3,
+    fontSize: 20,
+    letterSpacing: -0.2,
   },
-  availableBadge: {
-    backgroundColor: '#EFF6FF',
+  approvalStatusBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#93C5FD',
+    borderWidth: 1.5,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  availableBadgeText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 13,
-    color: '#2563EB',
+  approvalStatusBtnText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12.5,
   },
   summaryCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(238, 242, 255, 0.7)',
     borderRadius: 14,
-    paddingVertical: 14,
+    borderWidth: 1,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    marginBottom: 24,
+    marginBottom: 16,
   },
   summaryCol: {
     flex: 1,
@@ -542,43 +654,31 @@ const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontFamily: FontFamily.medium,
-    fontSize: 12,
-    color: '#2563EB',
-    marginBottom: 4,
+    fontSize: 13,
+    marginBottom: 3,
   },
   summaryValue: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 17,
-    color: '#0F172A',
+    fontSize: 16,
     fontVariant: ['tabular-nums'],
   },
   summaryDivider: {
     width: 1,
-    height: 26,
-    backgroundColor: '#CBD5E1',
+    height: 28,
   },
   durationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 22,
-  },
-  sectionTitle: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 17,
-    color: '#0F172A',
+    marginBottom: 14,
   },
   durationToggleContainer: {
+    alignSelf: 'flex-start',
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderWidth: 1.5,
     padding: 3,
   },
   durationToggleBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 18,
+    paddingVertical: 6,
+    paddingHorizontal: 20,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -589,7 +689,6 @@ const styles = StyleSheet.create({
   durationToggleText: {
     fontFamily: FontFamily.medium,
     fontSize: 14,
-    color: '#0F172A',
   },
   durationToggleTextActive: {
     fontFamily: FontFamily.semiBold,
@@ -599,13 +698,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   datePickerCol: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 12,
   },
   datePickerTextCol: {
     flex: 1,
@@ -613,43 +712,42 @@ const styles = StyleSheet.create({
   datePickerLabel: {
     fontFamily: FontFamily.medium,
     fontSize: 12,
-    color: '#2563EB',
     marginBottom: 2,
   },
   datePickerValue: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 14,
-    color: '#0F172A',
+    fontFamily: FontFamily.headingBold,
+    fontSize: 14.5,
   },
   datesVerticalDivider: {
     width: 1,
-    height: 32,
-    backgroundColor: '#E2E8F0',
+    height: 30,
     marginHorizontal: 12,
   },
   sectionSeparator: {
     height: 1,
-    backgroundColor: '#E2E8F0',
-    marginVertical: 18,
+    marginVertical: 12,
   },
   calendarContainer: {
-    marginBottom: 24,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 14,
   },
   calendarHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   calendarMonthTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 19,
-    color: '#0F172A',
+    fontSize: 17,
   },
   calendarArrowsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
   },
   arrowButton: {
     padding: 4,
@@ -657,130 +755,98 @@ const styles = StyleSheet.create({
   weekdaysRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    marginBottom: 10,
   },
   weekdayLabel: {
-    width: 40,
+    width: '14.28%',
     textAlign: 'center',
     fontFamily: FontFamily.semiBold,
     fontSize: 13,
-    color: '#2563EB',
   },
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 8,
+    rowGap: 6,
   },
   daySlotEmpty: {
     width: '14.28%',
-    height: 38,
+    height: 36,
   },
   daySlot: {
     width: '14.28%',
-    height: 38,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  daySlotSingleBorder: {
-    borderWidth: 2,
-    borderColor: '#1D4ED8',
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
-  },
-  daySlotTodayBorder: {
-    borderWidth: 2,
-    borderColor: '#1D4ED8',
-    borderRadius: 10,
-    backgroundColor: '#FFFFFF',
+  daySlotSelectedPill: {
+    borderWidth: 1.5,
+    borderRadius: 12,
   },
   daySlotEndpoint: {
     backgroundColor: '#1D4ED8',
-    borderRadius: 10,
+    borderRadius: 12,
   },
   daySlotInRange: {
-    backgroundColor: '#DBEAFE',
+    borderRadius: 6,
   },
   dayText: {
-    fontFamily: FontFamily.regular,
-    fontSize: 15,
-    color: '#0F172A',
+    fontFamily: FontFamily.semiBold,
+    fontSize: 14.5,
     fontVariant: ['tabular-nums'],
   },
-  dayTextSingle: {
+  dayTextSelectedPill: {
     fontFamily: FontFamily.semiBold,
-    color: '#0F172A',
-  },
-  dayTextToday: {
-    fontFamily: FontFamily.semiBold,
-    color: '#0F172A',
   },
   dayTextEndpoint: {
-    fontFamily: FontFamily.semiBold,
     color: '#FFFFFF',
   },
   reasonSection: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  reasonHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  reasonTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 16.5,
+  },
+  availableBadge: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  availableBadgeText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12,
   },
   reasonInputContainer: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginTop: 8,
-    minHeight: 84,
+    paddingHorizontal: 0,
+    paddingVertical: 4,
+    minHeight: 46,
   },
   reasonInput: {
     fontFamily: FontFamily.regular,
     fontSize: 14,
-    color: '#0F172A',
-    minHeight: 60,
-  },
-  durationSummaryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    paddingVertical: 4,
-  },
-  durationSummaryLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  durationSummaryTextCol: {
-    flex: 1,
-  },
-  durationSummaryTitle: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 15,
-    color: '#0F172A',
-  },
-  durationSummarySubtitle: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-    color: '#2563EB',
-    marginTop: 2,
-  },
-  durationSummaryValue: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 16,
-    color: '#0F172A',
+    minHeight: 40,
   },
   submitButton: {
     backgroundColor: '#1D4ED8',
-    borderRadius: 28,
-    paddingVertical: 16,
+    borderRadius: 16,
+    paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 10,
     shadowColor: '#1D4ED8',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
     elevation: 4,
+    marginBottom: 20,
   },
   submitButtonDisabled: {
     opacity: 0.6,

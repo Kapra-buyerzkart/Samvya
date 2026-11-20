@@ -47,7 +47,10 @@ export default function HomeScreen(): React.JSX.Element {
             timer.punchOut();
             stopTrackingSession();
             await stopBackgroundTracking();
-            Alert.alert('Punched Out', 'Shift ended successfully.');
+            router.push({
+              pathname: '/(app)/attendance/punch-success',
+              params: { action: 'punch-out' },
+            });
           },
         },
         {
@@ -82,9 +85,15 @@ export default function HomeScreen(): React.JSX.Element {
                 );
                 await startBackgroundTracking(newSession.sessionId, 'usr_default_employee');
               }
-              Alert.alert('Punched In', 'Shift started with live background GPS tracking.');
+              router.push({
+                pathname: '/(app)/attendance/punch-success',
+                params: { action: 'punch-in' },
+              });
             } catch {
-              Alert.alert('Notice', 'Started shift.');
+              router.push({
+                pathname: '/(app)/attendance/punch-success',
+                params: { action: 'punch-in' },
+              });
             }
           },
         },
@@ -727,7 +736,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 18,
     paddingTop: 12,
-    paddingBottom: 36,
+    paddingBottom: 96,
   },
   headerRow: {
     flexDirection: 'row',

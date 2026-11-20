@@ -5,7 +5,15 @@ import { Feather } from '@expo/vector-icons';
 import { Image, ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AddressBottomSheet } from './AddressBottomSheet';
 
@@ -44,15 +52,14 @@ export function ProfileScreen(): React.JSX.Element {
 
   return (
     <ImageBackground
-      source={require('../../../../assets/images/background.png')}
-      style={[
-        styles.backgroundImage,
-        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
-      ]}
+      source={require('../../../../assets/images/background_home.png')}
+      style={[styles.backgroundImage, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}
       imageStyle={{ opacity: isDark ? 0.05 : 1 }}
-      contentFit="fill"
+      contentFit="cover"
     >
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}
+      >
         {/* Navigation Bar */}
         <View style={styles.navBar}>
           <TouchableOpacity
@@ -71,13 +78,26 @@ export function ProfileScreen(): React.JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* 1. Header Profile Card */}
-          <View style={[styles.heroCard, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View
+            style={[
+              styles.heroCard,
+              isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' },
+            ]}
+          >
             <View style={styles.avatarWrapper}>
-              <View style={[styles.avatarCircle, isDark && { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' }]}>
+              <View
+                style={[
+                  styles.avatarCircle,
+                  isDark && { backgroundColor: '#1E3A8A', borderColor: '#3B82F6' },
+                ]}
+              >
                 <Text style={[styles.avatarText, isDark && { color: '#93C5FD' }]}>{initials}</Text>
               </View>
               <TactilePressable
-                style={[styles.cameraBadge, isDark && { backgroundColor: '#0F172A', borderColor: '#3B82F6' }]}
+                style={[
+                  styles.cameraBadge,
+                  isDark && { backgroundColor: '#0F172A', borderColor: '#3B82F6' },
+                ]}
                 onPress={handleEdit}
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -88,19 +108,30 @@ export function ProfileScreen(): React.JSX.Element {
 
             <View style={styles.heroTextCol}>
               <Text style={[styles.heroName, isDark && { color: '#F8FAFC' }]}>{displayName}</Text>
-              <Text style={[styles.heroSubtitle, isDark && { color: '#94A3B8' }]}>Personal and contact details</Text>
+              <Text style={[styles.heroSubtitle, isDark && { color: '#94A3B8' }]}>
+                Personal and contact details
+              </Text>
             </View>
           </View>
 
           {/* 2. Personal Information Card */}
-          <View style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View
+            style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}
+          >
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
-                <View style={[styles.headerIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                <View
+                  style={[
+                    styles.headerIconBox,
+                    isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  ]}
+                >
                   <Feather name="user" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
-                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>Personal Information</Text>
+                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>
+                  Personal Information
+                </Text>
               </View>
               <TactilePressable
                 onPress={handleEdit}
@@ -118,12 +149,16 @@ export function ProfileScreen(): React.JSX.Element {
             <View style={styles.twoColumnRow}>
               <View style={styles.columnHalf}>
                 <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>First name</Text>
-                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>{firstName}</Text>
+                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>
+                  {firstName}
+                </Text>
               </View>
               <View style={[styles.verticalDivider, isDark && { backgroundColor: '#1E293B' }]} />
               <View style={styles.columnHalf}>
                 <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Last name</Text>
-                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>{lastName}</Text>
+                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>
+                  {lastName}
+                </Text>
               </View>
             </View>
 
@@ -133,7 +168,9 @@ export function ProfileScreen(): React.JSX.Element {
             <View style={styles.middleNameSection}>
               <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Middle name</Text>
               {middleName ? (
-                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>{middleName}</Text>
+                <Text style={[styles.fieldValueBold, isDark && { color: '#F8FAFC' }]}>
+                  {middleName}
+                </Text>
               ) : (
                 <TouchableOpacity onPress={handleEdit} activeOpacity={0.7}>
                   <Text style={[styles.addText, isDark && { color: '#60A5FA' }]}>+ Add</Text>
@@ -144,44 +181,75 @@ export function ProfileScreen(): React.JSX.Element {
             {/* Sub-cards Row (Date of birth & Gender) */}
             <View style={styles.subCardsRow}>
               <TouchableOpacity
-                style={[styles.subCard, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+                style={[
+                  styles.subCard,
+                  isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                ]}
                 onPress={handleEdit}
                 activeOpacity={0.7}
               >
-                <View style={[styles.subCardIconBox, isDark && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                <View
+                  style={[
+                    styles.subCardIconBox,
+                    isDark && { backgroundColor: '#0F172A', borderColor: '#334155' },
+                  ]}
+                >
                   <Feather name="calendar" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
                 <View style={styles.subCardTextCol}>
-                  <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Date of birth</Text>
-                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{dob || '+ Add'}</Text>
+                  <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>
+                    Date of birth
+                  </Text>
+                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
+                    {dob || '+ Add'}
+                  </Text>
                 </View>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.subCard, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+                style={[
+                  styles.subCard,
+                  isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                ]}
                 onPress={handleEdit}
                 activeOpacity={0.7}
               >
-                <View style={[styles.subCardIconBox, isDark && { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+                <View
+                  style={[
+                    styles.subCardIconBox,
+                    isDark && { backgroundColor: '#0F172A', borderColor: '#334155' },
+                  ]}
+                >
                   <Feather name="user" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
                 <View style={styles.subCardTextCol}>
                   <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Gender</Text>
-                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{gender || '+ Add'}</Text>
+                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
+                    {gender || '+ Add'}
+                  </Text>
                 </View>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* 3. Contact Information Card */}
-          <View style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View
+            style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}
+          >
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
-                <View style={[styles.headerIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                <View
+                  style={[
+                    styles.headerIconBox,
+                    isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  ]}
+                >
                   <Feather name="mail" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
-                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>Contact Information</Text>
+                <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>
+                  Contact Information
+                </Text>
               </View>
               <TactilePressable
                 onPress={handleEdit}
@@ -197,12 +265,19 @@ export function ProfileScreen(): React.JSX.Element {
 
             {/* Work Email Row */}
             <View style={styles.contactRow}>
-              <View style={[styles.rowIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <View
+                style={[
+                  styles.rowIconBox,
+                  isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                ]}
+              >
                 <Feather name="mail" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
               </View>
               <View style={styles.rowContent}>
                 <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Work email</Text>
-                <Text style={[styles.fieldValueContact, isDark && { color: '#F8FAFC' }]}>{displayEmail}</Text>
+                <Text style={[styles.fieldValueContact, isDark && { color: '#F8FAFC' }]}>
+                  {displayEmail}
+                </Text>
               </View>
               <TouchableOpacity
                 onPress={() => handleCopy(displayEmail, 'Work email')}
@@ -218,12 +293,21 @@ export function ProfileScreen(): React.JSX.Element {
 
             {/* Primary Phone Row */}
             <View style={styles.contactRow}>
-              <View style={[styles.rowIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+              <View
+                style={[
+                  styles.rowIconBox,
+                  isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                ]}
+              >
                 <Feather name="phone" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
               </View>
               <View style={styles.rowContent}>
-                <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>Primary phone</Text>
-                <Text style={[styles.fieldValueContact, isDark && { color: '#F8FAFC' }]}>{displayPhone}</Text>
+                <Text style={[styles.fieldLabel, isDark && { color: '#94A3B8' }]}>
+                  Primary phone
+                </Text>
+                <Text style={[styles.fieldValueContact, isDark && { color: '#F8FAFC' }]}>
+                  {displayPhone}
+                </Text>
               </View>
               <TouchableOpacity
                 onPress={() => handleCopy(displayPhone, 'Primary phone')}
@@ -238,14 +322,23 @@ export function ProfileScreen(): React.JSX.Element {
             <View style={[styles.cardDivider, isDark && { backgroundColor: '#1E293B' }]} />
 
             {/* Sub-container for Other email & Other phone */}
-            <View style={[styles.subContainerRow, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+            <View
+              style={[
+                styles.subContainerRow,
+                isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+              ]}
+            >
               <TouchableOpacity
                 style={styles.subContainerHalf}
                 onPress={handleEdit}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Other email</Text>
-                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{otherEmail || '+ Add'}</Text>
+                <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>
+                  Other email
+                </Text>
+                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
+                  {otherEmail || '+ Add'}
+                </Text>
               </TouchableOpacity>
               <View style={[styles.verticalDividerSub, isDark && { backgroundColor: '#334155' }]} />
               <TouchableOpacity
@@ -253,18 +346,29 @@ export function ProfileScreen(): React.JSX.Element {
                 onPress={handleEdit}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Other phone</Text>
-                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>{otherPhone || '+ Add'}</Text>
+                <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>
+                  Other phone
+                </Text>
+                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
+                  {otherPhone || '+ Add'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* 4. Address Card */}
-          <View style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}>
+          <View
+            style={[styles.card, isDark && { backgroundColor: '#0F172A', borderColor: '#1E293B' }]}
+          >
             {/* Header */}
             <View style={styles.cardHeader}>
               <View style={styles.cardHeaderLeft}>
-                <View style={[styles.headerIconBox, isDark && { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+                <View
+                  style={[
+                    styles.headerIconBox,
+                    isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
+                  ]}
+                >
                   <Feather name="map-pin" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
                 </View>
                 <Text style={[styles.cardTitle, isDark && { color: '#F8FAFC' }]}>Address</Text>
@@ -283,7 +387,9 @@ export function ProfileScreen(): React.JSX.Element {
                 />
               </View>
 
-              <View style={[styles.addressVerticalDivider, isDark && { backgroundColor: '#1E293B' }]} />
+              <View
+                style={[styles.addressVerticalDivider, isDark && { backgroundColor: '#1E293B' }]}
+              />
 
               <View style={styles.addressContent}>
                 <Text style={[styles.addressEmptyTitle, isDark && { color: '#F8FAFC' }]}>
@@ -293,7 +399,10 @@ export function ProfileScreen(): React.JSX.Element {
                   {address || 'Add your street, city and postal code'}
                 </Text>
                 <TouchableOpacity
-                  style={[styles.addAddressBtn, isDark && { borderColor: '#3B82F6', backgroundColor: '#1E293B' }]}
+                  style={[
+                    styles.addAddressBtn,
+                    isDark && { borderColor: '#3B82F6', backgroundColor: '#1E293B' },
+                  ]}
                   onPress={() => setIsAddressModalOpen(true)}
                   activeOpacity={0.8}
                 >
@@ -351,7 +460,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 28,
+    paddingBottom: 96,
   },
   // 1. Hero Card
   heroCard: {

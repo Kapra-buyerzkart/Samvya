@@ -1,4 +1,8 @@
-import { enqueueAttendanceEvent, usePersistentShiftTimer } from '@/features/attendance';
+import {
+  enqueueAttendanceEvent,
+  PunchSuccessScreen,
+  usePersistentShiftTimer,
+} from '@/features/attendance';
 import { FaceVerifyCameraView } from '@/features/face';
 import {
   getActiveTrackingSession,
@@ -12,7 +16,7 @@ import { useFeatureFlag } from '@/shared/flags';
 import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FaceVerifyRoute(): React.JSX.Element {
@@ -24,6 +28,10 @@ export default function FaceVerifyRoute(): React.JSX.Element {
   const isPunchOut = params.action === 'punch-out';
   const actionText = isPunchOut ? 'Punch out' : 'Punch in';
   const [isPunching, setIsPunching] = useState(false);
+  const [punchSuccess, setPunchSuccess] = useState<{
+    type: 'punch-in' | 'punch-out';
+    timestamp: number;
+  } | null>(null);
 
   const navigateBack = (): void => {
     if (router.canGoBack()) {
@@ -64,11 +72,7 @@ export default function FaceVerifyRoute(): React.JSX.Element {
           timestamp: Date.now(),
         });
 
-        Alert.alert(
-          'Punch Out Successful',
-          'Your shift has ended successfully.',
-          [{ text: 'OK', onPress: navigateBack }],
-        );
+        setPunchSuccess({ type: 'punch-out', timestamp: Date.now() });
       } else {
         timer.punchIn();
         const current = getActiveTrackingSession();
@@ -91,22 +95,24 @@ export default function FaceVerifyRoute(): React.JSX.Element {
           timestamp: Date.now(),
         });
 
-        Alert.alert(
-          'Punch In Successful',
-          'Your shift has started successfully.',
-          [{ text: 'OK', onPress: navigateBack }],
-        );
+        setPunchSuccess({ type: 'punch-in', timestamp: Date.now() });
       }
     } catch {
-      Alert.alert(
-        'Punch Recorded',
-        `Your ${actionText.toLowerCase()} has been recorded.`,
-        [{ text: 'OK', onPress: navigateBack }],
-      );
+      setPunchSuccess({ type: isPunchOut ? 'punch-out' : 'punch-in', timestamp: Date.now() });
     } finally {
       setIsPunching(false);
     }
   };
+
+  if (punchSuccess) {
+    return (
+      <PunchSuccessScreen
+        type={punchSuccess.type}
+        timestamp={punchSuccess.timestamp}
+        onDismiss={navigateBack}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>

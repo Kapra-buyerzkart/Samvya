@@ -4,7 +4,9 @@ jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock
 // Mock Reanimated
 jest.mock('react-native-reanimated', () => {
   try {
-    const { createJSReanimatedModule } = require('react-native-reanimated/src/ReanimatedModule/js-reanimated');
+    const {
+      createJSReanimatedModule,
+    } = require('react-native-reanimated/src/ReanimatedModule/js-reanimated');
     if (createJSReanimatedModule) {
       const dummy = createJSReanimatedModule();
       const proto = Object.getPrototypeOf(dummy);
@@ -139,9 +141,10 @@ jest.mock('@swmansion/react-native-bottom-sheet', () => {
     BottomSheet: ({ children, ...props }: any) =>
       React.createElement(View, { testID: 'bottom-sheet', ...props }, children),
     ModalBottomSheet: ({ children, index, ...props }: any) =>
-      index > 0 ? React.createElement(View, { testID: 'modal-bottom-sheet', ...props }, children) : null,
-    BottomSheetProvider: ({ children }: any) =>
-      React.createElement(React.Fragment, null, children),
+      index > 0
+        ? React.createElement(View, { testID: 'modal-bottom-sheet', ...props }, children)
+        : null,
+    BottomSheetProvider: ({ children }: any) => React.createElement(React.Fragment, null, children),
   };
 });
 
@@ -162,8 +165,8 @@ jest.mock('expo-router', () => ({
     setParams: jest.fn(),
   }),
   useLocalSearchParams: () => ({}),
-  usePathname: () => '/',
-  useSegments: () => [],
+  usePathname: jest.fn(() => '/'),
+  useSegments: jest.fn(() => []),
   useIsFocused: () => true,
   Link: ({ children, ...props }: any) => {
     const React = require('react');
@@ -171,4 +174,3 @@ jest.mock('expo-router', () => ({
     return React.createElement(Text, props, children);
   },
 }));
-
