@@ -6,14 +6,18 @@ import {
   stopBackgroundTracking,
   stopTrackingSession,
 } from '@/features/location';
-import { PulsingStatusDot, TactilePressable } from '@/shared/animations';
-import { AppBottomSheet, CircularProgressDial } from '@/shared/components';
+import { TactilePressable } from '@/shared/animations';
+import {
+  AppBottomSheet,
+  CircularProgressDial,
+  KeyboardAvoidingScrollView,
+} from '@/shared/components';
 import { FontFamily, useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen(): React.JSX.Element {
@@ -114,19 +118,20 @@ export default function HomeScreen(): React.JSX.Element {
     router.push('/(app)/leave/request');
   };
 
+  const handleViewLeaveHistory = (): void => {
+    router.push('/(app)/leave/history');
+  };
+
   return (
     <ImageBackground
-      source={require('../../../assets/images/background_home.png')}
+      source={require('../../../assets/images/background.png')}
       style={[styles.backgroundImage, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}
       imageStyle={{ opacity: isDark ? 0.05 : 1 }}
-      resizeMode="cover"
+      contentFit="cover"
     >
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.scrollContent,
-            !timer.isPunchedOut && { paddingTop: 46 },
-          ]}
+        <KeyboardAvoidingScrollView
+          contentContainerStyle={[styles.scrollContent, !timer.isPunchedOut && { paddingTop: 40 }]}
           showsVerticalScrollIndicator={false}
         >
           {/* Header Row: Brand and Date */}
@@ -134,39 +139,9 @@ export default function HomeScreen(): React.JSX.Element {
             <Text style={[styles.brandTitle, { color: isDark ? '#F8FAFC' : '#0F1E36' }]}>
               Samavya
             </Text>
-            <View style={styles.headerRight}>
-              <Text style={[styles.headerDate, { color: isDark ? '#94A3B8' : '#1E293B' }]}>
-                Thu 12 Nov 2026
-              </Text>
-              <TactilePressable
-                onPress={() => router.push('/(app)/profile')}
-                style={[
-                  styles.settingsIconBtn,
-                  {
-                    backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.7)',
-                    borderWidth: isDark ? 1 : 0,
-                    borderColor: '#334155',
-                  },
-                ]}
-                accessibilityLabel="My Profile"
-              >
-                <Feather name="user" size={18} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-              </TactilePressable>
-              <TactilePressable
-                onPress={() => router.push('/(app)/settings')}
-                style={[
-                  styles.settingsIconBtn,
-                  {
-                    backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.7)',
-                    borderWidth: isDark ? 1 : 0,
-                    borderColor: '#334155',
-                  },
-                ]}
-                accessibilityLabel="Settings"
-              >
-                <Feather name="settings" size={18} color={isDark ? '#94A3B8' : '#475569'} />
-              </TactilePressable>
-            </View>
+            <Text style={[styles.headerDate, { color: isDark ? '#94A3B8' : '#1E293B' }]}>
+              Thu 12 Nov 2026
+            </Text>
           </View>
 
           {/* Top Dropdowns: Hours & Location */}
@@ -177,10 +152,13 @@ export default function HomeScreen(): React.JSX.Element {
                 styles.dropdownCard,
                 {
                   backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-                  borderColor: isDark ? '#1E293B' : '#CBD5E1',
+                  borderColor: isDark ? '#1E293B' : '#E2E8F0',
                 },
               ]}
               onPress={() => setShowHoursModal(true)}
+              activeScale={0.97}
+              accessibilityRole="button"
+              accessibilityLabel="Select Work Hours"
             >
               <View style={styles.dropdownIconContainer}>
                 <Feather name="clock" size={20} color={isDark ? '#60A5FA' : '#0F172A'} />
@@ -202,10 +180,13 @@ export default function HomeScreen(): React.JSX.Element {
                 styles.dropdownCard,
                 {
                   backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-                  borderColor: isDark ? '#1E293B' : '#CBD5E1',
+                  borderColor: isDark ? '#1E293B' : '#E2E8F0',
                 },
               ]}
               onPress={() => setShowLocationModal(true)}
+              activeScale={0.97}
+              accessibilityRole="button"
+              accessibilityLabel="Select Work Location"
             >
               <View style={styles.dropdownIconContainer}>
                 <Feather name="home" size={20} color={isDark ? '#60A5FA' : '#0F172A'} />
@@ -249,30 +230,26 @@ export default function HomeScreen(): React.JSX.Element {
             </Text>
           </View>
 
-          {/* Working Status Indicator with Pulsing Micro-Animation */}
+          {/* Working Status Indicator */}
           <View style={styles.statusIndicatorRow}>
-            <PulsingStatusDot
+            <Feather
+              name={timer.isOnBreak ? 'coffee' : 'clock'}
+              size={18}
               color={timer.isOnBreak ? '#D97706' : timer.isWorking ? '#2563EB' : '#64748B'}
-              size={8}
             />
             <Text
               style={[
                 styles.statusIndicatorText,
                 { color: isDark ? '#F8FAFC' : '#0F172A' },
-                timer.isOnBreak
-                  ? styles.statusTextBreak
-                  : timer.isPunchedOut
-                    ? styles.statusTextOff
-                    : null,
+                timer.isOnBreak && styles.statusTextBreak,
+                timer.isPunchedOut && styles.statusTextOff,
               ]}
             >
-              {timer.isOnBreak ? 'On Break' : timer.isWorking ? 'Working' : 'Off Duty'}
+              {timer.isOnBreak ? 'On break' : timer.isWorking ? 'Working' : 'Off duty'}
             </Text>
-
-            <View style={{ paddingTop: 50 }} />
           </View>
 
-          {/* Circular Progress Hero Dial with Ambient Aura & Breathing Knob */}
+          {/* Circular Progress Hero Dial */}
           <View style={styles.dialWrapper}>
             <CircularProgressDial
               size={220}
@@ -315,8 +292,7 @@ export default function HomeScreen(): React.JSX.Element {
             <View style={styles.infoBarItem}>
               <Feather name="coffee" size={16} color={isDark ? '#94A3B8' : '#475569'} />
               <Text style={[styles.infoBarTextMuted, { color: isDark ? '#94A3B8' : '#64748B' }]}>
-                {' '}
-                Break{' '}
+                {' '}Break{' '}
               </Text>
               <Text style={[styles.infoBarTextBold, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
                 {timer.breakDisplay}
@@ -328,8 +304,7 @@ export default function HomeScreen(): React.JSX.Element {
             <View style={styles.infoBarItem}>
               <Feather name="clock" size={16} color={isDark ? '#94A3B8' : '#475569'} />
               <Text style={[styles.infoBarTextBold, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
-                {' '}
-                {timer.remainingDisplay}{' '}
+                {' '}{timer.remainingDisplay}{' '}
               </Text>
               <Text style={[styles.infoBarTextMuted, { color: isDark ? '#94A3B8' : '#64748B' }]}>
                 remaining
@@ -337,7 +312,7 @@ export default function HomeScreen(): React.JSX.Element {
             </View>
           </View>
 
-          {/* Action Buttons with Spring Micro-Interactions */}
+          {/* Action Buttons */}
           <View style={styles.actionsRow}>
             <TactilePressable
               style={[
@@ -391,13 +366,16 @@ export default function HomeScreen(): React.JSX.Element {
               : 'Punch-out requires a live photo and location.'}
           </Text>
 
-          {/* Weekly Work Progress Card -> Tap to open Employment Details */}
+          {/* Subtle Horizontal Divider */}
+          <View style={[styles.sectionDivider, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]} />
+
+          {/* Weekly Work Progress -> Tap to open Employment Details */}
           <TactilePressable
             style={styles.weeklyCard}
             onPress={() => router.push('/(app)/employment')}
-            activeScale={0.98}
+            activeScale={0.99}
             accessibilityRole="button"
-            accessibilityLabel="View employment details and monthly work hours"
+            accessibilityLabel="View employment details and weekly work hours"
           >
             <View style={styles.weeklyHeader}>
               <View style={styles.weeklyTitleRow}>
@@ -406,12 +384,9 @@ export default function HomeScreen(): React.JSX.Element {
                   Weekly work
                 </Text>
               </View>
-              <View style={styles.weeklyHeaderRight}>
-                <Text style={[styles.weeklyStats, { color: isDark ? '#94A3B8' : '#0F172A' }]}>
-                  25h 30m / 40h
-                </Text>
-                <Feather name="chevron-right" size={15} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-              </View>
+              <Text style={[styles.weeklyStats, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                25h 30m / 40h
+              </Text>
             </View>
             <View
               style={[styles.progressBarTrack, { backgroundColor: isDark ? '#1E293B' : '#E0E7FF' }]}
@@ -428,53 +403,8 @@ export default function HomeScreen(): React.JSX.Element {
             </View>
           </TactilePressable>
 
-          {/* Dedicated Employment Details Action Button / Card */}
-          <TactilePressable
-            style={[
-              styles.employmentBanner,
-              {
-                backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-                borderColor: isDark ? '#1E293B' : '#E2E8F0',
-              },
-            ]}
-            onPress={() => router.push('/(app)/employment')}
-            activeScale={0.98}
-            accessibilityRole="button"
-            accessibilityLabel="Open Employment Details & Monthly Work Hours"
-          >
-            <View style={styles.employmentBannerLeft}>
-              <View
-                style={[
-                  styles.employmentIconBadge,
-                  {
-                    backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
-                    borderColor: isDark ? '#334155' : '#BFDBFE',
-                  },
-                ]}
-              >
-                <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
-              </View>
-              <View style={styles.employmentBannerTextCol}>
-                <Text
-                  style={[styles.employmentBannerTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
-                >
-                  Employment details
-                </Text>
-                <Text
-                  style={[
-                    styles.employmentBannerSubtitle,
-                    { color: isDark ? '#94A3B8' : '#64748B' },
-                  ]}
-                >
-                  Monthly work hours &amp; employment history
-                </Text>
-              </View>
-            </View>
-            <Feather name="chevron-right" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-          </TactilePressable>
-
-          {/* Team Hybrid Presence Radar */}
-          {/* <TeamRadarCard /> */}
+          {/* Subtle Horizontal Divider */}
+          <View style={[styles.sectionDivider, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]} />
 
           {/* Leave Balance Section */}
           <View style={styles.leaveSection}>
@@ -483,12 +413,13 @@ export default function HomeScreen(): React.JSX.Element {
                 styles.leaveHeaderBanner,
                 {
                   backgroundColor: isDark ? '#0F172A' : 'rgba(238, 242, 255, 0.7)',
-                  borderWidth: isDark ? 1 : 0,
-                  borderColor: '#1E293B',
+                  borderColor: isDark ? '#1E293B' : 'transparent',
                 },
               ]}
               onPress={handleRequestLeave}
-              activeScale={0.97}
+              activeScale={0.98}
+              accessibilityRole="button"
+              accessibilityLabel="Request leave"
             >
               <View style={styles.leaveHeaderLeft}>
                 <Feather name="calendar" size={16} color={isDark ? '#60A5FA' : '#1D4ED8'} />
@@ -496,31 +427,17 @@ export default function HomeScreen(): React.JSX.Element {
                   Leave balance
                 </Text>
               </View>
-              <View>
-                <Text style={[styles.leaveRequestLink, { color: isDark ? '#60A5FA' : '#1D4ED8' }]}>
-                  Request leave &gt;
-                </Text>
-              </View>
+              <Feather name="chevron-right" size={18} color={isDark ? '#94A3B8' : '#475569'} />
             </TactilePressable>
 
             <TactilePressable
-              style={[
-                styles.leaveMetricsRow,
-                isDark && {
-                  backgroundColor: '#0F172A',
-                  paddingVertical: 12,
-                  paddingHorizontal: 8,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: '#1E293B',
-                },
-              ]}
+              style={styles.leaveMetricsRow}
               onPress={handleRequestLeave}
               activeScale={0.98}
             >
               {/* Days Remaining */}
               <View style={styles.leaveMetricCol}>
-                <Text style={[styles.leaveMetricNumber, { color: isDark ? '#60A5FA' : '#1D4ED8' }]}>
+                <Text style={[styles.leaveMetricNumber, styles.leaveMetricBlue]}>
                   14
                 </Text>
                 <Text style={[styles.leaveMetricLabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
@@ -558,81 +475,23 @@ export default function HomeScreen(): React.JSX.Element {
             </TactilePressable>
           </View>
 
-          {/* Shortcuts & Diagnostics Tray */}
-          <View
+          {/* View Leave History Action Button */}
+          <TactilePressable
             style={[
-              styles.shortcutsCard,
+              styles.viewHistoryButton,
               {
-                backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-                borderColor: isDark ? '#1E293B' : '#E2E8F0',
+                backgroundColor: isDark ? '#2563EB' : '#1D4ED8',
               },
             ]}
+            onPress={handleViewLeaveHistory}
+            activeScale={0.97}
+            accessibilityRole="button"
+            accessibilityLabel="View Leave history"
           >
-            <Text style={[styles.shortcutsTitle, { color: isDark ? '#94A3B8' : '#64748B' }]}>
-              Quick Verification & Logs
-            </Text>
-            <View style={styles.shortcutsGrid}>
-              <TactilePressable
-                style={[
-                  styles.shortcutBtn,
-                  {
-                    backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
-                    borderWidth: isDark ? 1 : 0,
-                    borderColor: '#334155',
-                  },
-                ]}
-                onPress={() =>
-                  router.push({
-                    pathname: '/(app)/attendance/face-verify',
-                    params: { action: timer.isPunchedOut ? 'punch-in' : 'punch-out' },
-                  })
-                }
-                activeScale={0.94}
-              >
-                <Feather name="camera" size={16} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                <Text style={[styles.shortcutBtnText, { color: isDark ? '#F8FAFC' : '#334155' }]}>
-                  Biometric Face
-                </Text>
-              </TactilePressable>
-
-              <TactilePressable
-                style={[
-                  styles.shortcutBtn,
-                  {
-                    backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
-                    borderWidth: isDark ? 1 : 0,
-                    borderColor: '#334155',
-                  },
-                ]}
-                onPress={() => router.push('/(app)/attendance/manual-entry')}
-                activeScale={0.94}
-              >
-                <Feather name="map-pin" size={16} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                <Text style={[styles.shortcutBtnText, { color: isDark ? '#F8FAFC' : '#334155' }]}>
-                  Manual GPS
-                </Text>
-              </TactilePressable>
-
-              <TactilePressable
-                style={[
-                  styles.shortcutBtn,
-                  {
-                    backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
-                    borderWidth: isDark ? 1 : 0,
-                    borderColor: '#334155',
-                  },
-                ]}
-                onPress={() => router.push('/(app)/attendance/history')}
-                activeScale={0.94}
-              >
-                <Feather name="activity" size={16} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                <Text style={[styles.shortcutBtnText, { color: isDark ? '#F8FAFC' : '#334155' }]}>
-                  Sync Queue
-                </Text>
-              </TactilePressable>
-            </View>
-          </View>
-        </ScrollView>
+            <Text style={styles.viewHistoryButtonText}>View Leave history</Text>
+            <Feather name="arrow-right" size={18} color="#FFFFFF" />
+          </TactilePressable>
+        </KeyboardAvoidingScrollView>
       </SafeAreaView>
 
       {/* Hours Selector Bottom Sheet */}
@@ -736,7 +595,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 18,
     paddingTop: 12,
-    paddingBottom: 96,
+    paddingBottom: 110,
   },
   headerRow: {
     flexDirection: 'row',
@@ -746,28 +605,18 @@ const styles = StyleSheet.create({
   },
   brandTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 28,
+    fontSize: 26,
     color: '#0F1E36',
-    letterSpacing: -0.5,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    letterSpacing: -0.4,
   },
   headerDate: {
     fontFamily: FontFamily.medium,
     fontSize: 14,
     color: '#1E293B',
   },
-  settingsIconBtn: {
-    padding: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-  },
   dropdownsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
     marginBottom: 12,
   },
   dropdownCard: {
@@ -777,14 +626,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: '#E2E8F0',
     paddingVertical: 10,
     paddingHorizontal: 12,
     shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowRadius: 4,
+    elevation: 1,
   },
   dropdownIconContainer: {
     marginRight: 8,
@@ -812,7 +661,7 @@ const styles = StyleSheet.create({
     borderColor: '#D8B4FE',
     paddingVertical: 10,
     paddingHorizontal: 14,
-    marginBottom: 18,
+    marginBottom: 20,
   },
   shiftLeft: {
     flexDirection: 'row',
@@ -839,12 +688,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    marginBottom: 14,
+    gap: 8,
+    marginBottom: 16,
   },
   statusIndicatorText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 16,
+    fontFamily: FontFamily.headingBold,
+    fontSize: 18,
     color: '#0F172A',
   },
   statusTextBreak: {
@@ -866,7 +715,7 @@ const styles = StyleSheet.create({
   },
   workedTime: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 26,
+    fontSize: 28,
     color: '#0F172A',
     letterSpacing: -0.3,
     fontVariant: ['tabular-nums'],
@@ -887,7 +736,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   infoBarItem: {
     flexDirection: 'row',
@@ -920,17 +769,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#254EB9',
-    height: 52,
+    backgroundColor: '#2563EB',
+    height: 50,
     borderRadius: 14,
-    shadowColor: '#254EB9',
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
   },
   breakButtonActive: {
-    backgroundColor: '#254EB9',
+    backgroundColor: '#1D4ED8',
   },
   breakButtonText: {
     fontFamily: FontFamily.semiBold,
@@ -946,7 +795,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#0F172A',
-    height: 52,
+    height: 50,
     borderRadius: 14,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
@@ -974,16 +823,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 22,
+    marginBottom: 20,
+  },
+  sectionDivider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: '#E2E8F0',
+    marginBottom: 16,
   },
   weeklyCard: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   weeklyHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   weeklyTitleRow: {
     flexDirection: 'row',
@@ -996,64 +851,19 @@ const styles = StyleSheet.create({
     color: '#475569',
   },
   weeklyStats: {
-    fontFamily: FontFamily.bold,
+    fontFamily: FontFamily.headingBold,
     fontSize: 14,
     color: '#0F172A',
   },
-  weeklyHeaderRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  employmentBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    marginBottom: 20,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  employmentBannerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  employmentIconBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  employmentBannerTextCol: {
-    flex: 1,
-  },
-  employmentBannerTitle: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 15,
-    marginBottom: 2,
-  },
-  employmentBannerSubtitle: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-  },
   progressBarTrack: {
-    height: 8,
-    borderRadius: 4,
+    height: 7,
+    borderRadius: 3.5,
     backgroundColor: '#E0E7FF',
     overflow: 'hidden',
   },
   progressBarFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3.5,
     backgroundColor: '#2563EB',
   },
   leaveSection: {
@@ -1064,25 +874,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'rgba(238, 242, 255, 0.7)',
-    borderRadius: 10,
-    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
+    paddingVertical: 11,
     paddingHorizontal: 14,
     marginBottom: 16,
   },
   leaveHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   leaveHeaderTitle: {
     fontFamily: FontFamily.headingSemiBold,
-    fontSize: 14,
+    fontSize: 15,
     color: '#0F172A',
-  },
-  leaveRequestLink: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 13,
-    color: '#1D4ED8',
   },
   leaveMetricsRow: {
     flexDirection: 'row',
@@ -1095,7 +902,7 @@ const styles = StyleSheet.create({
   },
   leaveMetricNumber: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 32,
+    fontSize: 34,
     color: '#0F172A',
     marginBottom: 2,
     fontVariant: ['tabular-nums'],
@@ -1111,48 +918,29 @@ const styles = StyleSheet.create({
   },
   metricDivider: {
     width: 1,
-    height: 40,
-    backgroundColor: '#E2E8F0',
+    height: 38,
+    backgroundColor: '#CBD5E1',
   },
-  shortcutsCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-    marginTop: 6,
-  },
-  shortcutsTitle: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: 12,
-    color: '#64748B',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 10,
-  },
-  shortcutsGrid: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  shortcutBtn: {
-    flex: 1,
+  viewHistoryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#F1F5F9',
-    paddingVertical: 10,
-    borderRadius: 10,
+    gap: 8,
+    backgroundColor: '#1D4ED8',
+    height: 52,
+    borderRadius: 14,
+    marginTop: 6,
+    marginBottom: 20,
+    shadowColor: '#1D4ED8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  shortcutBtnText: {
-    fontFamily: FontFamily.medium,
-    fontSize: 12,
-    color: '#334155',
+  viewHistoryButtonText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 16,
+    color: '#FFFFFF',
   },
   sheetList: {
     paddingBottom: 8,
@@ -1166,16 +954,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
   },
-  modalItemActive: {
-    backgroundColor: '#EFF6FF',
-  },
   modalItemText: {
     fontSize: 15,
     color: '#334155',
     fontWeight: '500',
-  },
-  modalItemTextActive: {
-    color: '#1D4ED8',
-    fontWeight: '700',
   },
 });

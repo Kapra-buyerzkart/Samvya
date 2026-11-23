@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
+import { Button, Card, KeyboardAvoidingScrollView, ThemedText, ThemedView } from '@/shared/components';
 import {
   DPDP_NOTICE_TEXT,
   getDpdpConsent,
@@ -30,7 +30,7 @@ export default function ConsentRoute(): React.JSX.Element {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <KeyboardAvoidingScrollView contentContainerStyle={styles.scroll}>
           <Card style={styles.card}>
             <ThemedText variant="heading" style={styles.title}>
               {DPDP_NOTICE_TEXT.title}
@@ -85,7 +85,7 @@ export default function ConsentRoute(): React.JSX.Element {
               ) : null}
             </View>
           </Card>
-        </ScrollView>
+        </KeyboardAvoidingScrollView>
       </SafeAreaView>
     </ThemedView>
   );

@@ -1,19 +1,12 @@
-import React from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthStore } from '@/features/auth';
+import { TactilePressable } from '@/shared/animations';
+import { KeyboardAvoidingScrollView } from '@/shared/components';
+import { FontFamily, useAppTheme, useThemeStore, type ThemePreference } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useAuthStore } from '@/features/auth';
-import { FontFamily, useAppTheme, useThemeStore, type ThemePreference } from '@/shared/theme';
-import { TactilePressable } from '@/shared/animations';
+import React from 'react';
+import { Alert, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsRoute(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
@@ -46,7 +39,11 @@ export default function SettingsRoute(): React.JSX.Element {
     ]);
   };
 
-  const themeOptions: { key: ThemePreference; label: string; icon: keyof typeof Feather.glyphMap }[] = [
+  const themeOptions: {
+    key: ThemePreference;
+    label: string;
+    icon: keyof typeof Feather.glyphMap;
+  }[] = [
     { key: 'system', label: 'System', icon: 'smartphone' },
     { key: 'light', label: 'Light', icon: 'sun' },
     { key: 'dark', label: 'Dark', icon: 'moon' },
@@ -54,10 +51,7 @@ export default function SettingsRoute(): React.JSX.Element {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.colors.background }]}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Navigation Bar */}
         <View style={styles.navBar}>
           <TouchableOpacity
@@ -136,9 +130,7 @@ export default function SettingsRoute(): React.JSX.Element {
                 />
               </View>
               <View style={styles.menuTextCol}>
-                <Text style={[styles.menuTitle, { color: theme.colors.text }]}>
-                  Dark Mode
-                </Text>
+                <Text style={[styles.menuTitle, { color: theme.colors.text }]}>Dark Mode</Text>
                 <Text style={[styles.menuSubtitle, { color: theme.colors.textSecondary }]}>
                   {theme.isDark ? 'Dark theme active' : 'Light theme active'}
                 </Text>
@@ -151,9 +143,7 @@ export default function SettingsRoute(): React.JSX.Element {
               />
             </View>
 
-            <View
-              style={[styles.cardSeparator, { backgroundColor: theme.colors.border }]}
-            />
+            <View style={[styles.cardSeparator, { backgroundColor: theme.colors.border }]} />
 
             {/* Segmented Mode Selector: System / Light / Dark */}
             <View style={styles.themeSelectorRow}>
@@ -172,11 +162,7 @@ export default function SettingsRoute(): React.JSX.Element {
                           : theme.isDark
                             ? '#1E293B'
                             : '#F1F5F9',
-                        borderColor: isSelected
-                          ? '#3B82F6'
-                          : theme.isDark
-                            ? '#334155'
-                            : '#E2E8F0',
+                        borderColor: isSelected ? '#3B82F6' : theme.isDark ? '#334155' : '#E2E8F0',
                       },
                     ]}
                     onPress={() => setThemePreference(opt.key)}
@@ -220,36 +206,54 @@ export default function SettingsRoute(): React.JSX.Element {
             ]}
           >
             <TactilePressable
-              style={styles.menuItem}
-              onPress={() => router.push('/(app)/profile/edit')}
-              activeScale={0.98}
+              style={[styles.menuItem, { opacity: 0.6 }]}
+              onPress={() =>
+                Alert.alert(
+                  'Profile Editing Disabled',
+                  'Your profile details are managed by your HR administrator.',
+                )
+              }
+              activeScale={0.99}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: true }}
+              accessibilityLabel="Edit Profile Information disabled"
             >
               <View
                 style={[
                   styles.menuIconWrapper,
-                  { backgroundColor: theme.isDark ? '#1E3A8A' : '#EFF6FF' },
+                  { backgroundColor: theme.isDark ? '#1E293B' : '#F1F5F9' },
                 ]}
               >
-                <Feather
-                  name="user-check"
-                  size={18}
-                  color={theme.isDark ? '#93C5FD' : '#1D4ED8'}
-                />
+                <Feather name="lock" size={18} color={theme.colors.textMuted} />
               </View>
               <View style={styles.menuTextCol}>
-                <Text style={[styles.menuTitle, { color: theme.colors.text }]}>
-                  Edit Profile Information
-                </Text>
-                <Text style={[styles.menuSubtitle, { color: theme.colors.textSecondary }]}>
-                  Name, designation, emergency contact
+                <View style={styles.disabledTitleRow}>
+                  <Text style={[styles.menuTitle, { color: theme.colors.textMuted }]}>
+                    Edit Profile Information
+                  </Text>
+                  <View
+                    style={[
+                      styles.disabledBadge,
+                      { backgroundColor: theme.isDark ? '#334155' : '#E2E8F0' },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.disabledBadgeText,
+                        { color: theme.isDark ? '#94A3B8' : '#64748B' },
+                      ]}
+                    >
+                      Disabled
+                    </Text>
+                  </View>
+                </View>
+                <Text style={[styles.menuSubtitle, { color: theme.colors.textMuted }]}>
+                  Managed by HR administrator
                 </Text>
               </View>
-              <Feather name="chevron-right" size={18} color={theme.colors.borderStrong} />
             </TactilePressable>
 
-            <View
-              style={[styles.cardSeparator, { backgroundColor: theme.colors.border }]}
-            />
+            <View style={[styles.cardSeparator, { backgroundColor: theme.colors.border }]} />
 
             <TactilePressable
               style={styles.menuItem}
@@ -262,11 +266,7 @@ export default function SettingsRoute(): React.JSX.Element {
                   { backgroundColor: theme.isDark ? '#78350F' : '#FEF3C7' },
                 ]}
               >
-                <Feather
-                  name="key"
-                  size={18}
-                  color={theme.isDark ? '#FCD34D' : '#D97706'}
-                />
+                <Feather name="key" size={18} color={theme.isDark ? '#FCD34D' : '#D97706'} />
               </View>
               <View style={styles.menuTextCol}>
                 <Text style={[styles.menuTitle, { color: theme.colors.text }]}>
@@ -302,11 +302,7 @@ export default function SettingsRoute(): React.JSX.Element {
                   { backgroundColor: theme.isDark ? '#064E3B' : '#ECFDF5' },
                 ]}
               >
-                <Feather
-                  name="shield"
-                  size={18}
-                  color={theme.isDark ? '#6EE7B7' : '#059669'}
-                />
+                <Feather name="shield" size={18} color={theme.isDark ? '#6EE7B7' : '#059669'} />
               </View>
               <View style={styles.menuTextCol}>
                 <Text style={[styles.menuTitle, { color: theme.colors.text }]}>
@@ -319,9 +315,7 @@ export default function SettingsRoute(): React.JSX.Element {
               <Feather name="check" size={18} color={theme.isDark ? '#6EE7B7' : '#059669'} />
             </View>
 
-            <View
-              style={[styles.cardSeparator, { backgroundColor: theme.colors.border }]}
-            />
+            <View style={[styles.cardSeparator, { backgroundColor: theme.colors.border }]} />
 
             <View style={styles.menuItem}>
               <View
@@ -330,11 +324,7 @@ export default function SettingsRoute(): React.JSX.Element {
                   { backgroundColor: theme.isDark ? '#1E293B' : '#F1F5F9' },
                 ]}
               >
-                <Feather
-                  name="map-pin"
-                  size={18}
-                  color={theme.isDark ? '#94A3B8' : '#475569'}
-                />
+                <Feather name="map-pin" size={18} color={theme.isDark ? '#94A3B8' : '#475569'} />
               </View>
               <View style={styles.menuTextCol}>
                 <Text style={[styles.menuTitle, { color: theme.colors.text }]}>
@@ -351,9 +341,7 @@ export default function SettingsRoute(): React.JSX.Element {
 
         {/* App Info */}
         <View style={styles.section}>
-          <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>
-            App System
-          </Text>
+          <Text style={[styles.sectionHeader, { color: theme.colors.textMuted }]}>App System</Text>
           <View
             style={[
               styles.menuCard,
@@ -370,11 +358,7 @@ export default function SettingsRoute(): React.JSX.Element {
                   { backgroundColor: theme.isDark ? '#1E293B' : '#F8FAFC' },
                 ]}
               >
-                <Feather
-                  name="info"
-                  size={18}
-                  color={theme.isDark ? '#94A3B8' : '#64748B'}
-                />
+                <Feather name="info" size={18} color={theme.isDark ? '#94A3B8' : '#64748B'} />
               </View>
               <View style={styles.menuTextCol}>
                 <Text style={[styles.menuTitle, { color: theme.colors.text }]}>
@@ -401,21 +385,12 @@ export default function SettingsRoute(): React.JSX.Element {
           onPress={handleSignOut}
           activeScale={0.96}
         >
-          <Feather
-            name="log-out"
-            size={18}
-            color={theme.isDark ? '#F87171' : '#DC2626'}
-          />
-          <Text
-            style={[
-              styles.signOutText,
-              { color: theme.isDark ? '#F87171' : '#DC2626' },
-            ]}
-          >
+          <Feather name="log-out" size={18} color={theme.isDark ? '#F87171' : '#DC2626'} />
+          <Text style={[styles.signOutText, { color: theme.isDark ? '#F87171' : '#DC2626' }]}>
             Sign Out of Samavya
           </Text>
         </TactilePressable>
-      </ScrollView>
+      </KeyboardAvoidingScrollView>
     </SafeAreaView>
   );
 }
@@ -571,9 +546,24 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 8,
     marginTop: 8,
+    marginBottom: 100,
   },
   signOutText: {
     fontFamily: FontFamily.semiBold,
     fontSize: 14,
+  },
+  disabledTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  disabledBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  disabledBadgeText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 10,
   },
 });

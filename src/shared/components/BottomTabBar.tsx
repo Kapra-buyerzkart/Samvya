@@ -6,31 +6,34 @@ import {
   View,
 } from 'react-native';
 import { Image, ImageSource } from 'expo-image';
+import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
 import { FontFamily, useAppTheme } from '@/shared/theme';
+import { useKeyboard } from '@/shared/hooks';
 
-export type TabId = 'home' | 'history' | 'leave' | 'profile';
+export type TabId = 'home' | 'history' | 'attendance' | 'leave' | 'profile';
 
 export interface TabItem {
   id: TabId;
   label: string;
-  icon: ImageSource | number;
+  icon?: ImageSource | number;
+  featherIcon?: keyof typeof Feather.glyphMap;
   testID: string;
 }
 
 export const TABS: TabItem[] = [
   {
+    id: 'attendance',
+    label: 'Attendance',
+    featherIcon: 'clock',
+    testID: 'tab-btn-attendance',
+  },
+  {
     id: 'home',
     label: 'Home',
     icon: require('../../../assets/samagra/icons/home.png'),
     testID: 'tab-btn-home',
-  },
-  {
-    id: 'history',
-    label: 'History',
-    icon: require('../../../assets/samagra/icons/history.png'),
-    testID: 'tab-btn-history',
   },
   {
     id: 'leave',
@@ -51,10 +54,11 @@ export function BottomTabBar(): React.JSX.Element | null {
   const pathname = usePathname();
   const theme = useAppTheme();
   const isDark = theme.isDark;
+  const { isKeyboardVisible } = useKeyboard();
 
   // Determine active tab based on pathname
   const activeTab = useMemo<TabId>(() => {
-    if (pathname.includes('/attendance/history')) return 'history';
+    if (pathname.includes('/attendance')) return 'attendance';
     if (pathname.includes('/leave')) return 'leave';
     if (
       pathname.includes('/profile') ||
@@ -66,8 +70,9 @@ export function BottomTabBar(): React.JSX.Element | null {
     return 'home';
   }, [pathname]);
 
-  // Hide on modal / camera / full-screen flows
+  // Hide on modal / camera / full-screen flows or when keyboard is open
   const shouldHide = useMemo(() => {
+    if (isKeyboardVisible) return true;
     return (
       pathname.includes('attendance/face-verify') ||
       pathname.includes('attendance/manual-entry') ||
@@ -75,7 +80,7 @@ export function BottomTabBar(): React.JSX.Element | null {
       pathname.includes('login') ||
       pathname.includes('consent')
     );
-  }, [pathname]);
+  }, [pathname, isKeyboardVisible]);
 
   if (shouldHide) {
     return null;
@@ -88,6 +93,7 @@ export function BottomTabBar(): React.JSX.Element | null {
       case 'home':
         router.replace('/(app)');
         break;
+      case 'attendance':
       case 'history':
         router.push('/(app)/attendance/history');
         break;
@@ -137,20 +143,34 @@ export function BottomTabBar(): React.JSX.Element | null {
                   },
                 ]}
               >
-                <Image
-                  source={tab.icon}
-                  style={[
-                    styles.tabIcon,
-                    {
-                      tintColor: isActive
+                {tab.featherIcon ? (
+                  <Feather
+                    name={tab.featherIcon}
+                    size={20}
+                    color={
+                      isActive
                         ? '#2563EB'
                         : isDark
                           ? '#64748B'
-                          : '#94A3B8',
-                    },
-                  ]}
-                  contentFit="contain"
-                />
+                          : '#94A3B8'
+                    }
+                  />
+                ) : (
+                  <Image
+                    source={tab.icon!}
+                    style={[
+                      styles.tabIcon,
+                      {
+                        tintColor: isActive
+                          ? '#2563EB'
+                          : isDark
+                            ? '#64748B'
+                            : '#94A3B8',
+                      },
+                    ]}
+                    contentFit="contain"
+                  />
+                )}
               </View>
 
               <Text

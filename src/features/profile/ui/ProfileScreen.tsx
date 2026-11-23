@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/features/auth';
 import { TactilePressable } from '@/shared/animations';
+import { KeyboardAvoidingScrollView } from '@/shared/components';
 import { FontFamily, useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { Image, ImageBackground } from 'expo-image';
@@ -8,7 +9,6 @@ import React, { useState } from 'react';
 import {
   Alert,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -46,8 +46,11 @@ export function ProfileScreen(): React.JSX.Element {
     Alert.alert('Copied', `${label} copied: ${text}`);
   };
 
-  const handleEdit = () => {
-    router.push('/(app)/profile/edit');
+  const handleEditDisabled = () => {
+    Alert.alert(
+      'Profile Editing Disabled',
+      'Your profile details are managed by your HR administrator.',
+    );
   };
 
   return (
@@ -73,7 +76,7 @@ export function ProfileScreen(): React.JSX.Element {
           <Text style={[styles.navTitle, isDark && { color: '#F8FAFC' }]}>Profile</Text>
         </View>
 
-        <ScrollView
+        <KeyboardAvoidingScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -96,13 +99,14 @@ export function ProfileScreen(): React.JSX.Element {
               <TactilePressable
                 style={[
                   styles.cameraBadge,
-                  isDark && { backgroundColor: '#0F172A', borderColor: '#3B82F6' },
+                  isDark && { backgroundColor: '#0F172A', borderColor: '#334155' },
                 ]}
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityLabel="Change photo disabled"
               >
-                <Feather name="camera" size={11} color={isDark ? '#60A5FA' : '#2563EB'} />
+                <Feather name="lock" size={10} color={isDark ? '#64748B' : '#94A3B8'} />
               </TactilePressable>
             </View>
 
@@ -134,12 +138,13 @@ export function ProfileScreen(): React.JSX.Element {
                 </Text>
               </View>
               <TactilePressable
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 style={styles.editIconBtn}
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityLabel="Edit personal information disabled"
               >
-                <Feather name="edit-3" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+                <Feather name="lock" size={16} color={isDark ? '#64748B' : '#94A3B8'} />
               </TactilePressable>
             </View>
 
@@ -172,8 +177,8 @@ export function ProfileScreen(): React.JSX.Element {
                   {middleName}
                 </Text>
               ) : (
-                <TouchableOpacity onPress={handleEdit} activeOpacity={0.7}>
-                  <Text style={[styles.addText, isDark && { color: '#60A5FA' }]}>+ Add</Text>
+                <TouchableOpacity onPress={handleEditDisabled} activeOpacity={0.7}>
+                  <Text style={[styles.notSetText, isDark && { color: '#64748B' }]}>Not specified</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -185,7 +190,7 @@ export function ProfileScreen(): React.JSX.Element {
                   styles.subCard,
                   isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
                 ]}
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 activeOpacity={0.7}
               >
                 <View
@@ -200,8 +205,13 @@ export function ProfileScreen(): React.JSX.Element {
                   <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>
                     Date of birth
                   </Text>
-                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
-                    {dob || '+ Add'}
+                  <Text
+                    style={[
+                      dob ? styles.subCardActionText : styles.notSetText,
+                      isDark && { color: dob ? '#60A5FA' : '#64748B' },
+                    ]}
+                  >
+                    {dob || 'Not set'}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -211,7 +221,7 @@ export function ProfileScreen(): React.JSX.Element {
                   styles.subCard,
                   isDark && { backgroundColor: '#1E293B', borderColor: '#334155' },
                 ]}
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 activeOpacity={0.7}
               >
                 <View
@@ -224,8 +234,13 @@ export function ProfileScreen(): React.JSX.Element {
                 </View>
                 <View style={styles.subCardTextCol}>
                   <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>Gender</Text>
-                  <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
-                    {gender || '+ Add'}
+                  <Text
+                    style={[
+                      gender ? styles.subCardActionText : styles.notSetText,
+                      isDark && { color: gender ? '#60A5FA' : '#64748B' },
+                    ]}
+                  >
+                    {gender || 'Not set'}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -252,12 +267,13 @@ export function ProfileScreen(): React.JSX.Element {
                 </Text>
               </View>
               <TactilePressable
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 style={styles.editIconBtn}
                 activeScale={0.88}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityLabel="Edit personal information disabled"
               >
-                <Feather name="edit-3" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+                <Feather name="lock" size={16} color={isDark ? '#64748B' : '#94A3B8'} />
               </TactilePressable>
             </View>
 
@@ -330,27 +346,37 @@ export function ProfileScreen(): React.JSX.Element {
             >
               <TouchableOpacity
                 style={styles.subContainerHalf}
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>
                   Other email
                 </Text>
-                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
-                  {otherEmail || '+ Add'}
+                <Text
+                  style={[
+                    otherEmail ? styles.subCardActionText : styles.notSetText,
+                    isDark && { color: otherEmail ? '#60A5FA' : '#64748B' },
+                  ]}
+                >
+                  {otherEmail || 'Not set'}
                 </Text>
               </TouchableOpacity>
               <View style={[styles.verticalDividerSub, isDark && { backgroundColor: '#334155' }]} />
               <TouchableOpacity
                 style={styles.subContainerHalf}
-                onPress={handleEdit}
+                onPress={handleEditDisabled}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.subCardLabel, isDark && { color: '#94A3B8' }]}>
                   Other phone
                 </Text>
-                <Text style={[styles.subCardActionText, isDark && { color: '#60A5FA' }]}>
-                  {otherPhone || '+ Add'}
+                <Text
+                  style={[
+                    otherPhone ? styles.subCardActionText : styles.notSetText,
+                    isDark && { color: otherPhone ? '#60A5FA' : '#64748B' },
+                  ]}
+                >
+                  {otherPhone || 'Not set'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -415,11 +441,30 @@ export function ProfileScreen(): React.JSX.Element {
           </View>
 
           {/* 5. Bottom Action Button */}
-          <TactilePressable style={styles.bottomEditBtn} onPress={handleEdit} activeScale={0.98}>
-            <Text style={styles.bottomEditBtnText}>Edit Profile</Text>
-            <Feather name="arrow-right" size={18} color="#FFFFFF" />
+          <TactilePressable
+            style={[
+              styles.bottomEditBtn,
+              styles.bottomEditBtnDisabled,
+              isDark && styles.bottomEditBtnDisabledDark,
+            ]}
+            onPress={handleEditDisabled}
+            activeScale={1}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: true }}
+            accessibilityLabel="Edit Profile disabled"
+          >
+            <Feather name="lock" size={16} color={isDark ? '#64748B' : '#94A3B8'} />
+            <Text
+              style={[
+                styles.bottomEditBtnText,
+                styles.bottomEditBtnTextDisabled,
+                isDark && { color: '#64748B' },
+              ]}
+            >
+              Edit Profile (Disabled)
+            </Text>
           </TactilePressable>
-        </ScrollView>
+        </KeyboardAvoidingScrollView>
 
         <AddressBottomSheet
           isOpen={isAddressModalOpen}
@@ -780,5 +825,23 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.headingBold,
     fontSize: 15,
     color: '#FFFFFF',
+  },
+  bottomEditBtnDisabled: {
+    backgroundColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  bottomEditBtnDisabledDark: {
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  bottomEditBtnTextDisabled: {
+    color: '#94A3B8',
+  },
+  notSetText: {
+    fontFamily: FontFamily.regular,
+    fontSize: 12,
+    color: '#94A3B8',
   },
 });

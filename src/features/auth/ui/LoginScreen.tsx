@@ -147,7 +147,6 @@ export function LoginScreen(): React.JSX.Element {
       source={require('../../../../assets/images/background.png')}
       style={[styles.backgroundImage, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}
       imageStyle={{ opacity: isDark ? 0.05 : 1 }}
-      resizeMode="cover"
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
@@ -225,7 +224,7 @@ export function LoginScreen(): React.JSX.Element {
 
           {/* Card Container */}
           <GlassCard
-            intensity={50}
+            intensity={20}
             tint={isDark ? 'dark' : 'light'}
             style={[
               styles.card,

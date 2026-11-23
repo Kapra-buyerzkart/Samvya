@@ -1,10 +1,10 @@
-import { GlassCard } from '@/shared/components';
+import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
 import { FontFamily, useAppTheme } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DEFAULT_EMPLOYMENT_HISTORY, getMonthlyWorkHoursData } from '../data/employmentDataService';
 import { MonthlyWorkHoursChart } from './MonthlyWorkHoursChart';
@@ -79,7 +79,7 @@ export function EmploymentDetailsScreen(): React.JSX.Element {
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <KeyboardAvoidingScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -393,7 +393,7 @@ export function EmploymentDetailsScreen(): React.JSX.Element {
               </Text>
             </View>
           </GlassCard>
-        </ScrollView>
+        </KeyboardAvoidingScrollView>
       </SafeAreaView>
     </ImageBackground>
   );

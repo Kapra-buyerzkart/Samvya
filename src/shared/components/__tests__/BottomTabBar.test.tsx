@@ -1,14 +1,25 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { router, usePathname } from 'expo-router';
+import { useKeyboard } from '@/shared/hooks';
 import { BottomTabBar } from '../BottomTabBar';
 
+jest.mock('@/shared/hooks', () => ({
+  useKeyboard: jest.fn(),
+}));
+
 const mockUsePathname = usePathname as jest.Mock;
+const mockUseKeyboard = useKeyboard as jest.Mock;
 
 describe('BottomTabBar', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUsePathname.mockReturnValue('/(app)');
+    mockUseKeyboard.mockReturnValue({
+      isKeyboardVisible: false,
+      keyboardHeight: 0,
+      dismissKeyboard: jest.fn(),
+    });
   });
 
   it('renders all four tabs with correct labels', async () => {
@@ -17,12 +28,12 @@ describe('BottomTabBar', () => {
     expect(getByTestId('bottom-tab-bar')).toBeTruthy();
 
     expect(getByText('Home')).toBeTruthy();
-    expect(getByText('History')).toBeTruthy();
+    expect(getByText('Attendance')).toBeTruthy();
     expect(getByText('Leave')).toBeTruthy();
     expect(getByText('Profile')).toBeTruthy();
 
     expect(getByTestId('tab-btn-home')).toBeTruthy();
-    expect(getByTestId('tab-btn-history')).toBeTruthy();
+    expect(getByTestId('tab-btn-attendance')).toBeTruthy();
     expect(getByTestId('tab-btn-leave')).toBeTruthy();
     expect(getByTestId('tab-btn-profile')).toBeTruthy();
   });
@@ -38,12 +49,12 @@ describe('BottomTabBar', () => {
     expect(leaveTab.props.accessibilityState).toEqual({ selected: false });
   });
 
-  it('highlights History as active when on attendance history route', async () => {
+  it('highlights Attendance as active when on attendance history route', async () => {
     mockUsePathname.mockReturnValue('/(app)/attendance/history');
     const { getByTestId } = await render(<BottomTabBar />);
 
-    const historyTab = getByTestId('tab-btn-history');
-    expect(historyTab.props.accessibilityState).toEqual({ selected: true });
+    const attendanceTab = getByTestId('tab-btn-attendance');
+    expect(attendanceTab.props.accessibilityState).toEqual({ selected: true });
   });
 
   it('highlights Leave as active when on leave request or status route', async () => {
@@ -62,11 +73,11 @@ describe('BottomTabBar', () => {
     expect(profileTab.props.accessibilityState).toEqual({ selected: true });
   });
 
-  it('navigates to History when pressing History tab', async () => {
+  it('navigates to Attendance when pressing Attendance tab', async () => {
     mockUsePathname.mockReturnValue('/(app)');
     const { getByTestId } = await render(<BottomTabBar />);
 
-    fireEvent.press(getByTestId('tab-btn-history'));
+    fireEvent.press(getByTestId('tab-btn-attendance'));
     expect(router.push).toHaveBeenCalledWith('/(app)/attendance/history');
   });
 
@@ -111,6 +122,17 @@ describe('BottomTabBar', () => {
 
     mockUsePathname.mockReturnValue('/(app)/attendance/punch-success');
     await rerender(<BottomTabBar />);
+
+    expect(queryByTestId('bottom-tab-bar')).toBeNull();
+  });
+
+  it('hides tab bar when keyboard is visible', async () => {
+    mockUseKeyboard.mockReturnValue({
+      isKeyboardVisible: true,
+      keyboardHeight: 300,
+      dismissKeyboard: jest.fn(),
+    });
+    const { queryByTestId } = await render(<BottomTabBar />);
 
     expect(queryByTestId('bottom-tab-bar')).toBeNull();
   });

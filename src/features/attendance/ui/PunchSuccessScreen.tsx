@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -9,6 +8,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KeyboardAvoidingScrollView } from '@/shared/components';
 import { FontFamily, useAppTheme } from '@/shared/theme';
 
 export interface PunchSuccessScreenProps {
@@ -95,7 +95,7 @@ export function PunchSuccessScreen({
         },
       ]}
     >
-      <ScrollView
+      <KeyboardAvoidingScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
@@ -288,7 +288,7 @@ export function PunchSuccessScreen({
             </Text>
           </View>
         </View>
-      </ScrollView>
+      </KeyboardAvoidingScrollView>
     </View>
   );
 }

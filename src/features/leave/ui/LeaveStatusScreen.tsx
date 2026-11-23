@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ImageBackground } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
 import { FontFamily, useAppTheme } from '@/shared/theme';
 
 interface CalendarDay {
@@ -152,7 +152,7 @@ export function LeaveStatusScreen(): React.JSX.Element {
 
   return (
     <ImageBackground
-      source={require('../../../../assets/images/background_home.png')}
+      source={require('../../../../assets/images/background.png')}
       style={[
         styles.backgroundImage,
         { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
@@ -164,7 +164,7 @@ export function LeaveStatusScreen(): React.JSX.Element {
         style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}
         edges={['top', 'bottom']}
       >
-        <ScrollView
+        <KeyboardAvoidingScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
@@ -293,12 +293,14 @@ export function LeaveStatusScreen(): React.JSX.Element {
           </View>
 
           {/* Calendar Card */}
-          <View
+          <GlassCard
+            intensity={20}
+            tint={isDark ? 'dark' : 'light'}
             style={[
-              styles.calendarCard,
-              {
-                backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-                borderColor: isDark ? '#334155' : '#BFDBFE',
+              styles.card,
+              isDark && {
+                backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                borderColor: 'rgba(51, 65, 85, 0.8)',
               },
             ]}
           >
@@ -359,7 +361,7 @@ export function LeaveStatusScreen(): React.JSX.Element {
                 );
               })}
             </View>
-          </View>
+          </GlassCard>
 
           {/* Status Legend Row */}
           <View style={styles.legendRow}>
@@ -383,12 +385,14 @@ export function LeaveStatusScreen(): React.JSX.Element {
           </View>
 
           {/* Approval Status Card */}
-          <View
+          <GlassCard
+            intensity={20}
+            tint={isDark ? 'dark' : 'light'}
             style={[
-              styles.statusCard,
-              {
-                backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-                borderColor: isDark ? '#334155' : '#BFDBFE',
+              styles.card,
+              isDark && {
+                backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                borderColor: 'rgba(51, 65, 85, 0.8)',
               },
             ]}
           >
@@ -470,8 +474,8 @@ export function LeaveStatusScreen(): React.JSX.Element {
                 </View>
               ))}
             </View>
-          </View>
-        </ScrollView>
+          </GlassCard>
+        </KeyboardAvoidingScrollView>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -559,16 +563,10 @@ const styles = StyleSheet.create({
     height: 18,
     marginHorizontal: 10,
   },
-  calendarCard: {
-    borderRadius: 20,
-    borderWidth: 1.5,
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
+  card: {
+    borderRadius: 28,
+    padding: 20,
+    marginBottom: 16,
   },
   weekdaysRow: {
     flexDirection: 'row',
@@ -662,17 +660,6 @@ const styles = StyleSheet.create({
     width: 1,
     height: 14,
     marginHorizontal: 12,
-  },
-  statusCard: {
-    borderRadius: 20,
-    borderWidth: 1.5,
-    padding: 18,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 2,
-    marginBottom: 16,
   },
   statusCardTitle: {
     fontSize: 22,

@@ -1,19 +1,12 @@
-import React, { useMemo, useState } from 'react';
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { ImageBackground } from 'expo-image';
-import { Feather } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import { FontFamily, useAppTheme } from '@/shared/theme';
 import { TactilePressable } from '@/shared/animations';
 import { KeyboardAvoidingScrollView } from '@/shared/components';
+import { FontFamily, useAppTheme } from '@/shared/theme';
+import { Feather } from '@expo/vector-icons';
+import { ImageBackground } from 'expo-image';
+import { router } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type DurationType = 'full' | 'half';
 
@@ -205,14 +198,13 @@ export function RequestLeaveScreen(): React.JSX.Element {
   return (
     <ImageBackground
       source={require('../../../../assets/images/background_home.png')}
-      style={[
-        styles.backgroundImage,
-        { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
-      ]}
+      style={[styles.backgroundImage, { backgroundColor: isDark ? '#020617' : '#F8FAFC' }]}
       imageStyle={{ opacity: isDark ? 0.05 : 1 }}
       contentFit="cover"
     >
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}>
+      <SafeAreaView
+        style={[styles.safeArea, { backgroundColor: isDark ? '#020617' : 'transparent' }]}
+      >
         <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
           {/* 1. Header Navigation Bar */}
           <View style={styles.navBar}>
@@ -246,7 +238,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
               accessibilityLabel="Approval status"
               testID="approval-status-btn"
             >
-              <Text style={[styles.approvalStatusBtnText, { color: isDark ? '#93C5FD' : '#2563EB' }]}>
+              <Text
+                style={[styles.approvalStatusBtnText, { color: isDark ? '#93C5FD' : '#2563EB' }]}
+              >
                 Approval status
               </Text>
               <Feather name="chevron-right" size={14} color={isDark ? '#93C5FD' : '#2563EB'} />
@@ -272,7 +266,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </Text>
             </View>
 
-            <View style={[styles.summaryDivider, { backgroundColor: isDark ? '#334155' : '#BFDBFE' }]} />
+            <View
+              style={[styles.summaryDivider, { backgroundColor: isDark ? '#334155' : '#BFDBFE' }]}
+            />
 
             <View style={styles.summaryCol}>
               <Text style={[styles.summaryLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
@@ -283,7 +279,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </Text>
             </View>
 
-            <View style={[styles.summaryDivider, { backgroundColor: isDark ? '#334155' : '#BFDBFE' }]} />
+            <View
+              style={[styles.summaryDivider, { backgroundColor: isDark ? '#334155' : '#BFDBFE' }]}
+            />
 
             <View style={styles.summaryCol}>
               <Text style={[styles.summaryLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
@@ -383,7 +381,12 @@ export function RequestLeaveScreen(): React.JSX.Element {
               </View>
             </TouchableOpacity>
 
-            <View style={[styles.datesVerticalDivider, { backgroundColor: isDark ? '#334155' : '#CBD5E1' }]} />
+            <View
+              style={[
+                styles.datesVerticalDivider,
+                { backgroundColor: isDark ? '#334155' : '#CBD5E1' },
+              ]}
+            />
 
             {/* End Date Column */}
             <TouchableOpacity
@@ -411,7 +414,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
           </View>
 
           {/* Divider below Date Pickers */}
-          <View style={[styles.sectionSeparator, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]} />
+          <View
+            style={[styles.sectionSeparator, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}
+          />
 
           {/* 5. Month Calendar Grid Card */}
           <View
@@ -459,10 +464,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
               {WEEKDAY_NAMES.map((name) => (
                 <Text
                   key={name}
-                  style={[
-                    styles.weekdayLabel,
-                    { color: isDark ? '#60A5FA' : '#3B82F6' },
-                  ]}
+                  style={[styles.weekdayLabel, { color: isDark ? '#60A5FA' : '#3B82F6' }]}
                 >
                   {name}
                 </Text>
@@ -479,10 +481,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 const isStart = startDate === item.dateKey;
                 const isEnd = endDate === item.dateKey;
                 const isInRange =
-                  startDate &&
-                  endDate &&
-                  item.dateKey > startDate &&
-                  item.dateKey < endDate;
+                  startDate && endDate && item.dateKey > startDate && item.dateKey < endDate;
 
                 // Reference selected day in design (either todayKey when unselected or explicitly picked)
                 const isSingleSelected = isStart && (!endDate || startDate === endDate);
@@ -527,7 +526,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
           </View>
 
           {/* Divider below Calendar Card */}
-          <View style={[styles.sectionSeparator, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]} />
+          <View
+            style={[styles.sectionSeparator, { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' }]}
+          />
 
           {/* 6. Reason Section with Days Available Badge */}
           <View style={styles.reasonSection}>
@@ -544,7 +545,9 @@ export function RequestLeaveScreen(): React.JSX.Element {
                   },
                 ]}
               >
-                <Text style={[styles.availableBadgeText, { color: isDark ? '#93C5FD' : '#1D4ED8' }]}>
+                <Text
+                  style={[styles.availableBadgeText, { color: isDark ? '#93C5FD' : '#1D4ED8' }]}
+                >
                   14 days available
                 </Text>
               </View>
@@ -552,10 +555,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
 
             <View style={styles.reasonInputContainer}>
               <TextInput
-                style={[
-                  styles.reasonInput,
-                  { color: isDark ? '#F8FAFC' : '#0F172A' },
-                ]}
+                style={[styles.reasonInput, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
                 placeholder="Add a reason for your leave"
                 placeholderTextColor={isDark ? '#64748B' : '#3B82F6'}
                 value={reason}

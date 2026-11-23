@@ -40,7 +40,7 @@ export const resources = {
         shiftStarted: 'Shift started at',
         geofenceValid: 'Within Office Site',
         geofenceInvalid: 'Outside Office Site',
-        history: 'Attendance History',
+        history: 'Attendance',
       },
       face: {
         title: 'Face Verification',

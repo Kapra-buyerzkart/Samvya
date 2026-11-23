@@ -24,7 +24,7 @@ This document defines the manual and automated smoke-testing procedure required 
 *Verify that the app functions exactly as baseline when the feature flag is off.*
 - [ ] **Dashboard Display**: Renders shift status card with `Off Duty` indicator.
 - [ ] **Zero Permission Prompts**: Location permissions are **never** requested upon app launch or navigation.
-- [ ] **Navigation**: Tapping "Manual Entry" opens the modal; tapping "History" navigates to the attendance history view.
+- [ ] **Navigation**: Tapping "Manual Entry" opens the modal; tapping "Attendance" navigates to the attendance history view.
 
 ---
 

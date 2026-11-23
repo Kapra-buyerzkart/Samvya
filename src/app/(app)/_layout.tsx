@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
-import { DynamicIslandPill } from '@/features/attendance';
 import { BottomTabBar } from '@/shared/components';
+import { Stack } from 'expo-router';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 export default function AppLayout(): React.JSX.Element {
   return (
@@ -15,13 +14,13 @@ export default function AppLayout(): React.JSX.Element {
         <Stack.Screen name="attendance/punch-success" options={{ headerShown: false }} />
         <Stack.Screen name="leave/request" options={{ headerShown: false }} />
         <Stack.Screen name="leave/status" options={{ headerShown: false }} />
+        <Stack.Screen name="leave/history" options={{ headerShown: false }} />
         <Stack.Screen name="profile/index" options={{ headerShown: false }} />
-        <Stack.Screen name="profile/edit" options={{ headerShown: false }} />
         <Stack.Screen name="profile/reset-password" options={{ headerShown: false }} />
         <Stack.Screen name="employment/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />
       </Stack>
-      <DynamicIslandPill />
+      {/* <DynamicIslandPill /> */}
       <BottomTabBar />
     </View>
   );
@@ -32,4 +31,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
