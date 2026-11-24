@@ -6,3 +6,4 @@ export * from './domain/dpdpConsent';
 export * from './adapters/VisionCameraFaceAdapter';
 export * from './hooks/useFaceVerificationFlow';
 export * from './ui/FaceVerifyCameraView';
+export { ConsentScreen, useConsentScreen } from './screens/ConsentScreen';

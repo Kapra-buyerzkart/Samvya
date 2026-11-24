@@ -6,3 +6,4 @@ export * from './domain/mapsDeepLink';
 export * from './domain/photoCompressor';
 export * from './db/manualEntryDatabase';
 export * from './ui/ManualGpsForm';
+export { ManualEntryScreen, useManualEntryScreen } from './screens/ManualEntryScreen';

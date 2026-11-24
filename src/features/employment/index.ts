@@ -1,4 +1,4 @@
 export * from './domain/types';
 export * from './data/employmentDataService';
-export * from './ui/EmploymentDetailsScreen';
-export * from './ui/MonthlyWorkHoursChart';
+export { EmploymentDetailsScreen, useEmploymentDetailsScreen } from './screens/EmploymentDetailsScreen';
+export { MonthlyWorkHoursChart } from './components/MonthlyWorkHoursChart';
