@@ -1,10 +1,9 @@
 import { AddressBottomSheet } from '@/features/profile/ui/AddressBottomSheet';
 import { TactilePressable } from '@/shared/animations';
-import { KeyboardAvoidingScrollView } from '@/shared/components';
 import { Feather } from '@expo/vector-icons';
 import { Image, ImageBackground } from 'expo-image';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   getAddAddressBtnStyle,
@@ -90,9 +89,12 @@ export function ProfileScreen(): React.JSX.Element {
           <Text style={[styles.navTitle, getNavTitleStyle(isDark)]}>Profile</Text>
         </View>
 
-        <KeyboardAvoidingScrollView
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          bounces={true}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={[styles.heroCard, getHeroCardStyle(isDark)]}>
             <View style={styles.avatarWrapper}>
@@ -363,7 +365,7 @@ export function ProfileScreen(): React.JSX.Element {
               Edit Profile (Disabled)
             </Text>
           </TactilePressable>
-        </KeyboardAvoidingScrollView>
+        </ScrollView>
 
         <AddressBottomSheet
           isOpen={isAddressModalOpen}

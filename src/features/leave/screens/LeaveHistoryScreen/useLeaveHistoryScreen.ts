@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useAppTheme } from '@/shared/theme';
 import {
@@ -22,6 +21,8 @@ export interface UseLeaveHistoryScreenResult {
   currentPage: number;
   totalPages: number;
   isDurationModalOpen: boolean;
+  isLeaveDetailModalOpen: boolean;
+  selectedRecord: LeaveHistoryRecord | null;
   durationData: LeaveDurationData;
   currentDurationOption: DurationOption;
   filteredRecords: LeaveHistoryRecord[];
@@ -29,12 +30,15 @@ export interface UseLeaveHistoryScreenResult {
   pieData: LeavePieDataItem[];
   durationOptions: DurationOption[];
   setIsDurationModalOpen: (open: boolean) => void;
+  setIsLeaveDetailModalOpen: (open: boolean) => void;
   handleBack: () => void;
   handleSelectDuration: (key: DurationKey) => void;
   handleSelectMonth: (monthKey: string) => void;
   handlePrevPage: () => void;
   handleNextPage: () => void;
   handleRecordPress: (item: LeaveHistoryRecord) => void;
+  handleOpenHeaderHistory: () => void;
+  handleCloseRecordDetail: () => void;
 }
 
 export function useLeaveHistoryScreen(): UseLeaveHistoryScreenResult {
@@ -43,30 +47,27 @@ export function useLeaveHistoryScreen(): UseLeaveHistoryScreenResult {
 
   const [durationKey, setDurationKey] = useState<DurationKey>('3months');
   const [selectedMonth, setSelectedMonth] = useState<string>('Nov');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isDurationModalOpen, setIsDurationModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isDurationModalOpen, setIsDurationModalOpen] = useState<boolean>(false);
+  const [isLeaveDetailModalOpen, setIsLeaveDetailModalOpen] = useState<boolean>(false);
+  const [selectedRecord, setSelectedRecord] = useState<LeaveHistoryRecord | null>(null);
 
   const durationData = useMemo(() => getLeaveDataForDuration(durationKey), [durationKey]);
-  const currentDurationOption = useMemo(
-    () => DURATION_OPTIONS.find((o) => o.key === durationKey) ?? DURATION_OPTIONS[0]!,
+
+  const currentDurationOption = useMemo<DurationOption>(
+    () => (DURATION_OPTIONS.find((opt) => opt.key === durationKey) ?? DURATION_OPTIONS[0]) as DurationOption,
     [durationKey],
   );
 
   const handleBack = (): void => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(app)');
-    }
+    router.back();
   };
 
   const handleSelectDuration = (key: DurationKey): void => {
     setDurationKey(key);
-    const newDurationData = getLeaveDataForDuration(key);
-    const hasNov = newDurationData.months.some((m) => m.key === 'Nov');
-    setSelectedMonth(hasNov ? 'Nov' : (newDurationData.months[0]?.key ?? 'all'));
-    setCurrentPage(1);
     setIsDurationModalOpen(false);
+    setSelectedMonth('Nov');
+    setCurrentPage(1);
   };
 
   const handleSelectMonth = (monthKey: string): void => {
@@ -96,10 +97,22 @@ export function useLeaveHistoryScreen(): UseLeaveHistoryScreenResult {
   };
 
   const handleRecordPress = (item: LeaveHistoryRecord): void => {
-    Alert.alert(
-      `${item.dateDisplay} ${item.monthDisplay} (${item.durationLabel})`,
-      `${item.status}\n\n${item.reasonDescription}`,
-    );
+    setSelectedRecord(item);
+    setIsLeaveDetailModalOpen(true);
+  };
+
+  const handleOpenHeaderHistory = (): void => {
+    const recordToShow =
+      filteredRecords.find((r) => r.id === 'leave-2') ||
+      filteredRecords[0] ||
+      durationData.records[0] ||
+      null;
+    setSelectedRecord(recordToShow);
+    setIsLeaveDetailModalOpen(true);
+  };
+
+  const handleCloseRecordDetail = (): void => {
+    setIsLeaveDetailModalOpen(false);
   };
 
   const pieData = useMemo(
@@ -114,6 +127,8 @@ export function useLeaveHistoryScreen(): UseLeaveHistoryScreenResult {
     currentPage,
     totalPages,
     isDurationModalOpen,
+    isLeaveDetailModalOpen,
+    selectedRecord,
     durationData,
     currentDurationOption,
     filteredRecords,
@@ -121,11 +136,14 @@ export function useLeaveHistoryScreen(): UseLeaveHistoryScreenResult {
     pieData,
     durationOptions: DURATION_OPTIONS,
     setIsDurationModalOpen,
+    setIsLeaveDetailModalOpen,
     handleBack,
     handleSelectDuration,
     handleSelectMonth,
     handlePrevPage,
     handleNextPage,
     handleRecordPress,
+    handleOpenHeaderHistory,
+    handleCloseRecordDetail,
   };
 }

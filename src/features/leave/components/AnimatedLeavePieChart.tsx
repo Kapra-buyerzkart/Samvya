@@ -1,16 +1,115 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { PieChart } from 'react-native-gifted-charts';
+import React from 'react';
+import { View } from 'react-native';
 import Animated, {
-  Easing,
+  useAnimatedProps,
   useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSpring,
-  withTiming,
+  type SharedValue,
 } from 'react-native-reanimated';
-import { Text as SvgText, TSpan } from 'react-native-svg';
+import { G, Path, Svg, Text as SvgText, TSpan } from 'react-native-svg';
 import { type DurationKey, type LeavePieDataItem } from '../model/leaveHistoryData';
+import { getChartAuraBgStyle, styles } from './PieChart.styles';
+import {
+  buildArcPath,
+  usePieChartAnimation,
+  type ComputedSlice,
+} from './usePieChartAnimation';
+
+const AnimatedPath = Animated.createAnimatedComponent(Path);
+const AnimatedG = Animated.createAnimatedComponent(G);
+
+interface AnimatedPieSliceProps {
+  slice: ComputedSlice;
+  progress: SharedValue<number>;
+  radius: number;
+}
+
+function AnimatedPieSlice({
+  slice,
+  progress,
+  radius,
+}: AnimatedPieSliceProps): React.JSX.Element {
+  const animatedProps = useAnimatedProps(() => {
+    'worklet';
+    const p = progress.value;
+
+    if (p <= slice.startFrac) {
+      return { d: '' };
+    }
+
+    if (p >= slice.endFrac || p >= 1) {
+      return { d: slice.staticD };
+    }
+
+    const sliceSpan = slice.endFrac - slice.startFrac;
+    const localProgress = sliceSpan > 0 ? (p - slice.startFrac) / sliceSpan : 1;
+    const currentAngle =
+      slice.startAngle + localProgress * (slice.endAngle - slice.startAngle);
+
+    return {
+      d: buildArcPath(0, 0, radius, slice.startAngle, currentAngle),
+    };
+  });
+
+  const animatedLabelProps = useAnimatedProps(() => {
+    'worklet';
+    const p = progress.value;
+
+    if (p < slice.startFrac) {
+      return { opacity: 0 };
+    }
+
+    if (p >= slice.endFrac || p >= 1) {
+      return { opacity: 1 };
+    }
+
+    const sliceSpan = slice.endFrac - slice.startFrac;
+    const localProgress = sliceSpan > 0 ? (p - slice.startFrac) / sliceSpan : 1;
+    const opacity = localProgress > 0.5 ? (localProgress - 0.5) / 0.5 : 0;
+
+    return { opacity };
+  });
+
+  return (
+    <G>
+      <AnimatedPath
+        animatedProps={animatedProps}
+        fill={slice.color}
+        stroke="#FFFFFF"
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      {slice.showInnerLabel ? (
+        <AnimatedG animatedProps={animatedLabelProps} pointerEvents="none">
+          <SvgText
+            x={slice.labelX}
+            y={slice.labelY}
+            fill={slice.textColor}
+            textAnchor="middle"
+          >
+            <TSpan
+              x={slice.labelX}
+              dy="-3"
+              fontSize={slice.textSize}
+              fontWeight="bold"
+            >
+              {slice.monthLabel}
+            </TSpan>
+            <TSpan
+              x={slice.labelX}
+              dy="13"
+              fontSize={Math.max(slice.textSize - 2, 8)}
+              fontWeight="500"
+              fill={slice.textColor}
+              fillOpacity={0.92}
+            >
+              {slice.daysLabel}
+            </TSpan>
+          </SvgText>
+        </AnimatedG>
+      ) : null}
+    </G>
+  );
+}
 
 export interface AnimatedLeavePieChartProps {
   durationKey: DurationKey;
@@ -20,42 +119,16 @@ export interface AnimatedLeavePieChartProps {
 }
 
 export function AnimatedLeavePieChart({
-  durationKey,
-  selectedMonth,
   data,
   isDark,
 }: AnimatedLeavePieChartProps): React.JSX.Element {
-  const chartScale = useSharedValue(0.75);
-  const chartOpacity = useSharedValue(0);
-  const chartRotation = useSharedValue(-20);
+  const chartRadius = 95;
+  const viewPadding = 3;
+  const viewSize = (chartRadius + viewPadding) * 2;
+  const viewRadius = chartRadius + viewPadding;
 
-  const auraScale = useSharedValue(0.92);
-  const auraOpacity = useSharedValue(0.35);
-
-  useEffect(() => {
-    chartScale.value = withSpring(1, { damping: 13, stiffness: 100 });
-    chartOpacity.value = withTiming(1, { duration: 550, easing: Easing.out(Easing.cubic) });
-    chartRotation.value = withSpring(0, { damping: 14, stiffness: 85 });
-
-    auraScale.value = withRepeat(
-      withTiming(1.08, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-    auraOpacity.value = withRepeat(
-      withTiming(0.65, { duration: 2400, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true,
-    );
-  }, [auraOpacity, auraScale, chartOpacity, chartRotation, chartScale]);
-
-  const animatedChartStyle = useAnimatedStyle(() => ({
-    opacity: chartOpacity.value,
-    transform: [
-      { scale: chartScale.value },
-      { rotate: `${chartRotation.value}deg` },
-    ],
-  }));
+  const { progress, auraScale, auraOpacity, computedSlices, radius } =
+    usePieChartAnimation(data, chartRadius);
 
   const animatedAuraStyle = useAnimatedStyle(() => ({
     transform: [{ scale: auraScale.value }],
@@ -66,76 +139,24 @@ export function AnimatedLeavePieChart({
     <View style={styles.chartContainer} testID="gifted-pie-chart-container">
       <Animated.View
         pointerEvents="none"
-        style={[
-          styles.chartAuraCircle,
-          {
-            backgroundColor: isDark
-              ? 'rgba(59, 130, 246, 0.18)'
-              : 'rgba(59, 130, 246, 0.12)',
-          },
-          animatedAuraStyle,
-        ]}
+        style={[styles.chartAuraCircle, getChartAuraBgStyle(isDark), animatedAuraStyle]}
       />
 
-      <Animated.View style={animatedChartStyle}>
-        <PieChart
-          key={`pie-${durationKey}`}
-          data={data}
-          radius={95}
-          showText={false}
-          labelsPosition="outward"
-          strokeColor="#FFFFFF"
-          strokeWidth={2}
-          initialAngle={-75}
-          pieInnerComponent={(item) => {
-            const pieItem = item as LeavePieDataItem;
-            if (!pieItem?.showInnerLabel) return null;
-            return (
-              <SvgText
-                fill={pieItem.textColor || '#FFFFFF'}
-                textAnchor="middle"
-              >
-                <TSpan
-                  x={0}
-                  dy="-3"
-                  fontSize={pieItem.textSize || 11}
-                  fontWeight="bold"
-                >
-                  {pieItem.monthLabel}
-                </TSpan>
-                <TSpan
-                  x={0}
-                  dy="13"
-                  fontSize={(pieItem.textSize || 11) - 2}
-                  fontWeight="500"
-                  fill={pieItem.textColor || '#FFFFFF'}
-                  fillOpacity={0.92}
-                >
-                  {pieItem.daysLabel}
-                </TSpan>
-              </SvgText>
-            );
-          }}
-          isAnimated
-          animationDuration={800}
-        />
-      </Animated.View>
+      <Svg
+        width={viewSize}
+        height={viewSize}
+        viewBox={`-${viewRadius} -${viewRadius} ${viewSize} ${viewSize}`}
+        style={styles.svgContainer}
+      >
+        {computedSlices.map((slice) => (
+          <AnimatedPieSlice
+            key={`pie-slice-${slice.monthLabel}-${slice.index}`}
+            slice={slice}
+            progress={progress}
+            radius={radius}
+          />
+        ))}
+      </Svg>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  chartContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 4,
-    position: 'relative',
-  },
-  chartAuraCircle: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    alignSelf: 'center',
-  },
-});

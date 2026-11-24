@@ -1,46 +1,35 @@
+import { AppBottomSheet, GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
+import { Feather } from '@expo/vector-icons';
+import { ImageBackground } from 'expo-image';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { ImageBackground } from 'expo-image';
-import { AppBottomSheet, GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
 import { AnimatedLeavePieChart } from '../../components/AnimatedLeavePieChart';
-import { useLeaveHistoryScreen } from './useLeaveHistoryScreen';
+import { LeaveDetailModal } from './components/LeaveDetailModal';
+import { LeaveMonthPill } from './components/LeaveMonthPill';
+import { LeavePaginationFooter } from './components/LeavePaginationFooter';
+import { LeaveRecordCard } from './components/LeaveRecordCard';
+import { LeaveSummaryMetric } from './components/LeaveSummaryMetric';
 import {
-  styles,
   getBackgroundImageStyle,
-  getImageStyle,
-  getSafeAreaStyle,
-  getHeaderTitleStyle,
-  getCalendarIconBubbleStyle,
-  getSummaryTitleStyle,
-  getSummaryNumberStyle,
-  getSummarySubtitleStyle,
   getCardStyle,
+  getChartPromptTextStyle,
+  getFileIconBadgeStyle,
   getFilterPillStyle,
   getFilterPillTitleStyle,
   getFilterPillValueStyle,
-  getChartPromptTextStyle,
-  getMonthPillStyle,
-  getMonthPillNameStyle,
-  getMonthPillDaysStyle,
-  getFileIconBadgeStyle,
-  getHistoryHeaderTitleStyle,
+  getHeaderTitleStyle,
   getHistoryHeaderSubtitleStyle,
-  getViewAllTextStyle,
-  getRecordCardStyle,
-  getDateBoxStyle,
-  getDateNumberTextStyle,
-  getDateMonthTextStyle,
-  getDurationTextStyle,
-  getReasonHeaderTitleStyle,
-  getReasonDescriptionStyle,
-  getPaginationTextStyle,
-  getPageNavBtnStyle,
+  getHistoryHeaderTitleStyle,
+  getImageStyle,
   getModalItemStyle,
-  getModalItemTitleStyle,
   getModalItemSubtitleStyle,
+  getModalItemTitleStyle,
+  getSafeAreaStyle,
+  getViewAllTextStyle,
+  styles,
 } from './LeaveHistoryScreen.styles';
+import { useLeaveHistoryScreen } from './useLeaveHistoryScreen';
 
 export function LeaveHistoryScreen(): React.JSX.Element {
   const {
@@ -50,6 +39,8 @@ export function LeaveHistoryScreen(): React.JSX.Element {
     currentPage,
     totalPages,
     isDurationModalOpen,
+    isLeaveDetailModalOpen,
+    selectedRecord,
     durationData,
     currentDurationOption,
     pagedRecords,
@@ -62,19 +53,18 @@ export function LeaveHistoryScreen(): React.JSX.Element {
     handlePrevPage,
     handleNextPage,
     handleRecordPress,
+    handleOpenHeaderHistory,
+    handleCloseRecordDetail,
   } = useLeaveHistoryScreen();
 
   return (
     <ImageBackground
-      source={require('../../../../../assets/images/background_home.png')}
+      source={require('../../../../../assets/images/background_leave_history.png')}
       style={getBackgroundImageStyle(isDark)}
       imageStyle={getImageStyle(isDark)}
       contentFit="cover"
     >
-      <SafeAreaView
-        style={getSafeAreaStyle(isDark)}
-        edges={['top', 'bottom']}
-      >
+      <SafeAreaView style={getSafeAreaStyle(isDark)} edges={['top', 'bottom']}>
         <KeyboardAvoidingScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -89,43 +79,16 @@ export function LeaveHistoryScreen(): React.JSX.Element {
               accessibilityRole="button"
               accessibilityLabel="Leave history back"
             >
-              <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F172A'} />
-              <Text style={getHeaderTitleStyle(isDark)}>
-                Leave History
-              </Text>
+              <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F294A'} />
+              <Text style={getHeaderTitleStyle(isDark)}>Leave History</Text>
             </TouchableOpacity>
           </View>
 
           {/* 2. Summary Metric Row */}
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryLeft}>
-              <View style={getCalendarIconBubbleStyle(isDark)}>
-                <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-              </View>
-              <Text style={getSummaryTitleStyle(isDark)}>
-                Leave by month
-              </Text>
-            </View>
-
-            <View style={styles.summaryRight}>
-              <Text
-                style={getSummaryNumberStyle(isDark)}
-                testID="summary-total-days"
-              >
-                {durationData.totalDays} days
-              </Text>
-              <Text style={getSummarySubtitleStyle(isDark)}>
-                Approved leave taken
-              </Text>
-            </View>
-          </View>
+          <LeaveSummaryMetric totalDays={durationData.totalDays} isDark={isDark} />
 
           {/* 3. Card 1: Leave by month & Animated Pie Chart */}
-          <GlassCard
-            intensity={20}
-            tint={isDark ? 'dark' : 'light'}
-            style={getCardStyle(isDark)}
-          >
+          <GlassCard intensity={25} tint={isDark ? 'dark' : 'light'} style={getCardStyle(isDark)}>
             {/* Interactive Duration Selector Pill */}
             <TouchableOpacity
               style={getFilterPillStyle(isDark)}
@@ -137,9 +100,7 @@ export function LeaveHistoryScreen(): React.JSX.Element {
             >
               <View style={styles.filterPillLeft}>
                 <Feather name="calendar" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
-                <Text style={getFilterPillTitleStyle(isDark)}>
-                  {currentDurationOption.label}
-                </Text>
+                <Text style={getFilterPillTitleStyle(isDark)}>{currentDurationOption.label}</Text>
               </View>
               <View style={styles.filterPillRight}>
                 <Text style={getFilterPillValueStyle(isDark)}>
@@ -163,70 +124,64 @@ export function LeaveHistoryScreen(): React.JSX.Element {
               Select a month to view its leave history
             </Text>
 
-            {/* Month Selection Buttons Row (Horizontal Scrollable for longer durations) */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.monthPillsScrollContent}
-            >
-              <View style={styles.monthPillsRow}>
-                {durationData.months.map((m) => {
-                  const isSelected = selectedMonth === m.key;
-                  return (
-                    <TouchableOpacity
-                      key={m.key}
-                      style={getMonthPillStyle(isDark, isSelected)}
-                      onPress={() => handleSelectMonth(m.key)}
-                      activeOpacity={0.7}
-                      testID={`month-btn-${m.key.toLowerCase()}`}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Select ${m.label}`}
-                    >
-                      <View style={styles.monthPillHeader}>
-                        <View style={[styles.monthDot, { backgroundColor: m.color }]} />
-                        <Text style={getMonthPillNameStyle(isDark, isSelected)}>
-                          {m.label}
-                        </Text>
-                        {isSelected && (
-                          <Feather
-                            name="check"
-                            size={14}
-                            color="#1D4ED8"
-                            style={styles.checkIcon}
-                          />
-                        )}
-                      </View>
-                      <Text style={getMonthPillDaysStyle(isDark, isSelected)}>
-                        {m.days} {m.days === 1 ? 'day' : 'days'}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+            {/* Month Selection Buttons Row */}
+            {durationKey === '3months' ? (
+              <View style={styles.monthPillsRowFitted}>
+                {durationData.months.map((m) => (
+                  <LeaveMonthPill
+                    key={m.key}
+                    month={m}
+                    isSelected={selectedMonth === m.key}
+                    isDark={isDark}
+                    isFitted={true}
+                    onPress={() => handleSelectMonth(m.key)}
+                  />
+                ))}
               </View>
-            </ScrollView>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.monthPillsScrollContent}
+              >
+                <View style={styles.monthPillsRow}>
+                  {durationData.months.map((m) => (
+                    <LeaveMonthPill
+                      key={m.key}
+                      month={m}
+                      isSelected={selectedMonth === m.key}
+                      isDark={isDark}
+                      isFitted={false}
+                      onPress={() => handleSelectMonth(m.key)}
+                    />
+                  ))}
+                </View>
+              </ScrollView>
+            )}
           </GlassCard>
 
           {/* 4. Card 2: Leave History List & Pagination */}
-          <GlassCard
-            intensity={20}
-            tint={isDark ? 'dark' : 'light'}
-            style={getCardStyle(isDark)}
-          >
+          <GlassCard intensity={25} tint={isDark ? 'dark' : 'light'} style={getCardStyle(isDark)}>
             {/* Header: Leave History Title & View All */}
             <View style={styles.historyCardHeader}>
-              <View style={styles.historyHeaderLeft}>
+              <TouchableOpacity
+                style={styles.historyHeaderLeft}
+                onPress={handleOpenHeaderHistory}
+                activeOpacity={0.7}
+                testID="leave-history-header-btn"
+                accessibilityRole="button"
+                accessibilityLabel="Leave History details"
+              >
                 <View style={getFileIconBadgeStyle(isDark)}>
-                  <Feather name="file-text" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
+                  <Feather name="file-text" size={18} color={isDark ? '#60A5FA' : '#1D4ED8'} />
                 </View>
                 <View style={styles.historyHeaderTextCol}>
-                  <Text style={getHistoryHeaderTitleStyle(isDark)}>
-                    Leave History
-                  </Text>
+                  <Text style={getHistoryHeaderTitleStyle(isDark)}>Leave History</Text>
                   <Text style={getHistoryHeaderSubtitleStyle(isDark)}>
                     leaves from the selected time
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => handleSelectMonth('all')}
@@ -239,117 +194,30 @@ export function LeaveHistoryScreen(): React.JSX.Element {
                 <Text style={getViewAllTextStyle(isDark)}>
                   View all {durationData.records.length}
                 </Text>
-                <Feather name="chevron-right" size={15} color={isDark ? '#F8FAFC' : '#0F172A'} />
+                <Feather name="chevron-right" size={15} color={isDark ? '#F8FAFC' : '#0F294A'} />
               </TouchableOpacity>
             </View>
 
             {/* List of Leave Record Cards */}
             <View style={styles.recordsList}>
               {pagedRecords.map((item) => (
-                <TouchableOpacity
+                <LeaveRecordCard
                   key={item.id}
-                  style={getRecordCardStyle(isDark)}
-                  onPress={() => handleRecordPress(item)}
-                  activeOpacity={0.8}
-                  testID={`leave-record-${item.id}`}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Leave record for ${item.dateDisplay} ${item.monthDisplay}`}
-                >
-                  {/* Top row: Date Box and Duration + Status */}
-                  <View style={styles.recordTopRow}>
-                    <View style={getDateBoxStyle(isDark)}>
-                      <Text style={getDateNumberTextStyle(isDark, item.dateDisplay.length > 2)}>
-                        {item.dateDisplay}
-                      </Text>
-                      <Text style={getDateMonthTextStyle(isDark)}>
-                        {item.monthDisplay}
-                      </Text>
-                    </View>
-
-                    <View style={styles.durationCol}>
-                      <Text style={getDurationTextStyle(isDark)}>
-                        {item.durationLabel}
-                      </Text>
-                      <View style={styles.statusRow}>
-                        <View style={styles.approvedDot} />
-                        <Text style={styles.approvedText}>{item.status}</Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* Middle row: Reason requested + chevron */}
-                  <View style={styles.reasonHeaderRow}>
-                    <Text style={getReasonHeaderTitleStyle(isDark)}>
-                      {item.reasonTitle}
-                    </Text>
-                    <Feather
-                      name="chevron-right"
-                      size={18}
-                      color={isDark ? '#60A5FA' : '#2563EB'}
-                    />
-                  </View>
-
-                  {/* Bottom row: Description snippet */}
-                  <Text
-                    style={getReasonDescriptionStyle(isDark)}
-                    numberOfLines={2}
-                  >
-                    {item.reasonDescription}
-                  </Text>
-                </TouchableOpacity>
+                  item={item}
+                  isDark={isDark}
+                  onPress={handleRecordPress}
+                />
               ))}
             </View>
 
             {/* Pagination Controls Footer */}
-            <View style={styles.paginationFooter}>
-              <View style={styles.paginationIndicators}>
-                {Array.from({ length: totalPages }).map((_, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      i + 1 === currentPage ? styles.paginationPillActive : styles.paginationDot,
-                    ]}
-                  />
-                ))}
-                <Text style={getPaginationTextStyle(isDark)}>
-                  {currentPage} of {totalPages}
-                </Text>
-              </View>
-
-              <View style={styles.paginationButtons}>
-                <TouchableOpacity
-                  onPress={handlePrevPage}
-                  disabled={currentPage <= 1}
-                  style={getPageNavBtnStyle(isDark, currentPage <= 1)}
-                  activeOpacity={0.7}
-                  testID="prev-page-btn"
-                  accessibilityRole="button"
-                  accessibilityLabel="Previous page"
-                >
-                  <Feather
-                    name="chevron-left"
-                    size={18}
-                    color={currentPage <= 1 ? '#94A3B8' : isDark ? '#F8FAFC' : '#0F172A'}
-                  />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={handleNextPage}
-                  disabled={currentPage >= totalPages}
-                  style={getPageNavBtnStyle(isDark, currentPage >= totalPages)}
-                  activeOpacity={0.7}
-                  testID="next-page-btn"
-                  accessibilityRole="button"
-                  accessibilityLabel="Next page"
-                >
-                  <Feather
-                    name="chevron-right"
-                    size={18}
-                    color={currentPage >= totalPages ? '#94A3B8' : isDark ? '#F8FAFC' : '#0F172A'}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+            <LeavePaginationFooter
+              currentPage={currentPage}
+              totalPages={totalPages}
+              isDark={isDark}
+              onPrevPage={handlePrevPage}
+              onNextPage={handleNextPage}
+            />
           </GlassCard>
         </KeyboardAvoidingScrollView>
       </SafeAreaView>
@@ -372,9 +240,7 @@ export function LeaveHistoryScreen(): React.JSX.Element {
                 testID={`duration-option-${option.key}`}
               >
                 <View style={styles.modalItemTextCol}>
-                  <Text style={getModalItemTitleStyle(isDark, isSelected)}>
-                    {option.label}
-                  </Text>
+                  <Text style={getModalItemTitleStyle(isDark, isSelected)}>{option.label}</Text>
                   <Text style={getModalItemSubtitleStyle(isDark)}>
                     {option.dateRange} · {option.totalDays} days approved
                   </Text>
@@ -388,6 +254,14 @@ export function LeaveHistoryScreen(): React.JSX.Element {
           })}
         </View>
       </AppBottomSheet>
+
+      {/* Leave Detail Bottom Sheet Modal */}
+      <LeaveDetailModal
+        isOpen={isLeaveDetailModalOpen}
+        record={selectedRecord}
+        isDark={isDark}
+        onClose={handleCloseRecordDetail}
+      />
     </ImageBackground>
   );
 }

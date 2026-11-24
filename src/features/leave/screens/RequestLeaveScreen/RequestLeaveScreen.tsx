@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import { TactilePressable } from '@/shared/animations';
-import { KeyboardAvoidingScrollView } from '@/shared/components';
+import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
 import {
   MONTH_NAMES,
   WEEKDAY_NAMES,
@@ -29,11 +29,13 @@ import {
   getDatePickerValueStyle,
   getDatesVerticalDividerStyle,
   getSectionSeparatorStyle,
-  getCalendarContainerStyle,
-  getCalendarMonthTitleStyle,
-  getWeekdayLabelStyle,
-  getDaySlotStyle,
-  getDayTextStyle,
+  getMonthTitleStyle,
+  getNavChevronBtnStyle,
+  getCardStyle,
+  getWeekdayTextStyle,
+  getDayNumberTextStyle,
+  getInRangeContainerStyle,
+  getInRangeDayNumberTextStyle,
   getReasonTitleStyle,
   getAvailableBadgeStyle,
   getAvailableBadgeTextStyle,
@@ -46,7 +48,6 @@ export function RequestLeaveScreen(): React.JSX.Element {
     isDark,
     currentYear,
     currentMonth,
-    todayKey,
     durationType,
     startDate,
     endDate,
@@ -222,44 +223,52 @@ export function RequestLeaveScreen(): React.JSX.Element {
           <View style={getSectionSeparatorStyle(isDark)} />
 
           {/* 5. Month Calendar Grid Card */}
-          <View style={getCalendarContainerStyle(isDark)}>
-            {/* Month Header with Navigation Arrows */}
-            <View style={styles.calendarHeaderRow}>
-              <Text style={getCalendarMonthTitleStyle(isDark)}>
-                {MONTH_NAMES[currentMonth]} {currentYear}
-              </Text>
-              <View style={styles.calendarArrowsRow}>
-                <TactilePressable
-                  onPress={handlePrevMonth}
-                  style={styles.arrowButton}
-                  activeScale={0.88}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  accessibilityRole="button"
-                  accessibilityLabel="Previous month"
-                  testID="prev-month-btn"
-                >
-                  <Feather name="chevron-left" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                </TactilePressable>
-                <TactilePressable
-                  onPress={handleNextMonth}
-                  style={styles.arrowButton}
-                  activeScale={0.88}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  accessibilityRole="button"
-                  accessibilityLabel="Next month"
-                  testID="next-month-btn"
-                >
-                  <Feather name="chevron-right" size={20} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                </TactilePressable>
-              </View>
+          <View style={styles.monthHeaderRow}>
+            <Text
+              style={[styles.monthTitle, getMonthTitleStyle(isDark)]}
+              testID="current-month-label"
+            >
+              {MONTH_NAMES[currentMonth]} {currentYear}
+            </Text>
+            <View style={styles.monthNavButtons}>
+              <TactilePressable
+                onPress={handlePrevMonth}
+                style={[styles.navChevronBtn, getNavChevronBtnStyle(isDark)]}
+                activeScale={0.88}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Previous month"
+                testID="prev-month-btn"
+              >
+                <Feather name="chevron-left" size={18} color={isDark ? '#F8FAFC' : '#0F172A'} />
+              </TactilePressable>
+              <TactilePressable
+                onPress={handleNextMonth}
+                style={[styles.navChevronBtn, getNavChevronBtnStyle(isDark)]}
+                activeScale={0.88}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Next month"
+                testID="next-month-btn"
+              >
+                <Feather name="chevron-right" size={18} color={isDark ? '#F8FAFC' : '#0F172A'} />
+              </TactilePressable>
             </View>
+          </View>
 
+          <GlassCard
+            intensity={20}
+            tint={isDark ? 'dark' : 'light'}
+            style={[styles.card, getCardStyle(isDark)]}
+          >
             {/* Day of Week Labels */}
             <View style={styles.weekdaysRow}>
               {WEEKDAY_NAMES.map((name) => (
-                <Text key={name} style={getWeekdayLabelStyle(isDark)}>
-                  {name}
-                </Text>
+                <View key={name} style={styles.weekdaySlot}>
+                  <Text style={[styles.weekdayText, getWeekdayTextStyle(isDark)]}>
+                    {name}
+                  </Text>
+                </View>
               ))}
             </View>
 
@@ -267,7 +276,7 @@ export function RequestLeaveScreen(): React.JSX.Element {
             <View style={styles.daysGrid}>
               {calendarDays.map((item, index) => {
                 if (!item.isCurrentMonth) {
-                  return <View key={item.dateKey || `pad-${index}`} style={styles.daySlotEmpty} />;
+                  return <View key={item.dateKey || `pad-${index}`} style={styles.daySlot} />;
                 }
 
                 const isStart = startDate === item.dateKey;
@@ -275,39 +284,48 @@ export function RequestLeaveScreen(): React.JSX.Element {
                 const isInRange = Boolean(
                   startDate && endDate && item.dateKey > startDate && item.dateKey < endDate,
                 );
-
                 const isSingleSelected = isStart && (!endDate || startDate === endDate);
-                const isHighlightedRef = !startDate && item.dateKey === todayKey;
+                const isSelectedEndpoint = isStart || isEnd;
 
                 return (
                   <TactilePressable
                     key={item.dateKey}
-                    style={getDaySlotStyle(
-                      isDark,
-                      isInRange,
-                      Boolean(isStart || isEnd),
-                      Boolean(isSingleSelected),
-                      Boolean(isHighlightedRef),
-                    )}
+                    style={styles.daySlot}
                     onPress={() => handleSelectDay(item.dateKey)}
                     activeScale={0.9}
                     testID={`day-slot-${item.dateKey}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select date ${item.dateKey}`}
                   >
-                    <Text
-                      style={getDayTextStyle(
-                        isDark,
-                        Boolean(isStart || isEnd),
-                        Boolean(isSingleSelected),
-                        Boolean(isHighlightedRef),
-                      )}
-                    >
-                      {item.dayNumber}
-                    </Text>
+                    {isSelectedEndpoint || isSingleSelected ? (
+                      <View style={styles.selectedCircle}>
+                        <Text style={styles.selectedDayNumberText}>{item.dayNumber}</Text>
+                        <Feather
+                          name="check"
+                          size={12}
+                          color="#FFFFFF"
+                          style={styles.selectedCheckIcon}
+                        />
+                      </View>
+                    ) : isInRange ? (
+                      <View style={[styles.inRangeContainer, getInRangeContainerStyle(isDark)]}>
+                        <Text style={[styles.inRangeDayNumberText, getInRangeDayNumberTextStyle(isDark)]}>
+                          {item.dayNumber}
+                        </Text>
+                      </View>
+                    ) : (
+                      <View style={styles.unselectedDayContainer}>
+                        <Text style={[styles.dayNumberText, getDayNumberTextStyle(isDark)]}>
+                          {item.dayNumber}
+                        </Text>
+                        <View style={styles.emptyDotPlaceholder} />
+                      </View>
+                    )}
                   </TactilePressable>
                 );
               })}
             </View>
-          </View>
+          </GlassCard>
 
           {/* Divider below Calendar Card */}
           <View style={getSectionSeparatorStyle(isDark)} />

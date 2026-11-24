@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
@@ -7,7 +7,6 @@ import { TactilePressable } from '@/shared/animations';
 import {
   AppBottomSheet,
   CircularProgressDial,
-  KeyboardAvoidingScrollView,
 } from '@/shared/components';
 import { useHomeScreen } from './useHomeScreen';
 import {
@@ -79,9 +78,11 @@ export function HomeScreen(): React.JSX.Element {
       contentFit="cover"
     >
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingScrollView
+        <ScrollView
           contentContainerStyle={getScrollContentStyle(timer.isPunchedOut)}
           showsVerticalScrollIndicator={false}
+          bounces={true}
+          keyboardShouldPersistTaps="handled"
         >
           {/* Header Row: Brand and Date */}
           <View style={styles.headerRow}>
@@ -144,7 +145,7 @@ export function HomeScreen(): React.JSX.Element {
           </View>
 
           {/* Shift Banner */}
-          <View style={getShiftBannerStyle(isDark)}>
+          <View style={getShiftBannerStyle(isDark)} pointerEvents="none">
             <View style={styles.shiftLeft}>
               <Feather name="calendar" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
               <Text style={getShiftLabelStyle(isDark)}>
@@ -158,7 +159,7 @@ export function HomeScreen(): React.JSX.Element {
           </View>
 
           {/* Working Status Indicator */}
-          <View style={styles.statusIndicatorRow}>
+          <View style={styles.statusIndicatorRow} pointerEvents="none">
             <Feather
               name={timer.isOnBreak ? 'coffee' : 'clock'}
               size={18}
@@ -176,7 +177,7 @@ export function HomeScreen(): React.JSX.Element {
           </View>
 
           {/* Circular Progress Hero Dial */}
-          <View style={styles.dialWrapper}>
+          <View style={styles.dialWrapper} pointerEvents="none">
             <CircularProgressDial
               size={220}
               strokeWidth={10}
@@ -207,7 +208,7 @@ export function HomeScreen(): React.JSX.Element {
           </View>
 
           {/* Break and Remaining Info Bar */}
-          <View style={getInfoBarStyle(isDark)}>
+          <View style={getInfoBarStyle(isDark)} pointerEvents="none">
             <View style={styles.infoBarItem}>
               <Feather name="coffee" size={16} color={isDark ? '#94A3B8' : '#475569'} />
               <Text style={getInfoBarTextMutedStyle(isDark)}>
@@ -230,12 +231,16 @@ export function HomeScreen(): React.JSX.Element {
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.actionsRow}>
+          <View style={styles.actionsRow} pointerEvents="box-none">
             <TactilePressable
               style={getBreakButtonStyle(Boolean(timer.isOnBreak), Boolean(timer.isPunchedOut))}
               onPress={handleToggleBreak}
               disabled={timer.isPunchedOut}
               activeScale={0.95}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={timer.isOnBreak ? 'Resume work' : 'Start break'}
+              testID="btn-break-toggle"
             >
               <Feather name={timer.isOnBreak ? 'play' : 'pause'} size={18} color="#FFFFFF" />
               <Text style={styles.breakButtonText}>
@@ -247,6 +252,10 @@ export function HomeScreen(): React.JSX.Element {
               style={getPunchOutButtonStyle(isDark, Boolean(timer.isPunchedOut))}
               onPress={timer.isPunchedOut ? handlePunchIn : handlePunchOut}
               activeScale={0.95}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={timer.isPunchedOut ? 'Punch in' : 'Punch out'}
+              testID="btn-punch-action"
             >
               <Feather
                 name={timer.isPunchedOut ? 'log-in' : 'log-out'}
@@ -260,7 +269,7 @@ export function HomeScreen(): React.JSX.Element {
           </View>
 
           {/* Helper Subtext */}
-          <Text style={getPunchNoteStyle(isDark)}>
+          <Text style={getPunchNoteStyle(isDark)} pointerEvents="none">
             {timer.isPunchedOut
               ? 'Punch-in requires a live photo and location.'
               : 'Punch-out requires a live photo and location.'}
@@ -366,7 +375,7 @@ export function HomeScreen(): React.JSX.Element {
             <Text style={styles.viewHistoryButtonText}>View Leave history</Text>
             <Feather name="arrow-right" size={18} color="#FFFFFF" />
           </TactilePressable>
-        </KeyboardAvoidingScrollView>
+        </ScrollView>
       </SafeAreaView>
 
       {/* Hours Selector Bottom Sheet */}

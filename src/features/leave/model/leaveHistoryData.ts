@@ -26,6 +26,7 @@ export interface LeaveHistoryRecord {
   reasonTitle: string;
   reasonDescription: string;
   monthKey: string;
+  leaveType?: string;
 }
 
 export interface LeaveDurationData {
@@ -83,6 +84,7 @@ const LEAVE_RECORDS_BY_DURATION: Record<
         reasonDescription:
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
         monthKey: 'Nov',
+        leaveType: 'Casual\nleave',
       },
       {
         id: 'leave-2',
@@ -93,8 +95,9 @@ const LEAVE_RECORDS_BY_DURATION: Record<
         status: 'Approved',
         reasonTitle: 'Reason requested',
         reasonDescription:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque',
         monthKey: 'Nov',
+        leaveType: 'Sick\nleave',
       },
       {
         id: 'leave-3',
@@ -107,6 +110,7 @@ const LEAVE_RECORDS_BY_DURATION: Record<
         reasonDescription:
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
         monthKey: 'Nov',
+        leaveType: 'Annual\nleave',
       },
       {
         id: 'leave-4',

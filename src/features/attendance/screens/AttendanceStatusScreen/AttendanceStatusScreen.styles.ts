@@ -10,10 +10,14 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 110,
+    flexGrow: 1,
   },
   headerRow: {
     flexDirection: 'row',

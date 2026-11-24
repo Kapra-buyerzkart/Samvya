@@ -180,6 +180,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginBottom: 8,
+    zIndex: 10,
+    elevation: 4,
   },
   breakButton: {
     flex: 1,

@@ -139,78 +139,103 @@ export const styles = StyleSheet.create({
     height: 1,
     marginVertical: 12,
   },
-  calendarContainer: {
-    borderRadius: 22,
-    borderWidth: 1.5,
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 14,
-  },
-  calendarHeaderRow: {
+  monthHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 16,
   },
-  calendarMonthTitle: {
+  monthTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 17,
+    fontSize: 22,
+    letterSpacing: -0.3,
   },
-  calendarArrowsRow: {
+  monthNavButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
+    gap: 8,
   },
-  arrowButton: {
-    padding: 4,
+  navChevronBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    borderRadius: 28,
+    padding: 20,
+    marginBottom: 16,
   },
   weekdaysRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  weekdayLabel: {
-    width: '14.28%',
-    textAlign: 'center',
-    fontFamily: FontFamily.semiBold,
+  weekdaySlot: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  weekdayText: {
+    fontFamily: FontFamily.medium,
     fontSize: 13,
   },
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 6,
-  },
-  daySlotEmpty: {
-    width: '14.28%',
-    height: 36,
   },
   daySlot: {
     width: '14.28%',
-    height: 36,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 2,
+  },
+  unselectedDayContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  daySlotSelectedPill: {
-    borderWidth: 1.5,
-    borderRadius: 12,
+  dayNumberText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 15,
   },
-  daySlotEndpoint: {
+  emptyDotPlaceholder: {
+    height: 5,
+    marginTop: 4,
+  },
+  selectedCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#1D4ED8',
-    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1D4ED8',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  daySlotInRange: {
-    borderRadius: 6,
-  },
-  dayText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 14.5,
-    fontVariant: ['tabular-nums'],
-  },
-  dayTextSelectedPill: {
-    fontFamily: FontFamily.semiBold,
-  },
-  dayTextEndpoint: {
+  selectedDayNumberText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 15,
     color: '#FFFFFF',
+    lineHeight: 18,
+  },
+  selectedCheckIcon: {
+    marginTop: 1,
+  },
+  inRangeContainer: {
+    width: '100%',
+    height: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inRangeDayNumberText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 15,
+    color: '#1D4ED8',
   },
   reasonSection: {
     marginBottom: 16,
@@ -373,67 +398,49 @@ export const getSectionSeparatorStyle = (isDark: boolean): (ViewStyle | { backgr
   { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
 ];
 
-export const getCalendarContainerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
-  styles.calendarContainer,
-  {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.65)' : 'rgba(238, 242, 255, 0.45)',
-    borderColor: isDark ? '#334155' : '#CBD5E1',
-  },
-];
-
-export const getCalendarMonthTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.calendarMonthTitle,
+export const getMonthTitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.monthTitle,
   { color: isDark ? '#F8FAFC' : '#0F172A' },
 ];
 
-export const getWeekdayLabelStyle = (isDark: boolean): TextStyle[] => [
-  styles.weekdayLabel,
-  { color: isDark ? '#60A5FA' : '#3B82F6' },
+export const getNavChevronBtnStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+  styles.navChevronBtn,
+  {
+    backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+    borderColor: isDark ? '#334155' : '#E2E8F0',
+  },
 ];
 
-export const getDaySlotStyle = (
-  isDark: boolean,
-  isInRange: boolean,
-  isStartOrEnd: boolean,
-  isSingleSelected: boolean,
-  isHighlightedRef: boolean,
-): (ViewStyle | { backgroundColor?: string; borderColor?: string })[] => {
-  const result: (ViewStyle | { backgroundColor?: string; borderColor?: string })[] = [styles.daySlot];
-  if (isInRange) {
-    result.push(styles.daySlotInRange);
-    result.push({ backgroundColor: isDark ? 'rgba(37, 99, 235, 0.3)' : '#DBEAFE' });
-  }
-  if (isStartOrEnd && !isSingleSelected) {
-    result.push(styles.daySlotEndpoint);
-  }
-  if (isSingleSelected || isHighlightedRef) {
-    result.push(styles.daySlotSelectedPill);
+export const getCardStyle = (isDark: boolean): (ViewStyle | { backgroundColor?: string; borderColor?: string })[] => {
+  const result: (ViewStyle | { backgroundColor?: string; borderColor?: string })[] = [styles.card];
+  if (isDark) {
     result.push({
-      borderColor: isDark ? '#60A5FA' : '#2563EB',
-      backgroundColor: isDark ? 'rgba(37, 99, 235, 0.35)' : '#DBEAFE',
+      backgroundColor: 'rgba(15, 23, 42, 0.85)',
+      borderColor: 'rgba(51, 65, 85, 0.8)',
     });
   }
   return result;
 };
 
-export const getDayTextStyle = (
-  isDark: boolean,
-  isStartOrEnd: boolean,
-  isSingleSelected: boolean,
-  isHighlightedRef: boolean,
-): TextStyle[] => {
-  const result: TextStyle[] = [
-    styles.dayText,
-    { color: isDark ? '#F8FAFC' : '#0F172A' },
-  ];
-  if (isStartOrEnd && !isSingleSelected) {
-    result.push(styles.dayTextEndpoint);
-  }
-  if (isSingleSelected || isHighlightedRef) {
-    result.push(styles.dayTextSelectedPill);
-  }
-  return result;
-};
+export const getWeekdayTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.weekdayText,
+  { color: isDark ? '#94A3B8' : '#64748B' },
+];
+
+export const getDayNumberTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.dayNumberText,
+  { color: isDark ? '#F8FAFC' : '#0F172A' },
+];
+
+export const getInRangeContainerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
+  styles.inRangeContainer,
+  { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' },
+];
+
+export const getInRangeDayNumberTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.inRangeDayNumberText,
+  { color: isDark ? '#60A5FA' : '#1D4ED8' },
+];
 
 export const getReasonTitleStyle = (isDark: boolean): TextStyle[] => [
   styles.reasonTitle,

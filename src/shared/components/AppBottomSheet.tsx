@@ -76,11 +76,15 @@ export function AppBottomSheet({
   windowOverlay = false,
   scrimAccessibilityLabel = 'Close bottom sheet',
   testID,
-}: AppBottomSheetProps): React.JSX.Element {
+}: AppBottomSheetProps): React.JSX.Element | null {
   const insets = useSafeAreaInsets();
   const theme = useAppTheme();
 
-  const activeIndex = isOpen ? openIndex : 0;
+  if (!isOpen) {
+    return null;
+  }
+
+  const activeIndex = openIndex;
 
   const defaultSurfaceStyle: SurfaceStyle = {
     borderTopLeftRadius: 24,

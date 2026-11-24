@@ -24,10 +24,10 @@ import {
   getFilterPillStyle,
   getFilterDividerStyle,
   getCardStyle,
-  getDayNumberContainerStyle,
-  getDayNumberTextStyle,
+  getWeekdayTextStyle,
+  getDayNumberTextColorStyle,
+  getLegendRowStyle,
   getLegendTextStyle,
-  getLegendDividerStyle,
   getStatusCardTitleStyle,
   getRecordDividerStyle,
   getTimelineStepLabelStyle,
@@ -170,7 +170,7 @@ export function LeaveStatusScreen(): React.JSX.Element {
             <View style={styles.weekdaysRow}>
               {WEEKDAY_NAMES.map((w) => (
                 <View key={w} style={styles.weekdaySlot}>
-                  <Text style={styles.weekdayText}>{w}</Text>
+                  <Text style={[styles.weekdayText, getWeekdayTextStyle(isDark)]}>{w}</Text>
                 </View>
               ))}
             </View>
@@ -199,47 +199,56 @@ export function LeaveStatusScreen(): React.JSX.Element {
                     activeOpacity={0.7}
                     style={styles.daySlot}
                     testID={`status-day-${day.dateKey}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Day ${day.dayNumber}`}
                   >
-                    <View
-                      style={getDayNumberContainerStyle(isApproved, isSelected)}
-                    >
-                      <Text
-                        style={getDayNumberTextStyle(
-                          isDark,
-                          isPending,
-                          isApproved,
-                          isSelected,
+                    {isSelected ? (
+                      <View style={styles.selectedCircle}>
+                        <Text style={styles.selectedDayNumberText}>{day.dayNumber}</Text>
+                        <Feather
+                          name="check"
+                          size={12}
+                          color="#FFFFFF"
+                          style={styles.selectedCheckIcon}
+                        />
+                      </View>
+                    ) : (
+                      <View style={styles.unselectedDayContainer}>
+                        <Text style={[styles.dayNumberText, getDayNumberTextColorStyle(isDark)]}>
+                          {day.dayNumber}
+                        </Text>
+                        {isApproved ? (
+                          <Feather
+                            name="check"
+                            size={11}
+                            color="#10B981"
+                            style={styles.dayMarkerIcon}
+                          />
+                        ) : isPending ? (
+                          <View style={styles.pendingDot} />
+                        ) : (
+                          <View style={styles.emptyDotPlaceholder} />
                         )}
-                      >
-                        {day.dayNumber}
-                      </Text>
-                    </View>
+                      </View>
+                    )}
                   </TouchableOpacity>
                 );
               })}
             </View>
-          </GlassCard>
 
-          {/* Status Legend Row */}
-          <View style={styles.legendRow}>
-            <View style={styles.legendItem}>
-              <View style={styles.approvedIconBox}>
-                <Feather name="check" size={13} color="#16A34A" />
+            {/* Status Legend Row inside Card */}
+            <View style={[styles.legendRow, getLegendRowStyle(isDark)]}>
+              <View style={styles.legendItem}>
+                <Feather name="check" size={14} color="#10B981" />
+                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Approved</Text>
               </View>
-              <Text style={getLegendTextStyle(isDark)}>
-                Approved
-              </Text>
-            </View>
 
-            <View style={getLegendDividerStyle(isDark)} />
-
-            <View style={styles.legendItem}>
-              <Feather name="clock" size={14} color="#EA580C" />
-              <Text style={getLegendTextStyle(isDark)}>
-                Pending
-              </Text>
+              <View style={styles.legendItem}>
+                <View style={styles.pendingLegendDot} />
+                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Pending</Text>
+              </View>
             </View>
-          </View>
+          </GlassCard>
 
           {/* Approval Status Card */}
           <GlassCard

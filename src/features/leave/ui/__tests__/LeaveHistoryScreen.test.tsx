@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react-native';
+import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import React from 'react';
 import { LeaveHistoryScreen } from '../LeaveHistoryScreen';
@@ -106,5 +106,37 @@ describe('LeaveHistoryScreen', () => {
     expect(await findByText('16.5 days')).toBeTruthy();
     expect(await findByText('Dec 2025-Nov 2026')).toBeTruthy();
     expect(await findByTestId('month-btn-dec')).toBeTruthy();
+  });
+
+  it('opens the leave detail modal when clicking on a leave history card and closes on close button', async () => {
+    const { getByTestId, findByText, findAllByText, findByTestId, queryByTestId } = await render(
+      <LeaveHistoryScreen />,
+    );
+
+    // Click on 11-12 Nov record card
+    fireEvent.press(getByTestId('leave-record-leave-2'));
+
+    // Modal is opened
+    expect(await findByTestId('leave-detail-bottom-sheet')).toBeTruthy();
+    expect(await findByText('11 - 12 Nov')).toBeTruthy();
+    expect((await findAllByText('2 days')).length).toBeGreaterThanOrEqual(2);
+    expect(await findByText('Sick leave')).toBeTruthy();
+    expect(await findByText('Number of days')).toBeTruthy();
+    expect(await findByText('Date of leave')).toBeTruthy();
+    expect(await findByText('Leave type')).toBeTruthy();
+
+    // Close button dismisses modal
+    fireEvent.press(getByTestId('leave-detail-close-btn'));
+    await waitFor(() => {
+      expect(queryByTestId('leave-detail-bottom-sheet')).toBeNull();
+    });
+  });
+
+  it('opens the leave detail modal when clicking on leave history section header', async () => {
+    const { getByTestId, findByText, findByTestId } = await render(<LeaveHistoryScreen />);
+
+    fireEvent.press(getByTestId('leave-history-header-btn'));
+    expect(await findByTestId('leave-detail-bottom-sheet')).toBeTruthy();
+    expect(await findByText('Sick leave')).toBeTruthy();
   });
 });

@@ -89,10 +89,10 @@ export function CircularProgressDial({
   }));
 
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
+    <View style={[styles.container, { width: size, height: size }]} pointerEvents="none">
       {/* 0. Ambient Radial Aura Glow */}
       {showAura && (
-        <View style={styles.auraWrapper}>
+        <View style={styles.auraWrapper} pointerEvents="none">
           <AmbientDialAura size={size + 32} isActive={isActive} />
         </View>
       )}

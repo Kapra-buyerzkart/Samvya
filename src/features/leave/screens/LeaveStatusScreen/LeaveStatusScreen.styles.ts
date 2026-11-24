@@ -106,80 +106,81 @@ export const styles = StyleSheet.create({
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    rowGap: 10,
   },
   daySlot: {
     width: '14.28%',
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 36,
+    marginVertical: 2,
   },
-  dayNumberContainer: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    justifyContent: 'center',
+  unselectedDayContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
   },
   dayNumberText: {
-    fontSize: 14,
     fontFamily: FontFamily.medium,
-    fontWeight: '500',
+    fontSize: 15,
   },
-  pendingDayText: {
-    color: '#D97706',
-    fontWeight: '700',
+  dayMarkerIcon: {
+    marginTop: 2,
   },
-  approvedDayPill: {
-    backgroundColor: '#DCFCE7',
-    borderWidth: 1.5,
-    borderColor: '#22C55E',
-    borderRadius: 9,
+  pendingDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: '#F59E0B',
+    marginTop: 4,
   },
-  approvedDayText: {
-    color: '#15803D',
-    fontWeight: '700',
+  emptyDotPlaceholder: {
+    height: 5,
+    marginTop: 4,
   },
-  selectedDayPill: {
-    borderWidth: 1.5,
-    borderColor: '#2563EB',
-    backgroundColor: '#EFF6FF',
-    borderRadius: 9,
+  selectedCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1D4ED8',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#1D4ED8',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  selectedDayText: {
-    color: '#2563EB',
-    fontWeight: '700',
+  selectedDayNumberText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 15,
+    color: '#FFFFFF',
+    lineHeight: 18,
+  },
+  selectedCheckIcon: {
+    marginTop: 1,
   },
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 14,
+    gap: 20,
+    borderTopWidth: 1,
+    marginTop: 12,
+    paddingTop: 12,
     paddingHorizontal: 4,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  approvedIconBox: {
-    width: 16,
-    height: 16,
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: '#16A34A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#DCFCE7',
+    gap: 6,
   },
   legendText: {
+    fontFamily: FontFamily.medium,
     fontSize: 13,
-    fontFamily: FontFamily.semiBold,
-    fontWeight: '600',
-    marginLeft: 6,
   },
-  legendDivider: {
-    width: 1,
-    height: 14,
-    marginHorizontal: 12,
+  pendingLegendDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F59E0B',
   },
   statusCardTitle: {
     fontSize: 22,
@@ -298,50 +299,24 @@ export const getCardStyle = (isDark: boolean): (ViewStyle | { backgroundColor?: 
   return result;
 };
 
-export const getDayNumberContainerStyle = (
-  isApproved: boolean,
-  isSelected: boolean,
-): ViewStyle[] => {
-  const result: ViewStyle[] = [styles.dayNumberContainer];
-  if (isApproved) {
-    result.push(styles.approvedDayPill);
-  }
-  if (isSelected && !isApproved) {
-    result.push(styles.selectedDayPill);
-  }
-  return result;
-};
+export const getWeekdayTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.weekdayText,
+  { color: isDark ? '#94A3B8' : '#64748B' },
+];
 
-export const getDayNumberTextStyle = (
-  isDark: boolean,
-  isPending: boolean,
-  isApproved: boolean,
-  isSelected: boolean,
-): TextStyle[] => {
-  const result: TextStyle[] = [
-    styles.dayNumberText,
-    { color: isDark ? '#F8FAFC' : '#0F172A' },
-  ];
-  if (isPending) {
-    result.push(styles.pendingDayText);
-  }
-  if (isApproved) {
-    result.push(styles.approvedDayText);
-  }
-  if (isSelected && !isApproved) {
-    result.push(styles.selectedDayText);
-  }
-  return result;
-};
+export const getDayNumberTextColorStyle = (isDark: boolean): TextStyle[] => [
+  styles.dayNumberText,
+  { color: isDark ? '#F8FAFC' : '#0F172A' },
+];
+
+export const getLegendRowStyle = (isDark: boolean): (ViewStyle | { borderTopColor: string })[] => [
+  styles.legendRow,
+  { borderTopColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)' },
+];
 
 export const getLegendTextStyle = (isDark: boolean): TextStyle[] => [
   styles.legendText,
-  { color: isDark ? '#CBD5E1' : '#334155' },
-];
-
-export const getLegendDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.legendDivider,
-  { backgroundColor: isDark ? '#334155' : '#CBD5E1' },
+  { color: isDark ? '#94A3B8' : '#64748B' },
 ];
 
 export const getStatusCardTitleStyle = (isDark: boolean): TextStyle[] => [

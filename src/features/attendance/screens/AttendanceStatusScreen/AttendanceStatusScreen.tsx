@@ -1,8 +1,8 @@
-import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
+import { GlassCard } from '@/shared/components';
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   getBackgroundImageProps,
@@ -46,13 +46,12 @@ export function AttendanceStatusScreen(): React.JSX.Element {
       imageStyle={getBackgroundImageProps(isDark)}
       contentFit="cover"
     >
-      <SafeAreaView
-        style={[styles.safeArea, getSafeAreaStyle(isDark)]}
-        edges={['top', 'bottom']}
-      >
-        <KeyboardAvoidingScrollView
+      <SafeAreaView style={[styles.safeArea, getSafeAreaStyle(isDark)]} edges={['top', 'bottom']}>
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          bounces={true}
         >
           <View style={styles.headerRow}>
             <TouchableOpacity
@@ -64,9 +63,7 @@ export function AttendanceStatusScreen(): React.JSX.Element {
               accessibilityLabel="Attendance status back"
             >
               <Feather name="chevron-left" size={24} color={getTextColor(isDark)} />
-              <Text style={[styles.headerTitle, getTextColorStyle(isDark)]}>
-                Attendance status
-              </Text>
+              <Text style={[styles.headerTitle, getTextColorStyle(isDark)]}>Attendance status</Text>
             </TouchableOpacity>
           </View>
 
@@ -81,10 +78,7 @@ export function AttendanceStatusScreen(): React.JSX.Element {
             <View style={styles.monthNavButtons}>
               <TouchableOpacity
                 onPress={handlePrevMonth}
-                style={[
-                  styles.navChevronBtn,
-                  getNavChevronBtnStyle(isDark),
-                ]}
+                style={[styles.navChevronBtn, getNavChevronBtnStyle(isDark)]}
                 activeOpacity={0.7}
                 testID="prev-month-btn"
                 accessibilityRole="button"
@@ -95,10 +89,7 @@ export function AttendanceStatusScreen(): React.JSX.Element {
 
               <TouchableOpacity
                 onPress={handleNextMonth}
-                style={[
-                  styles.navChevronBtn,
-                  getNavChevronBtnStyle(isDark),
-                ]}
+                style={[styles.navChevronBtn, getNavChevronBtnStyle(isDark)]}
                 activeOpacity={0.7}
                 testID="next-month-btn"
                 accessibilityRole="button"
@@ -112,17 +103,12 @@ export function AttendanceStatusScreen(): React.JSX.Element {
           <GlassCard
             intensity={20}
             tint={isDark ? 'dark' : 'light'}
-            style={[
-              styles.card,
-              getCardStyle(isDark),
-            ]}
+            style={[styles.card, getCardStyle(isDark)]}
           >
             <View style={styles.weekdaysRow}>
               {weekdayNames.map((w) => (
                 <View key={w} style={styles.weekdaySlot}>
-                  <Text style={[styles.weekdayText, getWeekdayTextStyle(isDark)]}>
-                    {w}
-                  </Text>
+                  <Text style={[styles.weekdayText, getWeekdayTextStyle(isDark)]}>{w}</Text>
                 </View>
               ))}
             </View>
@@ -191,16 +177,12 @@ export function AttendanceStatusScreen(): React.JSX.Element {
             <View style={[styles.legendRow, getLegendRowStyle(isDark)]}>
               <View style={styles.legendItem}>
                 <Feather name="check" size={14} color="#10B981" />
-                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>
-                  Approved
-                </Text>
+                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Approved</Text>
               </View>
 
               <View style={styles.legendItem}>
                 <View style={styles.pendingLegendDot} />
-                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>
-                  Pending review
-                </Text>
+                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Pending review</Text>
               </View>
             </View>
           </GlassCard>
@@ -208,10 +190,7 @@ export function AttendanceStatusScreen(): React.JSX.Element {
           <GlassCard
             intensity={20}
             tint={isDark ? 'dark' : 'light'}
-            style={[
-              styles.card,
-              getCardStyle(isDark),
-            ]}
+            style={[styles.card, getCardStyle(isDark)]}
           >
             <View style={styles.punchCardHeader}>
               <View style={styles.dateCol}>
@@ -242,56 +221,36 @@ export function AttendanceStatusScreen(): React.JSX.Element {
             </View>
 
             <View style={styles.punchItemRow}>
-              <View
-                style={[
-                  styles.punchIconBox,
-                  getPunchIconBoxStyle(isDark),
-                ]}
-              >
+              <View style={[styles.punchIconBox, getPunchIconBoxStyle(isDark)]}>
                 <Feather name="sunrise" size={22} color={getTextColor(isDark)} />
               </View>
               <View style={styles.punchInfoCol}>
-                <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>
-                  Punch-in
-                </Text>
+                <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>Punch-in</Text>
                 <Text style={[styles.punchPeriod, getPunchPeriodStyle(isDark)]}>
                   {selectedPunchInfo.punchInPeriod}
                 </Text>
               </View>
-              <Text
-                style={[styles.punchTime, getTextColorStyle(isDark)]}
-                testID="punch-in-time"
-              >
+              <Text style={[styles.punchTime, getTextColorStyle(isDark)]} testID="punch-in-time">
                 {selectedPunchInfo.punchInTime}
               </Text>
             </View>
 
             <View style={styles.punchItemRow}>
-              <View
-                style={[
-                  styles.punchIconBox,
-                  getPunchIconBoxStyle(isDark),
-                ]}
-              >
+              <View style={[styles.punchIconBox, getPunchIconBoxStyle(isDark)]}>
                 <Feather name="moon" size={22} color={getTextColor(isDark)} />
               </View>
               <View style={styles.punchInfoCol}>
-                <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>
-                  Punch-out
-                </Text>
+                <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>Punch-out</Text>
                 <Text style={[styles.punchPeriod, getPunchPeriodStyle(isDark)]}>
                   {selectedPunchInfo.punchOutPeriod}
                 </Text>
               </View>
-              <Text
-                style={[styles.punchTime, getTextColorStyle(isDark)]}
-                testID="punch-out-time"
-              >
+              <Text style={[styles.punchTime, getTextColorStyle(isDark)]} testID="punch-out-time">
                 {selectedPunchInfo.punchOutTime}
               </Text>
             </View>
           </GlassCard>
-        </KeyboardAvoidingScrollView>
+        </ScrollView>
       </SafeAreaView>
     </ImageBackground>
   );

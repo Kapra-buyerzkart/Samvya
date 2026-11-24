@@ -29,9 +29,13 @@ export const styles = StyleSheet.create({
     color: '#0F172A',
     letterSpacing: -0.3,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: 16,
     paddingBottom: 96,
+    flexGrow: 1,
   },
   heroCard: {
     flexDirection: 'row',
