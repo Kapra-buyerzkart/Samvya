@@ -1,7 +1,8 @@
 import * as SQLite from 'expo-sqlite';
+import type { SyncStatus } from '@/shared/types';
 
+export type { SyncStatus };
 export type AttendanceQueueType = 'check_in' | 'check_out';
-export type SyncStatus = 'pending' | 'syncing' | 'synced' | 'failed';
 
 export interface AttendanceQueueInput {
   clientId: string;

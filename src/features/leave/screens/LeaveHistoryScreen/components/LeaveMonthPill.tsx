@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { FontFamily } from '@/shared/theme';
-import { MonthSegment } from '../../../model/leaveHistoryData';
+import { MonthSegment } from '../../../data/leaveHistoryData';
 
 interface LeaveMonthPillProps {
   month: MonthSegment;

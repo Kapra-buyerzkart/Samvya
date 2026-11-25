@@ -3,7 +3,7 @@ import {
   getDpdpConsent,
   grantDpdpConsent,
   revokeDpdpConsent,
-} from '@/features/face/domain/dpdpConsent';
+} from '../../domain/dpdpConsent';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';

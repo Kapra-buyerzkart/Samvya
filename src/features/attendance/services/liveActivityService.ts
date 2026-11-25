@@ -1,5 +1,5 @@
 import * as Location from 'expo-location';
-import { BACKGROUND_LOCATION_TASK } from '@/features/location/tasks/backgroundLocationTask';
+import { BACKGROUND_LOCATION_TASK } from '@/features/location';
 import type { PersistedShiftState, ShiftMetrics } from '../domain/shiftTimer';
 
 export interface ShiftLiveActivityAttributes {

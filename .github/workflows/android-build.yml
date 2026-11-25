@@ -1,0 +1,369 @@
+name: Android Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      build_format:
+        description: Artifact format to build (aab, apk, or both)
+        required: true
+        type: choice
+        default: both
+        options:
+          - both
+          - aab
+          - apk
+      deploy_to_play_internal:
+        description: Deploy AAB to Google Play Console internal track
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      skip_validation:
+        description: Skip JS validation when already run by caller workflow
+        required: false
+        type: boolean
+        default: false
+      build_format:
+        description: Artifact format to build (aab, apk, or both)
+        required: false
+        type: string
+        default: both
+      deploy_to_play_internal:
+        description: Deploy AAB to Google Play Console internal track
+        required: false
+        type: boolean
+        default: false
+      release_tag:
+        description: Semantic version tag triggering the release
+        required: false
+        type: string
+        default: ''
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:
+        required: false
+      SENTRY_AUTH_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  validate:
+    name: Validate JS & Bundle
+    if: ${{ !(github.event_name == 'workflow_call' && inputs.skip_validation == true) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install dependencies and run JS/Expo validation
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'true'
+          export-platforms: 'android'
+
+  build:
+    name: Build Android Release
+    needs: validate
+    if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    outputs:
+      app_version: ${{ steps.meta.outputs.app_version }}
+      version_code: ${{ steps.meta.outputs.version_code }}
+      package_name: ${{ steps.meta.outputs.package_name }}
+      signed: ${{ steps.signing.outputs.signed }}
+      artifact_name: ${{ steps.package_artifacts.outputs.artifact_name }}
+      aab_built: ${{ steps.package_artifacts.outputs.aab_built }}
+      aab_filename: ${{ steps.package_artifacts.outputs.aab_filename }}
+      has_mapping: ${{ steps.package_artifacts.outputs.has_mapping }}
+      mapping_filename: ${{ steps.package_artifacts.outputs.mapping_filename }}
+
+    env:
+      APP_ENV: production
+      BUILD_FORMAT: ${{ inputs.build_format || 'both' }}
+      DEPLOY_REQUESTED: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.deploy_to_play_internal == true }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js and install dependencies
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'false'
+
+      - name: Set up Java 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Android NDK 27.1.12297006
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /usr/local/lib/android/sdk/ndk/27.1.12297006
+          key: android-ndk-27.1.12297006-${{ runner.os }}
+
+      - name: Set up Android SDK & accept licenses
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: platform-tools
+
+      - name: Set up Gradle & cache
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.ref_name != github.event.repository.default_branch }}
+
+      - name: Derive version metadata from project config
+        id: meta
+        env:
+          BUILD_NUMBER_OFFSET: ${{ vars.BUILD_NUMBER_OFFSET || '0' }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          OFFSET=$((10#${BUILD_NUMBER_OFFSET:-0}))
+          RUN_NUM=$((10#${GITHUB_RUN_NUMBER}))
+          VERSION_CODE=$((RUN_NUM + OFFSET))
+
+          APP_VERSION=$(npx expo config --type public --json | node -e "const c=JSON.parse(require('fs').readFileSync(0,'utf8')); process.stdout.write(c.version || '')")
+          PACKAGE_NAME=$(npx expo config --type public --json | node -e "const c=JSON.parse(require('fs').readFileSync(0,'utf8')); process.stdout.write(c.android?.package || '')")
+
+          if [ -z "$APP_VERSION" ] || [ -z "$PACKAGE_NAME" ]; then
+            echo "::error::Failed to resolve version or android.package from Expo config."
+            exit 1
+          fi
+
+          echo "BUILD_NUMBER=${VERSION_CODE}" >> "$GITHUB_ENV"
+          echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "version_code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "package_name=${PACKAGE_NAME}" >> "$GITHUB_OUTPUT"
+          echo "Resolved Android metadata: package=${PACKAGE_NAME}, versionName=${APP_VERSION}, versionCode=${VERSION_CODE}"
+
+      - name: Configure Android signing & Sentry mode
+        id: signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
+            echo "SENTRY_DISABLE_AUTO_UPLOAD=true" >> "$GITHUB_ENV"
+          fi
+
+          MISSING=()
+          [ -z "${ANDROID_KEYSTORE_BASE64:-}" ] && MISSING+=("ANDROID_KEYSTORE_BASE64")
+          [ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ] && MISSING+=("ANDROID_KEYSTORE_PASSWORD")
+          [ -z "${ANDROID_KEY_ALIAS:-}" ] && MISSING+=("ANDROID_KEY_ALIAS")
+          [ -z "${ANDROID_KEY_PASSWORD:-}" ] && MISSING+=("ANDROID_KEY_PASSWORD")
+
+          if [ "${#MISSING[@]}" -gt 0 ]; then
+            if [ "${DEPLOY_REQUESTED}" = "true" ] || [ "${GITHUB_EVENT_NAME}" = "workflow_call" ]; then
+              echo "::error::Missing required Android signing secrets: ${MISSING[*]}"
+              exit 1
+            fi
+            echo "::warning::Android signing secrets (${MISSING[*]}) are not configured. Building debug-signed release artifact for validation only."
+            echo "REQUIRE_RELEASE_SIGNING=false" >> "$GITHUB_ENV"
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          KEYSTORE_FILE="${RUNNER_TEMP}/android-release.keystore"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_FILE"
+          chmod 600 "$KEYSTORE_FILE"
+
+          keytool -list -keystore "$KEYSTORE_FILE" -alias "$ANDROID_KEY_ALIAS" -storepass "$ANDROID_KEYSTORE_PASSWORD" >/dev/null
+
+          echo "ANDROID_KEYSTORE_PATH=${KEYSTORE_FILE}" >> "$GITHUB_ENV"
+          echo "ANDROID_KEYSTORE_PASSWORD=${ANDROID_KEYSTORE_PASSWORD}" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_ALIAS=${ANDROID_KEY_ALIAS}" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD=${ANDROID_KEY_PASSWORD}" >> "$GITHUB_ENV"
+          echo "REQUIRE_RELEASE_SIGNING=true" >> "$GITHUB_ENV"
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Generate Android project via Expo Prebuild (CNG)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build Android release binary
+        working-directory: android
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          TASKS=()
+          case "$BUILD_FORMAT" in
+            aab)
+              TASKS+=(bundleRelease)
+              ;;
+            apk)
+              TASKS+=(assembleRelease)
+              ;;
+            both)
+              TASKS+=(bundleRelease assembleRelease)
+              ;;
+            *)
+              echo "::error::Unsupported build_format '$BUILD_FORMAT'"
+              exit 1
+              ;;
+          esac
+          ./gradlew "${TASKS[@]}" --no-daemon --stacktrace
+
+      - name: Verify release signature & stage artifacts
+        id: package_artifacts
+        env:
+          APP_VERSION: ${{ steps.meta.outputs.app_version }}
+          VERSION_CODE: ${{ steps.meta.outputs.version_code }}
+          SIGNED: ${{ steps.signing.outputs.signed }}
+        run: |
+          set -euo pipefail
+          VERSION="$APP_VERSION"
+          CODE="$VERSION_CODE"
+          SIGN_LABEL=$([ "$SIGNED" = "true" ] && echo "signed" || echo "unsigned-debugkey")
+          STAGE_DIR="${RUNNER_TEMP}/android-artifacts"
+          mkdir -p "$STAGE_DIR"
+
+          AAB_SRC="android/app/build/outputs/bundle/release/app-release.aab"
+          APK_SRC="android/app/build/outputs/apk/release/app-release.apk"
+          MAP_SRC="android/app/build/outputs/mapping/release/mapping.txt"
+
+          AAB_BUILT="false"
+          AAB_NAME=""
+          HAS_MAPPING="false"
+          MAP_NAME=""
+
+          if [ -f "$AAB_SRC" ]; then
+            if [ "$SIGNED" = "true" ]; then
+              jarsigner -verify -strict "$AAB_SRC" >/dev/null
+              if jarsigner -verify -verbose -certs "$AAB_SRC" | grep -q "CN=Android Debug"; then
+                echo "::error::AAB was signed with Android Debug certificate instead of release keystore!"
+                exit 1
+              fi
+            fi
+            AAB_NAME="hrms-attendance-${VERSION}-b${CODE}-${SIGN_LABEL}.aab"
+            cp "$AAB_SRC" "$STAGE_DIR/$AAB_NAME"
+            AAB_BUILT="true"
+          fi
+
+          if [ -f "$APK_SRC" ]; then
+            if [ "$SIGNED" = "true" ]; then
+              APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -n 1)
+              "$APKSIGNER" verify --print-certs "$APK_SRC" | tee "${RUNNER_TEMP}/apk-certs.txt"
+              if grep -q "CN=Android Debug" "${RUNNER_TEMP}/apk-certs.txt"; then
+                echo "::error::APK was signed with Android Debug certificate instead of release keystore!"
+                exit 1
+              fi
+            fi
+            cp "$APK_SRC" "$STAGE_DIR/hrms-attendance-${VERSION}-b${CODE}-${SIGN_LABEL}.apk"
+          fi
+
+          if [ -f "$MAP_SRC" ]; then
+            MAP_NAME="hrms-attendance-${VERSION}-b${CODE}-mapping.txt"
+            cp "$MAP_SRC" "$STAGE_DIR/$MAP_NAME"
+            HAS_MAPPING="true"
+          fi
+
+          if [ "$DEPLOY_REQUESTED" = "true" ] && [ "$AAB_BUILT" != "true" ]; then
+            echo "::error::Google Play deployment requires an AAB build, but no AAB was generated."
+            exit 1
+          fi
+
+          ls -lh "$STAGE_DIR"
+          echo "artifact_name=android-${VERSION}-b${CODE}-${SIGN_LABEL}" >> "$GITHUB_OUTPUT"
+          echo "aab_built=${AAB_BUILT}" >> "$GITHUB_OUTPUT"
+          echo "aab_filename=${AAB_NAME}" >> "$GITHUB_OUTPUT"
+          echo "has_mapping=${HAS_MAPPING}" >> "$GITHUB_OUTPUT"
+          echo "mapping_filename=${MAP_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Android build artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.package_artifacts.outputs.artifact_name }}
+          path: ${{ runner.temp }}/android-artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Clean up temporary keystore
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/android-release.keystore" "${RUNNER_TEMP}/apk-certs.txt"
+
+  deploy-play-internal:
+    name: Deploy to Google Play Internal Testing
+    needs: build
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.deploy_to_play_internal == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Verify Play Store deployment prerequisites
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          BUILD_SIGNED: ${{ needs.build.outputs.signed }}
+          AAB_BUILT: ${{ needs.build.outputs.aab_built }}
+        run: |
+          set -euo pipefail
+          if [ "$BUILD_SIGNED" != "true" ]; then
+            echo "::error::Cannot deploy an unsigned/debug-signed build to Google Play."
+            exit 1
+          fi
+          if [ "$AAB_BUILT" != "true" ]; then
+            echo "::error::Cannot deploy to Google Play because no AAB artifact was produced."
+            exit 1
+          fi
+          if [ -z "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-}" ]; then
+            echo "::error::GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is required for Google Play deployment."
+            exit 1
+          fi
+
+      - name: Download signed Android artifacts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: artifacts
+
+      - name: Upload AAB to Google Play Console (internal track)
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: ${{ needs.build.outputs.package_name }}
+          releaseFiles: artifacts/${{ needs.build.outputs.aab_filename }}
+          tracks: internal
+          releaseName: ${{ inputs.release_tag || format('{0} ({1})', needs.build.outputs.app_version, needs.build.outputs.version_code) }}
+          status: ${{ vars.PLAY_INTERNAL_RELEASE_STATUS || 'completed' }}
+          mappingFile: ${{ needs.build.outputs.has_mapping == 'true' && format('artifacts/{0}', needs.build.outputs.mapping_filename) || '' }}
+
+      - name: Write Android deployment summary
+        env:
+          PACKAGE_NAME: ${{ needs.build.outputs.package_name }}
+          APP_VERSION: ${{ needs.build.outputs.app_version }}
+          VERSION_CODE: ${{ needs.build.outputs.version_code }}
+          AAB_FILENAME: ${{ needs.build.outputs.aab_filename }}
+        run: |
+          {
+            echo "### Google Play Internal Testing Deployment"
+            echo "- **Package**: \`${PACKAGE_NAME}\`"
+            echo "- **Version**: \`${APP_VERSION}\` (versionCode \`${VERSION_CODE}\`)"
+            echo "- **Track**: \`internal\`"
+            echo "- **Artifact**: \`${AAB_FILENAME}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

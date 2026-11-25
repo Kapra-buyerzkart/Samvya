@@ -1,4 +1,4 @@
-import { AddressBottomSheet } from '@/features/profile/ui/AddressBottomSheet';
+import { AddressBottomSheet } from '../../components/AddressBottomSheet';
 import { TactilePressable } from '@/shared/animations';
 import { Feather } from '@expo/vector-icons';
 import { Image, ImageBackground } from 'expo-image';

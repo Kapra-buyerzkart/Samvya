@@ -1,7 +1,5 @@
-import {
-  enqueueAttendanceEvent,
-  usePersistentShiftTimer,
-} from '@/features/attendance';
+import { enqueueAttendanceEvent } from '../../db/attendanceQueue';
+import { usePersistentShiftTimer } from '../../hooks/usePersistentShiftTimer';
 import {
   getActiveTrackingSession,
   startBackgroundTracking,

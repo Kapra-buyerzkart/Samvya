@@ -1,4 +1,4 @@
-import { PunchSuccessScreen } from '@/features/attendance/screens/PunchSuccessScreen';
+import { PunchSuccessScreen } from '../PunchSuccessScreen';
 import { FaceVerifyCameraView } from '@/features/face';
 import { Button, Card, ThemedText } from '@/shared/components';
 import React from 'react';

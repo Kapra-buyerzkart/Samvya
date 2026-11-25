@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/features/auth/model/authStore';
+import { useAuthStore } from '@/features/auth';
 import { useAppTheme, useThemeStore, type ThemePreference } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';

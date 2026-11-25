@@ -43,6 +43,11 @@ sentry.properties
 *.orig.*
 .gradle/
 build/
+vendor/
+*.apk
+*.aab
+*.ipa
+*.xcarchive
 
 # Metro
 .metro-health-check*

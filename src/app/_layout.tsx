@@ -22,7 +22,7 @@ import { AppErrorBoundary } from '@/shared/errors';
 import { useAppTheme } from '@/shared/theme';
 import '@/shared/i18n';
 // Top-level task definition import required by expo-task-manager
-import { initializeTrackingOnStartup } from '@/features/location/tasks/backgroundLocationTask';
+import { initializeTrackingOnStartup } from '@/features/location';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 

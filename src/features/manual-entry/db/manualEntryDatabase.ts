@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { ManualApprovalStatus, ManualAuditMetadata, ManualGpsRecord } from '../domain/types';
-import { enqueueAttendanceEvent } from '@/features/attendance/db/attendanceQueue';
+import { enqueueAttendanceEvent } from '@/features/attendance';
 
 const DB_NAME = 'hrms_attendance.db';
 let cachedDb: SQLite.SQLiteDatabase | null = null;

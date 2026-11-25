@@ -1,0 +1,60 @@
+name: Validate Expo React Native Project
+description: Install dependencies from lockfile and run ESLint, TypeScript, Jest, Expo Doctor, and Metro/Hermes export checks.
+
+inputs:
+  run-checks:
+    description: Whether to run lint, typecheck, unit tests, expo-doctor, and expo export
+    required: false
+    default: 'true'
+  export-platforms:
+    description: Space-separated Expo export platforms for bundling validation
+    required: false
+    default: 'android ios'
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js 22
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: '22'
+        cache: npm
+
+    - name: Install dependencies from lockfile
+      shell: bash
+      run: npm ci
+
+    - name: Run ESLint checks
+      if: ${{ inputs.run-checks == 'true' }}
+      shell: bash
+      run: npm run lint
+
+    - name: Run TypeScript type checking
+      if: ${{ inputs.run-checks == 'true' }}
+      shell: bash
+      run: npm run typecheck
+
+    - name: Run unit tests
+      if: ${{ inputs.run-checks == 'true' }}
+      shell: bash
+      run: npm test -- --ci
+
+    - name: Run Expo Doctor health checks
+      if: ${{ inputs.run-checks == 'true' }}
+      shell: bash
+      run: npx expo-doctor
+
+    - name: Validate React Native Metro/Hermes bundle export
+      if: ${{ inputs.run-checks == 'true' }}
+      shell: bash
+      env:
+        EXPORT_PLATFORMS: ${{ inputs.export-platforms }}
+      run: |
+        set -euo pipefail
+        PLATFORM_ARGS=()
+        for platform in $EXPORT_PLATFORMS; do
+          PLATFORM_ARGS+=(--platform "$platform")
+        done
+        rm -rf .build/expo-export
+        npx expo export "${PLATFORM_ARGS[@]}" --output-dir .build/expo-export
+        rm -rf .build/expo-export

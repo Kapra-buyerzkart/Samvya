@@ -1,4 +1,4 @@
-import { ManualGpsForm } from '@/features/manual-entry/ui/ManualGpsForm';
+import { ManualGpsForm } from '../../components/ManualGpsForm';
 import { Button, Card, ThemedText, ThemedView } from '@/shared/components';
 import React from 'react';
 import { View } from 'react-native';

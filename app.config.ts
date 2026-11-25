@@ -1,4 +1,15 @@
+import fs from 'fs';
+import path from 'path';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
+
+const rawPackageJson = fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf8');
+const packageJson = JSON.parse(rawPackageJson) as { version?: string };
+const appVersion = process.env.APP_VERSION || packageJson.version || '1.0.0';
+
+const rawBuildNumber = process.env.BUILD_NUMBER || process.env.GITHUB_RUN_NUMBER;
+const parsedBuildNumber = rawBuildNumber ? Number.parseInt(rawBuildNumber, 10) : 1;
+const buildNumber =
+  Number.isInteger(parsedBuildNumber) && parsedBuildNumber > 0 ? parsedBuildNumber : 1;
 
 const isProductionBuild =
   process.env.APP_ENV === 'production' ||
@@ -58,7 +69,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'HRMS Attendance',
   slug: 'hrms-attendance',
-  version: '1.0.0',
+  version: appVersion,
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'hrms',
@@ -69,6 +80,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: false,
     bundleIdentifier: 'com.hrms.attendance',
+    buildNumber: String(buildNumber),
     infoPlist: {
       NSCameraUsageDescription:
         'HRMS requires camera access for biometric face verification during check-in and check-out.',
@@ -81,6 +93,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   android: {
     package: 'com.hrms.attendance',
+    versionCode: buildNumber,
     adaptiveIcon: {
       backgroundColor: '#0F172A',
       foregroundImage: './assets/images/android-icon-foreground.png',
@@ -135,6 +148,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     './plugins/withUnbundledMlKit',
+    './plugins/withAndroidReleaseSigning',
     [
       'expo-build-properties',
       {

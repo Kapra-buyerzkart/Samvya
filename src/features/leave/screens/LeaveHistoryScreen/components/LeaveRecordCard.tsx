@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { FontFamily } from '@/shared/theme';
-import { LeaveHistoryRecord } from '../../../model/leaveHistoryData';
+import { LeaveHistoryRecord } from '../../../data/leaveHistoryData';
 
 interface LeaveRecordCardProps {
   item: LeaveHistoryRecord;

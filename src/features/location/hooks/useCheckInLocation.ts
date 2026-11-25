@@ -12,7 +12,7 @@ import {
   type GeofenceEvaluation,
   type GeofenceSite,
 } from '../domain/checkInFix';
-import { enqueueAttendanceEvent } from '@/features/attendance/db/attendanceQueue';
+import { enqueueAttendanceEvent } from '@/features/attendance';
 
 export type CheckInStep =
   | 'idle'

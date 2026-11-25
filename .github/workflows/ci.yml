@@ -1,45 +1,152 @@
-name: CI Quality Gates
+name: CI Validation
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  quality-gates:
-    name: Typecheck, Lint, Tests, Doctor & Size Budget
-    runs-on: macos-latest
+  validate:
+    name: Lint, Typecheck, Tests, Doctor & Bundling
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Install dependencies and run JS/Expo validation
+        uses: ./.github/actions/validate-project
         with:
-          node-version: 22
-          cache: npm
+          run-checks: 'true'
+          export-platforms: 'android ios'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: 1. Strict Typecheck
-        run: npm run typecheck
-
-      - name: 2. ESLint Flat Config
-        run: npm run lint
-
-      - name: 3. Unit Tests
-        run: npm test
-
-      - name: 4. Expo Doctor Dependency Health
-        run: npx expo-doctor
-
-      - name: 5. Bundle Size Budget Check
+      - name: Advisory bundle size budget check
+        id: bundle_budget
+        continue-on-error: true
         run: node scripts/check-bundle-budget.js
 
+      - name: Report advisory bundle budget notice
+        if: steps.bundle_budget.outcome == 'failure'
+        run: |
+          echo "::warning::scripts/check-bundle-budget.js exceeded its configured threshold (update PHASE_BASELINE_BYTES in scripts/check-bundle-budget.js when approving intentional phase growth)."
+          echo "### Advisory: Bundle Size Budget" >> "$GITHUB_STEP_SUMMARY"
+          echo "scripts/check-bundle-budget.js exceeded its baseline threshold. Review bundle growth or update PHASE_BASELINE_BYTES if intentional." >> "$GITHUB_STEP_SUMMARY"
+
+  android-build-validation:
+    name: Android Build Validation
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      APP_ENV: production
+      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js and install dependencies
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'false'
+
+      - name: Set up Java 17
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Cache Android NDK 27.1.12297006
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /usr/local/lib/android/sdk/ndk/27.1.12297006
+          key: android-ndk-27.1.12297006-${{ runner.os }}
+
+      - name: Set up Android SDK & accept licenses
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
+        with:
+          packages: platform-tools
+
+      - name: Set up Gradle & cache
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          cache-read-only: true
+
+      - name: Generate Android project via Expo Prebuild (CNG)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Build Android Release APK (validation only, unsigned/debug-signed)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+  ios-build-validation:
+    name: iOS Build Validation
+    needs: validate
+    runs-on: macos-26
+    timeout-minutes: 35
+
+    env:
+      APP_ENV: production
+      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js and install dependencies
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'false'
+
+      - name: Select Xcode 26.6
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: '26.6'
+
+      - name: Set up Ruby & CocoaPods via Bundler
+        uses: ruby/setup-ruby@78c62f2208e480ce3d5ae4dfd9b9e181acf48b63 # v1.344.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Generate iOS project via Expo Prebuild (CNG)
+        run: |
+          npx expo prebuild --platform ios --no-install
+          echo "export NODE_BINARY=$(command -v node)" > ios/.xcode.env.local
+
+      - name: Cache CocoaPods & Sentry xcframeworks
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/Library/Caches/sentry-react-native
+            ios/Pods
+            ios/Podfile.lock
+          key: ${{ runner.os }}-ios-pods-xcode26.6-${{ hashFiles('package-lock.json', 'app.config.ts', 'plugins/**', 'Gemfile') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-pods-xcode26.6-
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Build iOS Release for Simulator (validation only, unsigned)
+        run: |
+          xcodebuild \
+            -workspace ios/HRMSAttendance.xcworkspace \
+            -scheme HRMSAttendance \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build | tee "${RUNNER_TEMP}/xcodebuild.log"

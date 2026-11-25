@@ -1,0 +1,419 @@
+name: iOS Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_to_testflight:
+        description: Deploy IPA to TestFlight via App Store Connect API
+        required: false
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      skip_validation:
+        description: Skip JS validation when already run by caller workflow
+        required: false
+        type: boolean
+        default: false
+      deploy_to_testflight:
+        description: Deploy IPA to TestFlight via App Store Connect API
+        required: false
+        type: boolean
+        default: false
+      release_tag:
+        description: Semantic version tag triggering the release
+        required: false
+        type: string
+        default: ''
+    secrets:
+      IOS_DIST_CERT_BASE64:
+        required: false
+      IOS_DIST_CERT_PASSWORD:
+        required: false
+      IOS_PROVISIONING_PROFILE_BASE64:
+        required: false
+      APP_STORE_CONNECT_API_KEY_ID:
+        required: false
+      APP_STORE_CONNECT_ISSUER_ID:
+        required: false
+      APP_STORE_CONNECT_API_KEY:
+        required: false
+      SENTRY_AUTH_TOKEN:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  validate:
+    name: Validate JS & Bundle
+    if: ${{ !(github.event_name == 'workflow_call' && inputs.skip_validation == true) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install dependencies and run JS/Expo validation
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'true'
+          export-platforms: 'ios'
+
+  build:
+    name: Build iOS Release
+    needs: validate
+    if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    outputs:
+      app_version: ${{ steps.meta.outputs.app_version }}
+      build_number: ${{ steps.meta.outputs.build_number }}
+      bundle_id: ${{ steps.meta.outputs.bundle_id }}
+      signed: ${{ steps.signing_check.outputs.signed }}
+      artifact_name: ${{ steps.package_artifacts.outputs.artifact_name }}
+      ipa_built: ${{ steps.package_artifacts.outputs.ipa_built }}
+      ipa_filename: ${{ steps.package_artifacts.outputs.ipa_filename }}
+
+    env:
+      APP_ENV: production
+      DEPLOY_REQUESTED: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.deploy_to_testflight == true }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js and install dependencies
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'false'
+
+      - name: Select Xcode 26.6
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: '26.6'
+
+      - name: Set up Ruby & CocoaPods via Bundler
+        uses: ruby/setup-ruby@78c62f2208e480ce3d5ae4dfd9b9e181acf48b63 # v1.344.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Derive version metadata from project config
+        id: meta
+        env:
+          BUILD_NUMBER_OFFSET: ${{ vars.BUILD_NUMBER_OFFSET || '0' }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          OFFSET=$((10#${BUILD_NUMBER_OFFSET:-0}))
+          RUN_NUM=$((10#${GITHUB_RUN_NUMBER}))
+          BUILD_NUM=$((RUN_NUM + OFFSET))
+
+          APP_VERSION=$(npx expo config --type public --json | node -e "const c=JSON.parse(require('fs').readFileSync(0,'utf8')); process.stdout.write(c.version || '')")
+          BUNDLE_ID=$(npx expo config --type public --json | node -e "const c=JSON.parse(require('fs').readFileSync(0,'utf8')); process.stdout.write(c.ios?.bundleIdentifier || '')")
+
+          if [ -z "$APP_VERSION" ] || [ -z "$BUNDLE_ID" ]; then
+            echo "::error::Failed to resolve version or ios.bundleIdentifier from Expo config."
+            exit 1
+          fi
+
+          echo "BUILD_NUMBER=${BUILD_NUM}" >> "$GITHUB_ENV"
+          echo "app_version=${APP_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build_number=${BUILD_NUM}" >> "$GITHUB_OUTPUT"
+          echo "bundle_id=${BUNDLE_ID}" >> "$GITHUB_OUTPUT"
+          echo "Resolved iOS metadata: bundleId=${BUNDLE_ID}, version=${APP_VERSION}, buildNumber=${BUILD_NUM}"
+
+      - name: Check iOS signing secrets & Sentry mode
+        id: signing_check
+        env:
+          IOS_DIST_CERT_BASE64: ${{ secrets.IOS_DIST_CERT_BASE64 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SENTRY_AUTH_TOKEN:-}" ]; then
+            echo "SENTRY_DISABLE_AUTO_UPLOAD=true" >> "$GITHUB_ENV"
+          fi
+
+          MISSING=()
+          [ -z "${IOS_DIST_CERT_BASE64:-}" ] && MISSING+=("IOS_DIST_CERT_BASE64")
+          [ -z "${IOS_DIST_CERT_PASSWORD:-}" ] && MISSING+=("IOS_DIST_CERT_PASSWORD")
+          [ -z "${IOS_PROVISIONING_PROFILE_BASE64:-}" ] && MISSING+=("IOS_PROVISIONING_PROFILE_BASE64")
+
+          if [ "${#MISSING[@]}" -gt 0 ]; then
+            if [ "${DEPLOY_REQUESTED}" = "true" ] || [ "${GITHUB_EVENT_NAME}" = "workflow_call" ]; then
+              echo "::error::Missing required iOS signing secrets: ${MISSING[*]}"
+              exit 1
+            fi
+            echo "::warning::iOS signing secrets (${MISSING[*]}) are not configured. Building unsigned iOS Simulator release artifact for validation only."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "signed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Generate iOS project via Expo Prebuild (CNG)
+        run: |
+          npx expo prebuild --platform ios --no-install
+          echo "export NODE_BINARY=$(command -v node)" > ios/.xcode.env.local
+
+      - name: Cache CocoaPods & Sentry xcframeworks
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/Library/Caches/CocoaPods
+            ~/Library/Caches/sentry-react-native
+            ios/Pods
+            ios/Podfile.lock
+          key: ${{ runner.os }}-ios-pods-xcode26.6-${{ hashFiles('package-lock.json', 'app.config.ts', 'plugins/**', 'Gemfile') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-pods-xcode26.6-
+
+      - name: Install CocoaPods dependencies
+        working-directory: ios
+        run: bundle exec pod install
+
+      - name: Import Apple distribution certificate into temporary keychain
+        if: steps.signing_check.outputs.signed == 'true'
+        id: import_certs
+        uses: apple-actions/import-codesign-certs@288b8ec97b82c66b6f2a6baaf7acc8dfbcbe331c # v7.2.0
+        with:
+          p12-file-base64: ${{ secrets.IOS_DIST_CERT_BASE64 }}
+          p12-password: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+
+      - name: Install provisioning profile & generate ExportOptions.plist
+        if: steps.signing_check.outputs.signed == 'true'
+        id: profile
+        env:
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IDENTITIES: ${{ steps.import_certs.outputs.identities }}
+          BUNDLE_ID: ${{ steps.meta.outputs.bundle_id }}
+          OVERRIDE_TEAM_ID: ${{ vars.APPLE_TEAM_ID || '' }}
+        run: |
+          set -euo pipefail
+          PROFILE_TMP="${RUNNER_TEMP}/dist.mobileprovision"
+          PROFILE_PLIST="${RUNNER_TEMP}/dist-profile.plist"
+          EXPORT_PLIST="${RUNNER_TEMP}/ExportOptions.plist"
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROFILE_TMP"
+          security cms -D -i "$PROFILE_TMP" > "$PROFILE_PLIST"
+
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$PROFILE_PLIST")
+          TEAM_ID="${OVERRIDE_TEAM_ID:-$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" "$PROFILE_PLIST")}"
+          APP_ID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" "$PROFILE_PLIST")
+
+          if [ "$APP_ID" != "${TEAM_ID}.${BUNDLE_ID}" ] && [ "$APP_ID" != "${TEAM_ID}.*" ]; then
+            echo "::error::Provisioning profile application-identifier (${APP_ID}) does not match bundle ID (${TEAM_ID}.${BUNDLE_ID})."
+            exit 1
+          fi
+
+          mkdir -p "$PROFILES_DIR"
+          cp "$PROFILE_TMP" "${PROFILES_DIR}/${PROFILE_UUID}.mobileprovision"
+
+          SIGN_HASH=$(jq -r '([.[] | select(.name | test("Apple Distribution|iPhone Distribution"))][0] // .[0]).hash // empty' <<<"$IDENTITIES")
+          if [ -z "$SIGN_HASH" ]; then
+            echo "::error::No valid code-signing identity found in imported .p12 certificate."
+            exit 1
+          fi
+
+          python3 - "$EXPORT_PLIST" "$TEAM_ID" "$SIGN_HASH" "$BUNDLE_ID" "$PROFILE_UUID" <<'PY'
+          import plistlib, sys
+          out_path, team_id, sign_hash, bundle_id, profile_uuid = sys.argv[1:6]
+          data = {
+              "method": "app-store-connect",
+              "signingStyle": "manual",
+              "teamID": team_id,
+              "signingCertificate": sign_hash,
+              "provisioningProfiles": {bundle_id: profile_uuid},
+              "uploadSymbols": True,
+              "stripSwiftSymbols": True,
+          }
+          with open(out_path, "wb") as f:
+              plistlib.dump(data, f)
+          PY
+
+          echo "profile_uuid=${PROFILE_UUID}" >> "$GITHUB_OUTPUT"
+          echo "team_id=${TEAM_ID}" >> "$GITHUB_OUTPUT"
+          echo "sign_hash=${SIGN_HASH}" >> "$GITHUB_OUTPUT"
+          echo "export_plist=${EXPORT_PLIST}" >> "$GITHUB_OUTPUT"
+
+      - name: Archive & export signed IPA
+        if: steps.signing_check.outputs.signed == 'true'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          TEAM_ID: ${{ steps.profile.outputs.team_id }}
+          SIGN_HASH: ${{ steps.profile.outputs.sign_hash }}
+          PROFILE_UUID: ${{ steps.profile.outputs.profile_uuid }}
+          EXPORT_PLIST: ${{ steps.profile.outputs.export_plist }}
+        run: |
+          set -euo pipefail
+          ARCHIVE_PATH="${RUNNER_TEMP}/HRMSAttendance.xcarchive"
+          EXPORT_DIR="${RUNNER_TEMP}/ios-export"
+
+          xcodebuild \
+            -workspace ios/HRMSAttendance.xcworkspace \
+            -scheme HRMSAttendance \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_IDENTITY="$SIGN_HASH" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
+            archive
+
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_DIR" \
+            -exportOptionsPlist "$EXPORT_PLIST"
+
+      - name: Build unsigned iOS Simulator release artifact (main fallback)
+        if: steps.signing_check.outputs.signed != 'true'
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -workspace ios/HRMSAttendance.xcworkspace \
+            -scheme HRMSAttendance \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "${RUNNER_TEMP}/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Stage iOS build artifacts
+        id: package_artifacts
+        env:
+          APP_VERSION: ${{ steps.meta.outputs.app_version }}
+          BUILD_NUM: ${{ steps.meta.outputs.build_number }}
+          SIGNED: ${{ steps.signing_check.outputs.signed }}
+        run: |
+          set -euo pipefail
+          VERSION="$APP_VERSION"
+          STAGE_DIR="${RUNNER_TEMP}/ios-artifacts"
+          mkdir -p "$STAGE_DIR"
+
+          if [ "$SIGNED" = "true" ]; then
+            IPA_SRC=$(find "${RUNNER_TEMP}/ios-export" -maxdepth 1 -name "*.ipa" | head -n 1)
+            if [ -z "$IPA_SRC" ] || [ ! -f "$IPA_SRC" ]; then
+              echo "::error::Expected exported IPA under ${RUNNER_TEMP}/ios-export, but none was found."
+              exit 1
+            fi
+            IPA_NAME="hrms-attendance-${VERSION}-b${BUILD_NUM}-signed.ipa"
+            cp "$IPA_SRC" "$STAGE_DIR/$IPA_NAME"
+
+            DSYM_DIR="${RUNNER_TEMP}/HRMSAttendance.xcarchive/dSYMs"
+            if [ -d "$DSYM_DIR" ]; then
+              ditto -c -k --sequesterRsrc --keepParent "$DSYM_DIR" "$STAGE_DIR/hrms-attendance-${VERSION}-b${BUILD_NUM}-dSYMs.zip"
+            fi
+
+            echo "artifact_name=ios-${VERSION}-b${BUILD_NUM}-signed" >> "$GITHUB_OUTPUT"
+            echo "ipa_built=true" >> "$GITHUB_OUTPUT"
+            echo "ipa_filename=${IPA_NAME}" >> "$GITHUB_OUTPUT"
+          else
+            APP_SRC=$(find "${RUNNER_TEMP}/DerivedData/Build/Products/Release-iphonesimulator" -maxdepth 1 -name "*.app" | head -n 1)
+            if [ -z "$APP_SRC" ] || [ ! -d "$APP_SRC" ]; then
+              echo "::error::Expected Simulator .app bundle under DerivedData, but none was found."
+              exit 1
+            fi
+            ditto -c -k --sequesterRsrc --keepParent "$APP_SRC" "$STAGE_DIR/hrms-attendance-${VERSION}-b${BUILD_NUM}-simulator-unsigned.app.zip"
+            echo "artifact_name=ios-${VERSION}-b${BUILD_NUM}-simulator-unsigned" >> "$GITHUB_OUTPUT"
+            echo "ipa_built=false" >> "$GITHUB_OUTPUT"
+            echo "ipa_filename=" >> "$GITHUB_OUTPUT"
+          fi
+          ls -lh "$STAGE_DIR"
+
+      - name: Upload iOS build artifacts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.package_artifacts.outputs.artifact_name }}
+          path: ${{ runner.temp }}/ios-artifacts/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Clean up provisioning profile and temporary signing files
+        if: always()
+        env:
+          PROFILE_UUID: ${{ steps.profile.outputs.profile_uuid }}
+        run: |
+          rm -f "${RUNNER_TEMP}/dist.mobileprovision" "${RUNNER_TEMP}/dist-profile.plist" "${RUNNER_TEMP}/ExportOptions.plist"
+          if [ -n "${PROFILE_UUID:-}" ]; then
+            rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+          fi
+
+  deploy-testflight:
+    name: Deploy to TestFlight
+    needs: build
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && inputs.deploy_to_testflight == true }}
+    runs-on: macos-26
+    timeout-minutes: 25
+
+    steps:
+      - name: Verify TestFlight deployment prerequisites
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          BUILD_SIGNED: ${{ needs.build.outputs.signed }}
+          IPA_BUILT: ${{ needs.build.outputs.ipa_built }}
+        run: |
+          set -euo pipefail
+          if [ "$BUILD_SIGNED" != "true" ] || [ "$IPA_BUILT" != "true" ]; then
+            echo "::error::Cannot deploy to TestFlight without a signed IPA."
+            exit 1
+          fi
+          MISSING=()
+          [ -z "${APP_STORE_CONNECT_API_KEY_ID:-}" ] && MISSING+=("APP_STORE_CONNECT_API_KEY_ID")
+          [ -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ] && MISSING+=("APP_STORE_CONNECT_ISSUER_ID")
+          [ -z "${APP_STORE_CONNECT_API_KEY:-}" ] && MISSING+=("APP_STORE_CONNECT_API_KEY")
+          if [ "${#MISSING[@]}" -gt 0 ]; then
+            echo "::error::Missing required App Store Connect secrets: ${MISSING[*]}"
+            exit 1
+          fi
+
+      - name: Download signed IPA artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.build.outputs.artifact_name }}
+          path: artifacts
+
+      - name: Upload IPA to TestFlight
+        uses: apple-actions/upload-testflight-build@665328adbecbc3ad929d3da710696d928b8a7ba9 # v5.9.0
+        with:
+          app-path: artifacts/${{ needs.build.outputs.ipa_filename }}
+          app-type: ios
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          uses-non-exempt-encryption: ${{ vars.IOS_USES_NON_EXEMPT_ENCRYPTION || 'false' }}
+          wait-for-processing: ${{ vars.TESTFLIGHT_WAIT_FOR_PROCESSING || 'true' }}
+          groups: ${{ vars.TESTFLIGHT_GROUPS || '' }}
+
+      - name: Write iOS deployment summary
+        env:
+          BUNDLE_ID: ${{ needs.build.outputs.bundle_id }}
+          APP_VERSION: ${{ needs.build.outputs.app_version }}
+          BUILD_NUMBER: ${{ needs.build.outputs.build_number }}
+          IPA_FILENAME: ${{ needs.build.outputs.ipa_filename }}
+        run: |
+          {
+            echo "### Apple TestFlight Deployment"
+            echo "- **Bundle ID**: \`${BUNDLE_ID}\`"
+            echo "- **Version**: \`${APP_VERSION}\` (build \`${BUILD_NUMBER}\`)"
+            echo "- **Artifact**: \`${IPA_FILENAME}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

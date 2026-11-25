@@ -1,0 +1,199 @@
+name: Release Build & Deploy
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  preflight-and-validate:
+    name: SemVer, Credentials & Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    outputs:
+      tag_version: ${{ steps.semver.outputs.tag_version }}
+      deploy_android: ${{ steps.targets.outputs.deploy_android }}
+      deploy_ios: ${{ steps.targets.outputs.deploy_ios }}
+
+    steps:
+      - name: Validate strict semantic version tag
+        id: semver
+        run: |
+          set -euo pipefail
+          TAG="$GITHUB_REF_NAME"
+          SEMVER_REGEX='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9][0-9]*|[0-9]*[a-zA-Z-][0-9a-zA-Z-]*))*))?(\+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*))?$'
+          if [[ ! "$TAG" =~ $SEMVER_REGEX ]]; then
+            echo "::error::Tag '${TAG}' is not a valid semantic version tag (expected e.g. v1.0.0 or v1.2.3-rc.1)."
+            exit 1
+          fi
+          CORE_VERSION="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+          echo "tag_version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "core_version=${CORE_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine release platforms & verify signing/deployment credentials
+        id: targets
+        env:
+          RELEASE_PLATFORMS: ${{ vars.RELEASE_PLATFORMS || 'all' }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          IOS_DIST_CERT_BASE64: ${{ secrets.IOS_DIST_CERT_BASE64 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          set -euo pipefail
+          DEPLOY_ANDROID="false"
+          DEPLOY_IOS="false"
+
+          case "$RELEASE_PLATFORMS" in
+            all)
+              DEPLOY_ANDROID="true"
+              DEPLOY_IOS="true"
+              ;;
+            android)
+              DEPLOY_ANDROID="true"
+              ;;
+            ios)
+              DEPLOY_IOS="true"
+              ;;
+            *)
+              echo "::error::Invalid RELEASE_PLATFORMS value '${RELEASE_PLATFORMS}'. Allowed values: all, android, ios."
+              exit 1
+              ;;
+          esac
+
+          MISSING=()
+          if [ "$DEPLOY_ANDROID" = "true" ]; then
+            [ -z "${ANDROID_KEYSTORE_BASE64:-}" ] && MISSING+=("ANDROID_KEYSTORE_BASE64")
+            [ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ] && MISSING+=("ANDROID_KEYSTORE_PASSWORD")
+            [ -z "${ANDROID_KEY_ALIAS:-}" ] && MISSING+=("ANDROID_KEY_ALIAS")
+            [ -z "${ANDROID_KEY_PASSWORD:-}" ] && MISSING+=("ANDROID_KEY_PASSWORD")
+            [ -z "${GOOGLE_PLAY_SERVICE_ACCOUNT_JSON:-}" ] && MISSING+=("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON")
+          fi
+
+          if [ "$DEPLOY_IOS" = "true" ]; then
+            [ -z "${IOS_DIST_CERT_BASE64:-}" ] && MISSING+=("IOS_DIST_CERT_BASE64")
+            [ -z "${IOS_DIST_CERT_PASSWORD:-}" ] && MISSING+=("IOS_DIST_CERT_PASSWORD")
+            [ -z "${IOS_PROVISIONING_PROFILE_BASE64:-}" ] && MISSING+=("IOS_PROVISIONING_PROFILE_BASE64")
+            [ -z "${APP_STORE_CONNECT_API_KEY_ID:-}" ] && MISSING+=("APP_STORE_CONNECT_API_KEY_ID")
+            [ -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ] && MISSING+=("APP_STORE_CONNECT_ISSUER_ID")
+            [ -z "${APP_STORE_CONNECT_API_KEY:-}" ] && MISSING+=("APP_STORE_CONNECT_API_KEY")
+          fi
+
+          if [ "${#MISSING[@]}" -gt 0 ]; then
+            echo "::error::Release aborted: missing required signing or deployment secrets for RELEASE_PLATFORMS='${RELEASE_PLATFORMS}': ${MISSING[*]}"
+            echo "### Release Blocked: Missing Required Secrets" >> "$GITHUB_STEP_SUMMARY"
+            echo "A release tag requires all signing and store deployment credentials for enabled platforms (\`${RELEASE_PLATFORMS}\`)." >> "$GITHUB_STEP_SUMMARY"
+            printf -- "- \`%s\`\n" "${MISSING[@]}" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "deploy_android=${DEPLOY_ANDROID}" >> "$GITHUB_OUTPUT"
+          echo "deploy_ios=${DEPLOY_IOS}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install dependencies and run JS/Expo validation
+        uses: ./.github/actions/validate-project
+        with:
+          run-checks: 'true'
+          export-platforms: 'android ios'
+
+      - name: Verify tag matches project version
+        env:
+          TAG_CORE: ${{ steps.semver.outputs.core_version }}
+        run: |
+          set -euo pipefail
+          PROJECT_VERSION=$(npx expo config --type public --json | node -e "const c=JSON.parse(require('fs').readFileSync(0,'utf8')); process.stdout.write(c.version || '')")
+          if [ "$PROJECT_VERSION" != "$TAG_CORE" ]; then
+            echo "::error::Tag version (${TAG_CORE}) does not match project version (${PROJECT_VERSION}) in package.json / app.config.ts. Bump package.json version before tagging."
+            exit 1
+          fi
+          echo "Verified tag ${GITHUB_REF_NAME} matches project version ${PROJECT_VERSION}."
+
+  release-android:
+    name: Build & Deploy Android
+    needs: preflight-and-validate
+    if: needs.preflight-and-validate.outputs.deploy_android == 'true'
+    uses: ./.github/workflows/android-build.yml
+    with:
+      skip_validation: true
+      build_format: both
+      deploy_to_play_internal: true
+      release_tag: ${{ github.ref_name }}
+    secrets: inherit
+
+  release-ios:
+    name: Build & Deploy iOS
+    needs: preflight-and-validate
+    if: needs.preflight-and-validate.outputs.deploy_ios == 'true'
+    uses: ./.github/workflows/ios-build.yml
+    with:
+      skip_validation: true
+      deploy_to_testflight: true
+      release_tag: ${{ github.ref_name }}
+    secrets: inherit
+
+  verify-release:
+    name: Verify Release Deployment Completion
+    needs: [preflight-and-validate, release-android, release-ios]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Assert enabled deployments succeeded
+        env:
+          PREFLIGHT: ${{ needs.preflight-and-validate.result }}
+          DEPLOY_ANDROID: ${{ needs.preflight-and-validate.outputs.deploy_android }}
+          DEPLOY_IOS: ${{ needs.preflight-and-validate.outputs.deploy_ios }}
+          ANDROID_RES: ${{ needs.release-android.result }}
+          IOS_RES: ${{ needs.release-ios.result }}
+        run: |
+          set -euo pipefail
+          if [ "$PREFLIGHT" != "success" ]; then
+            echo "::error::Preflight and validation failed (result=${PREFLIGHT})."
+            exit 1
+          fi
+
+          DEPLOYED_COUNT=0
+          if [ "$DEPLOY_ANDROID" = "true" ]; then
+            if [ "$ANDROID_RES" != "success" ]; then
+              echo "::error::Android release deployment did not succeed (result=${ANDROID_RES})."
+              exit 1
+            fi
+            DEPLOYED_COUNT=$((DEPLOYED_COUNT + 1))
+          fi
+
+          if [ "$DEPLOY_IOS" = "true" ]; then
+            if [ "$IOS_RES" != "success" ]; then
+              echo "::error::iOS release deployment did not succeed (result=${IOS_RES})."
+              exit 1
+            fi
+            DEPLOYED_COUNT=$((DEPLOYED_COUNT + 1))
+          fi
+
+          if [ "$DEPLOYED_COUNT" -lt 1 ]; then
+            echo "::error::No platform deployment occurred for tag ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+
+          {
+            echo "### Release ${GITHUB_REF_NAME} Completed"
+            echo "- Android Play Store Internal: \`${ANDROID_RES}\` (enabled: \`${DEPLOY_ANDROID}\`)"
+            echo "- iOS TestFlight: \`${IOS_RES}\` (enabled: \`${DEPLOY_IOS}\`)"
+          } >> "$GITHUB_STEP_SUMMARY"

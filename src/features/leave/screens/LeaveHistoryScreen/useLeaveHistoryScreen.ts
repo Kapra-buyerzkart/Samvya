@@ -10,7 +10,7 @@ import {
   type LeaveDurationData,
   type LeaveHistoryRecord,
   type LeavePieDataItem,
-} from '../../model/leaveHistoryData';
+} from '../../data/leaveHistoryData';
 
 const ITEMS_PER_PAGE = 3;
 

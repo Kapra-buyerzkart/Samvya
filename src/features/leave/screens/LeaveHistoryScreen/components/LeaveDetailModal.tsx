@@ -2,7 +2,7 @@ import { AppBottomSheet } from '@/shared/components';
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { type LeaveHistoryRecord } from '../../../model/leaveHistoryData';
+import { type LeaveHistoryRecord } from '../../../data/leaveHistoryData';
 import {
   getCloseBtnStyle,
   getDescriptionBoxStyle,

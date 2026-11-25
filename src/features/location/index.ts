@@ -6,5 +6,5 @@ export * from './domain/trackingSession';
 export * from './db/locationDatabase';
 export * from './tasks/backgroundLocationTask';
 export * from './hooks/useCheckInLocation';
-export * from './ui/OneShotCheckInLocation';
-export * from './ui/BackgroundTrackingBanner';
+export * from './components/OneShotCheckInLocation';
+export * from './components/BackgroundTrackingBanner';
