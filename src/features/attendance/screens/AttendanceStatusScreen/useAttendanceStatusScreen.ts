@@ -1,6 +1,14 @@
+import { useAuthStore } from '@/features/auth';
+import { type DayWorkHours, type MonthlyWorkHoursSummary } from '@/features/employment/domain/types';
+import { isApiError } from '@/shared/api';
 import { useAppTheme } from '@/shared/theme';
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  attendanceApi,
+  getMonthDateRange,
+  type AttendanceRangeRecord,
+} from '../../api/attendanceApi';
 
 export interface CalendarDay {
   dayNumber: number;
@@ -9,11 +17,12 @@ export interface CalendarDay {
 }
 
 export interface DayPunchInfo {
-  status: 'approved' | 'pending';
+  status: 'approved' | 'pending' | 'rejected' | 'empty';
   punchInTime: string;
   punchInPeriod: string;
   punchOutTime: string;
   punchOutPeriod: string;
+  workedHoursLabel: string | null;
   subtitle: string;
 }
 
@@ -34,56 +43,118 @@ export const MONTH_NAMES = [
 
 export const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export const ATTENDANCE_DATA: Record<number, DayPunchInfo> = {
-  19: {
-    status: 'approved',
-    punchInTime: '09:02 AM',
-    punchInPeriod: 'Morning',
-    punchOutTime: '05:34 PM',
-    punchOutPeriod: 'Evening',
-    subtitle: 'Selfies recorded · IST',
-  },
-  18: {
-    status: 'approved',
-    punchInTime: '09:05 AM',
-    punchInPeriod: 'Morning',
-    punchOutTime: '05:30 PM',
-    punchOutPeriod: 'Evening',
-    subtitle: 'Selfies recorded · IST',
-  },
-  17: {
-    status: 'approved',
-    punchInTime: '08:58 AM',
-    punchInPeriod: 'Morning',
-    punchOutTime: '05:35 PM',
-    punchOutPeriod: 'Evening',
-    subtitle: 'Selfies recorded · IST',
-  },
-  16: {
-    status: 'approved',
-    punchInTime: '09:12 AM',
-    punchInPeriod: 'Morning',
-    punchOutTime: '05:40 PM',
-    punchOutPeriod: 'Evening',
-    subtitle: 'Selfies recorded · IST',
-  },
-  13: {
-    status: 'pending',
-    punchInTime: '09:30 AM',
-    punchInPeriod: 'Morning',
-    punchOutTime: '06:15 PM',
-    punchOutPeriod: 'Evening',
-    subtitle: 'Selfies recorded · IST',
-  },
-};
+function formatWorkedMinutes(minutes: number): string {
+  const safe = Math.max(0, Math.round(minutes));
+  if (safe === 0) return '0h';
+  const hrs = Math.floor(safe / 60);
+  const mins = safe % 60;
+  return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+}
 
 export function useAttendanceStatusScreen() {
   const theme = useAppTheme();
   const isDark = theme.isDark;
+  const employmentId = useAuthStore((s) => s.session?.employmentId ?? null);
 
-  const [currentYear, setCurrentYear] = useState(2026);
-  const [currentMonth, setCurrentMonth] = useState(10);
-  const [selectedDay, setSelectedDay] = useState(19);
+  const [initialDate] = useState(() => new Date());
+  const [currentYear, setCurrentYear] = useState(() => initialDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(() => initialDate.getMonth());
+  const [selectedDay, setSelectedDay] = useState(() => initialDate.getDate());
+  const [reloadCount, setReloadCount] = useState(0);
+  const [fetchState, setFetchState] = useState<{
+    key: string;
+    recordsByDay: Record<number, AttendanceRangeRecord>;
+    monthlySummary: MonthlyWorkHoursSummary | null;
+    error: string | null;
+  } | null>(null);
+
+  const requestKey =
+    employmentId !== null && employmentId !== ''
+      ? `${employmentId}:${currentYear}:${currentMonth}:${reloadCount}`
+      : null;
+
+  useEffect(() => {
+    if (!requestKey || employmentId === null || employmentId === '') {
+      return;
+    }
+
+    let isCancelled = false;
+    const month1Based = currentMonth + 1;
+    const { fromDate, toDate } = getMonthDateRange(currentYear, month1Based);
+
+    Promise.allSettled([
+      attendanceApi.getEmploymentAttendanceRange({
+        employmentId,
+        fromDate,
+        toDate,
+      }),
+      attendanceApi.getEmploymentMonthlyAttendance({
+        employmentId,
+        year: currentYear,
+        month: month1Based,
+      }),
+    ]).then(([rangeResult, monthResult]) => {
+      if (isCancelled) return;
+
+      const recordsByDay: Record<number, AttendanceRangeRecord> = {};
+      if (rangeResult.status === 'fulfilled') {
+        for (const rec of rangeResult.value) {
+          const parts = rec.dateKey.split('-');
+          const recYear = Number(parts[0]);
+          const recMonth = Number(parts[1]);
+          const recDay = Number(parts[2]);
+          if (recYear === currentYear && recMonth === month1Based && Number.isInteger(recDay)) {
+            recordsByDay[recDay] = rec;
+          }
+        }
+      }
+
+      const monthlySummary =
+        monthResult.status === 'fulfilled' ? monthResult.value : null;
+
+      let error: string | null = null;
+      if (rangeResult.status === 'rejected') {
+        error = isApiError(rangeResult.reason)
+          ? rangeResult.reason.message
+          : 'Unable to load attendance logs right now.';
+      } else if (monthResult.status === 'rejected') {
+        error = isApiError(monthResult.reason)
+          ? monthResult.reason.message
+          : 'Unable to load monthly attendance summary right now.';
+      }
+
+      setFetchState({
+        key: requestKey,
+        recordsByDay,
+        monthlySummary,
+        error,
+      });
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [requestKey, employmentId, currentYear, currentMonth]);
+
+  const activeFetchState =
+    requestKey !== null && fetchState?.key === requestKey ? fetchState : null;
+  const isLoading = requestKey !== null && activeFetchState === null;
+  const loadError = activeFetchState?.error ?? null;
+  const apiRecordsByDay = useMemo(() => activeFetchState?.recordsByDay ?? {}, [activeFetchState]);
+  const monthlySummary = activeFetchState?.monthlySummary ?? null;
+
+  const monthlyDayByDay = useMemo<Record<number, DayWorkHours>>(() => {
+    const map: Record<number, DayWorkHours> = {};
+    if (!monthlySummary) return map;
+    for (const dayRec of monthlySummary.dailyRecords) {
+      map[dayRec.day] = dayRec;
+    }
+    return map;
+  }, [monthlySummary]);
+
+  const handleRetryLoad = useCallback((): void => {
+    setReloadCount((c) => c + 1);
+  }, []);
 
   const handlePrevMonth = (): void => {
     if (currentMonth === 0) {
@@ -140,35 +211,135 @@ export function useAttendanceStatusScreen() {
     return days;
   }, [currentYear, currentMonth]);
 
-  const selectedPunchInfo = useMemo<DayPunchInfo>(() => {
-    if (currentMonth === 10 && currentYear === 2026 && ATTENDANCE_DATA[selectedDay]) {
-      return ATTENDANCE_DATA[selectedDay];
+  const dayStatusByDay = useMemo<Record<number, 'approved' | 'pending' | 'rejected'>>(() => {
+    if (employmentId === null || employmentId === '') {
+      return {};
     }
 
-    const d = new Date(currentYear, currentMonth, selectedDay);
-    const dayOfWeek = d.getDay();
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const result: Record<number, 'approved' | 'pending' | 'rejected'> = {};
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-    if (isWeekend) {
+    for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+      const record = apiRecordsByDay[dayNum];
+      if (record) {
+        const hasActivity =
+          record.hasAttendanceData ??
+          (record.punchInTimeUtc !== null ||
+            record.punchOutTimeUtc !== null ||
+            record.workedMinutes > 0 ||
+            record.status === 'pending' ||
+            record.status === 'rejected');
+        if (hasActivity) {
+          result[dayNum] = record.status;
+          continue;
+        }
+      }
+
+      const monthlyDay = monthlyDayByDay[dayNum];
+      if (
+        monthlyDay &&
+        (monthlyDay.status === 'recorded' || monthlyDay.status === 'lesser' || monthlyDay.hours > 0)
+      ) {
+        result[dayNum] = 'approved';
+      }
+    }
+
+    return result;
+  }, [employmentId, apiRecordsByDay, monthlyDayByDay, currentYear, currentMonth]);
+
+  const selectedPunchInfo = useMemo<DayPunchInfo>(() => {
+    if (employmentId === null || employmentId === '') {
       return {
-        status: 'approved',
+        status: 'empty',
         punchInTime: '—',
-        punchInPeriod: 'Weekend',
+        punchInPeriod: 'No punch',
         punchOutTime: '—',
-        punchOutPeriod: 'Rest day',
-        subtitle: 'Scheduled off day',
+        punchOutPeriod: 'No punch',
+        workedHoursLabel: null,
+        subtitle: 'No active employment selected',
       };
     }
 
+    const apiRecord = apiRecordsByDay[selectedDay];
+    const monthlyDay = monthlyDayByDay[selectedDay];
+    const d = new Date(currentYear, currentMonth, selectedDay);
+    const dayOfWeek = d.getDay();
+    const defaultWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    if (apiRecord) {
+      const hasActivity =
+        apiRecord.hasAttendanceData ??
+        (apiRecord.punchInTimeUtc !== null ||
+          apiRecord.punchOutTimeUtc !== null ||
+          apiRecord.workedMinutes > 0 ||
+          apiRecord.status === 'pending');
+
+      if (!hasActivity && !(monthlyDay && (monthlyDay.hours > 0 || monthlyDay.status !== 'no_entry'))) {
+        const isWeekend = apiRecord.isWeekend ?? monthlyDay?.isWeekend ?? defaultWeekend;
+        const isHoliday = apiRecord.isHoliday ?? monthlyDay?.isHoliday ?? false;
+        return {
+          status: 'empty',
+          punchInTime: apiRecord.punchInDisplay,
+          punchInPeriod: isHoliday ? 'Holiday' : isWeekend ? 'Weekend' : 'No punch',
+          punchOutTime: apiRecord.punchOutDisplay,
+          punchOutPeriod: isHoliday ? 'Holiday' : isWeekend ? 'Rest day' : 'No punch',
+          workedHoursLabel: null,
+          subtitle: apiRecord.subtitle,
+        };
+      }
+
+      const workedHoursLabel =
+        apiRecord.workedMinutes > 0
+          ? formatWorkedMinutes(apiRecord.workedMinutes)
+          : monthlyDay && monthlyDay.hours > 0
+            ? monthlyDay.formattedHours
+            : null;
+
+      return {
+        status:
+          apiRecord.status === 'pending'
+            ? 'pending'
+            : apiRecord.status === 'rejected'
+              ? 'rejected'
+              : 'approved',
+        punchInTime: apiRecord.punchInDisplay,
+        punchInPeriod: apiRecord.punchInPeriod,
+        punchOutTime: apiRecord.punchOutDisplay,
+        punchOutPeriod: apiRecord.punchOutPeriod,
+        workedHoursLabel,
+        subtitle: apiRecord.subtitle,
+      };
+    }
+
+    if (monthlyDay && (monthlyDay.hours > 0 || monthlyDay.status === 'recorded' || monthlyDay.status === 'lesser')) {
+      return {
+        status: 'approved',
+        punchInTime: '—',
+        punchInPeriod: 'Not recorded',
+        punchOutTime: '—',
+        punchOutPeriod: 'Not recorded',
+        workedHoursLabel: monthlyDay.formattedHours,
+        subtitle: `${monthlyDay.formattedHours} worked`,
+      };
+    }
+
+    const isWeekend = monthlyDay?.isWeekend ?? defaultWeekend;
+    const isHoliday = monthlyDay?.isHoliday ?? false;
+
     return {
-      status: 'approved',
-      punchInTime: '09:00 AM',
-      punchInPeriod: 'Morning',
-      punchOutTime: '05:30 PM',
-      punchOutPeriod: 'Evening',
-      subtitle: 'Selfies recorded · IST',
+      status: 'empty',
+      punchInTime: '—',
+      punchInPeriod: isHoliday ? 'Holiday' : isWeekend ? 'Weekend' : 'No punch',
+      punchOutTime: '—',
+      punchOutPeriod: isHoliday ? 'Holiday' : isWeekend ? 'Rest day' : 'No punch',
+      workedHoursLabel: null,
+      subtitle: isHoliday
+        ? 'Public holiday'
+        : isWeekend
+          ? 'Scheduled off day'
+          : 'No attendance log recorded',
     };
-  }, [currentYear, currentMonth, selectedDay]);
+  }, [employmentId, apiRecordsByDay, monthlyDayByDay, currentYear, currentMonth, selectedDay]);
 
   const formattedSelectedDate = useMemo(() => {
     const d = new Date(currentYear, currentMonth, selectedDay);
@@ -182,9 +353,14 @@ export function useAttendanceStatusScreen() {
     currentYear,
     currentMonth,
     selectedDay,
+    isLoading,
+    loadError,
+    monthlySummary,
+    dayStatusByDay,
     setSelectedDay,
     handlePrevMonth,
     handleNextMonth,
+    handleRetryLoad,
     handleBack,
     calendarDays,
     selectedPunchInfo,

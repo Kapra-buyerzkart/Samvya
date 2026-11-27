@@ -24,16 +24,16 @@ export interface TabItem {
 
 export const TABS: TabItem[] = [
   {
-    id: 'attendance',
-    label: 'Attendance',
-    featherIcon: 'clock',
-    testID: 'tab-btn-attendance',
-  },
-  {
     id: 'home',
     label: 'Home',
     icon: require('../../../assets/samagra/icons/home.png'),
     testID: 'tab-btn-home',
+  },
+  {
+    id: 'attendance',
+    label: 'Attendance',
+    featherIcon: 'clock',
+    testID: 'tab-btn-attendance',
   },
   {
     id: 'leave',

@@ -56,6 +56,8 @@ export function MonthlyWorkHoursChart({
           <ScrollView
             ref={scrollRef}
             horizontal
+            nestedScrollEnabled
+            directionalLockEnabled
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >

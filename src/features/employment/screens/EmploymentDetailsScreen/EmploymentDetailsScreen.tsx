@@ -1,62 +1,66 @@
-import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { ImageBackground } from 'expo-image';
-import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
-import { MonthlyWorkHoursChart } from '../../components/MonthlyWorkHoursChart';
-import { useEmploymentDetailsScreen } from './useEmploymentDetailsScreen';
+import React from 'react';
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  styles,
-  getBackgroundImageStyle,
-  getImageStyle,
-  getNavTitleStyle,
+  EmploymentHistoryShimmer,
+  MonthlyWorkHoursShimmer,
+} from '../../components/EmploymentDetailsShimmer';
+import { MonthlyWorkHoursChart } from '../../components/MonthlyWorkHoursChart';
+import {
+  getBackgroundStyle,
   getCardStyle,
-  getHeaderIconBadgeStyle,
-  getHistoryHeaderIconBadgeStyle,
   getCardTitleStyle,
   getCounterPillStyle,
   getCounterPillTextStyle,
+  getEmpCodeTextStyle,
+  getEmptyStateTextStyle,
+  getFieldLabelStyle,
+  getFieldValueStyle,
+  getFooterTextStyle,
+  getGridRowSpacingStyle,
+  getHeaderIconBadgeStyle,
+  getHistoryHeaderIconBadgeStyle,
+  getHorizontalDividerStyle,
+  getMetricLargeTextStyle,
+  getMetricSubLabelStyle,
   getMonthNavBtnStyle,
   getMonthPillStyle,
   getMonthPillTextStyle,
-  getMetricLargeTextStyle,
-  getMetricSubLabelStyle,
-  getVerticalDividerStyle,
-  getHorizontalDividerStyle,
+  getNavTitleStyle,
+  getPrimaryPillStyle,
+  getPrimaryPillTextStyle,
   getRoleHeadingStyle,
   getStatusPillStyle,
   getStatusPillTextStyle,
-  getPrimaryPillStyle,
-  getPrimaryPillTextStyle,
-  getEmpCodeTextStyle,
   getSubOrganisationTextStyle,
-  getFieldLabelStyle,
-  getFieldValueStyle,
-  getGridRowSpacingStyle,
-  getFooterTextStyle,
+  getVerticalDividerStyle,
+  styles,
 } from './EmploymentDetailsScreen.styles';
+import { useEmploymentDetailsScreen } from './useEmploymentDetailsScreen';
 
 export function EmploymentDetailsScreen(): React.JSX.Element {
   const {
     isDark,
+    monthLabel,
     monthData,
     selectedDay,
-    history,
+    historyItems,
+    isLoadingMonth,
+    monthError,
+    isLoadingHistory,
+    historyError,
     setSelectedDay,
     handlePrevMonth,
     handleNextMonth,
+    handleRetryMonth,
+    handleRetryHistory,
     handleBack,
   } = useEmploymentDetailsScreen();
 
   return (
-    <ImageBackground
-      source={require('../../../../../assets/images/background_home.png')}
-      style={getBackgroundImageStyle(isDark)}
-      imageStyle={getImageStyle(isDark)}
-      resizeMode="cover"
-    >
-      <SafeAreaView style={styles.safeArea}>
+    <View style={getBackgroundStyle(isDark)} testID="employment-details-screen">
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         {/* Navigation Bar */}
         <View style={styles.navBar}>
           <TouchableOpacity
@@ -68,31 +72,51 @@ export function EmploymentDetailsScreen(): React.JSX.Element {
             accessibilityLabel="Go back"
           >
             <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F172A'} />
-            <Text style={getNavTitleStyle(isDark)}>
-              Employment details
-            </Text>
+            <Text style={getNavTitleStyle(isDark)}>Employment details</Text>
           </TouchableOpacity>
         </View>
 
-        <KeyboardAvoidingScrollView
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+          bounces
+          keyboardShouldPersistTaps="handled"
+          testID="employment-details-scroll-view"
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoadingMonth || isLoadingHistory}
+              onRefresh={() => {
+                handleRetryMonth();
+                handleRetryHistory();
+              }}
+              tintColor={isDark ? '#60A5FA' : '#1D4ED8'}
+              colors={['#1D4ED8']}
+            />
+          }
         >
           {/* CARD 1: Monthly work hours */}
-          <GlassCard
-            intensity={50}
-            tint={isDark ? 'dark' : 'light'}
-            style={getCardStyle(isDark)}
-          >
-            {/* Card Header */}
+          <View style={getCardStyle(isDark)} testID="monthly-work-hours-card">
             <View style={styles.cardHeaderRow}>
               <View style={getHeaderIconBadgeStyle(isDark)}>
                 <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : '#2563EB'} />
               </View>
-              <Text style={getCardTitleStyle(isDark)}>
-                Monthly work hours
-              </Text>
+              <Text style={getCardTitleStyle(isDark)}>Monthly work hours</Text>
             </View>
+
+            {monthError ? (
+              <TouchableOpacity
+                style={styles.monthErrorBanner}
+                onPress={handleRetryMonth}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading monthly attendance"
+                testID="employment-month-retry"
+              >
+                <Text style={styles.monthErrorText}>{monthError} Tap to retry.</Text>
+              </TouchableOpacity>
+            ) : null}
 
             {/* Month Navigator Row */}
             <View style={styles.monthNavRow}>
@@ -107,9 +131,7 @@ export function EmploymentDetailsScreen(): React.JSX.Element {
               </TouchableOpacity>
 
               <View style={getMonthPillStyle(isDark)}>
-                <Text style={getMonthPillTextStyle(isDark)}>
-                  {monthData.monthName}
-                </Text>
+                <Text style={getMonthPillTextStyle(isDark)}>{monthLabel}</Text>
               </View>
 
               <TouchableOpacity
@@ -123,171 +145,165 @@ export function EmploymentDetailsScreen(): React.JSX.Element {
               </TouchableOpacity>
             </View>
 
-            {/* 3-Column Metrics Row */}
-            <View style={styles.metricsRow}>
-              <View style={styles.metricCol}>
-                <Text style={getMetricLargeTextStyle(isDark)}>
-                  {monthData.workingDays} working days
+            {isLoadingMonth ? (
+              <MonthlyWorkHoursShimmer isDark={isDark} />
+            ) : monthData ? (
+              <>
+                <View style={styles.metricsRow}>
+                  <View style={styles.metricCol}>
+                    <Text style={getMetricLargeTextStyle(isDark)}>
+                      {monthData.workingDays} working {'\n'} days
+                    </Text>
+                  </View>
+
+                  <View style={getVerticalDividerStyle(isDark)} />
+
+                  <View style={styles.metricCol}>
+                    <Text style={getMetricSubLabelStyle(isDark)}>Total hours</Text>
+                    <Text style={getMetricLargeTextStyle(isDark)}>
+                      {monthData.totalHoursFormatted}
+                    </Text>
+                  </View>
+
+                  <View style={getVerticalDividerStyle(isDark)} />
+
+                  <View style={styles.metricCol}>
+                    <Text style={getMetricLargeTextStyle(isDark)}>
+                      {monthData.daysRecorded} days {'\n'}recorded
+                    </Text>
+                  </View>
+                </View>
+
+                <MonthlyWorkHoursChart
+                  dailyRecords={monthData.dailyRecords}
+                  selectedDay={selectedDay}
+                  onSelectDay={setSelectedDay}
+                  isDark={isDark}
+                />
+              </>
+            ) : !monthError ? (
+              <View style={styles.emptyStateBox} testID="employment-month-empty">
+                <Text style={getEmptyStateTextStyle(isDark)}>
+                  No monthly attendance records available.
                 </Text>
               </View>
-
-              <View style={getVerticalDividerStyle(isDark)} />
-
-              <View style={styles.metricCol}>
-                <Text style={getMetricSubLabelStyle(isDark)}>
-                  Total hours
-                </Text>
-                <Text style={getMetricLargeTextStyle(isDark)}>
-                  {monthData.totalHoursFormatted}
-                </Text>
-              </View>
-
-              <View style={getVerticalDividerStyle(isDark)} />
-
-              <View style={styles.metricCol}>
-                <Text style={getMetricLargeTextStyle(isDark)}>
-                  {monthData.daysRecorded} days recorded
-                </Text>
-              </View>
-            </View>
-
-            {/* Interactive Bar Chart */}
-            <MonthlyWorkHoursChart
-              dailyRecords={monthData.dailyRecords}
-              selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
-              isDark={isDark}
-            />
-          </GlassCard>
+            ) : null}
+          </View>
 
           {/* CARD 2: Employment history */}
-          <GlassCard
-            intensity={50}
-            tint={isDark ? 'dark' : 'light'}
-            style={getCardStyle(isDark, true)}
-          >
-            {/* Card Header with Counter Badge */}
+          <View style={getCardStyle(isDark, true)} testID="employment-history-card">
             <View style={styles.cardHeaderRow}>
               <View style={getHistoryHeaderIconBadgeStyle(isDark)}>
                 <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : '#2563EB'} />
               </View>
-              <Text style={getCardTitleStyle(isDark)}>
-                Employment history
-              </Text>
+              <Text style={getCardTitleStyle(isDark)}>Employment history</Text>
               <View style={getCounterPillStyle(isDark)}>
-                <Text style={getCounterPillTextStyle(isDark)}>
-                  1
+                <Text style={getCounterPillTextStyle(isDark)} testID="employment-history-count">
+                  {isLoadingHistory ? '—' : historyItems.length}
                 </Text>
               </View>
             </View>
 
-            <View style={getHorizontalDividerStyle(isDark)} />
+            {historyError ? (
+              <TouchableOpacity
+                style={styles.monthErrorBanner}
+                onPress={handleRetryHistory}
+                activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading employment history"
+                testID="employment-history-retry"
+              >
+                <Text style={styles.monthErrorText}>{historyError} Tap to retry.</Text>
+              </TouchableOpacity>
+            ) : null}
 
-            {/* Role, Status, and Department */}
-            <View style={styles.historyRoleSection}>
-              <Text style={getRoleHeadingStyle(isDark)}>
-                {history.designation}
-              </Text>
+            {isLoadingHistory ? (
+              <EmploymentHistoryShimmer isDark={isDark} />
+            ) : historyItems.length > 0 ? (
+              historyItems.map((item) => (
+                <React.Fragment key={item.id}>
+                  <View style={getHorizontalDividerStyle(isDark)} />
 
-              {/* Status Pills */}
-              <View style={styles.badgeGroup}>
-                <View style={getStatusPillStyle(isDark)}>
-                  <Text style={getStatusPillTextStyle(isDark)}>
-                    {history.status}
-                  </Text>
-                </View>
+                  <View style={styles.historyRoleSection}>
+                    <Text style={getRoleHeadingStyle(isDark)}>{item.designation}</Text>
 
-                {history.isPrimary && (
-                  <View style={getPrimaryPillStyle(isDark)}>
-                    <Text style={getPrimaryPillTextStyle(isDark)}>
-                      Primary
+                    <View style={styles.badgeGroup}>
+                      <View style={getStatusPillStyle(isDark)}>
+                        <Text style={getStatusPillTextStyle(isDark)}>{item.status}</Text>
+                      </View>
+
+                      {item.isPrimary && (
+                        <View style={getPrimaryPillStyle(isDark)}>
+                          <Text style={getPrimaryPillTextStyle(isDark)}>Primary</Text>
+                        </View>
+                      )}
+
+                      <Text style={getEmpCodeTextStyle(isDark)}>{item.employeeCode}</Text>
+                    </View>
+
+                    <Text style={getSubOrganisationTextStyle(isDark)}>
+                      {item.organisation} &nbsp;|&nbsp; {item.office} &nbsp;|&nbsp;{' '}
+                      {item.department}
                     </Text>
                   </View>
-                )}
 
-                <Text style={getEmpCodeTextStyle(isDark)}>
-                  {history.employeeCode}
-                </Text>
+                  <View style={getHorizontalDividerStyle(isDark)} />
+
+                  <View style={styles.infoGrid}>
+                    <View style={styles.gridRow}>
+                      <View style={styles.gridCol}>
+                        <Text style={getFieldLabelStyle(isDark)}>EMPLOYMENT TYPE</Text>
+                        <Text style={getFieldValueStyle(isDark)}>{item.employmentType}</Text>
+                      </View>
+
+                      <View style={styles.gridCol}>
+                        <Text style={getFieldLabelStyle(isDark)}>WORK ARRANGEMENT</Text>
+                        <Text style={getFieldValueStyle(isDark)}>{item.workArrangement}</Text>
+                      </View>
+                    </View>
+
+                    <View style={getGridRowSpacingStyle()}>
+                      <View style={styles.gridCol}>
+                        <Text style={getFieldLabelStyle(isDark)}>EFFECTIVE PERIOD</Text>
+                        <Text style={getFieldValueStyle(isDark)}>{item.effectivePeriod}</Text>
+                      </View>
+
+                      <View style={styles.gridCol}>
+                        <Text style={getFieldLabelStyle(isDark)}>CONFIRMATION</Text>
+                        <Text style={getFieldValueStyle(isDark)}>{item.confirmation}</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={getHorizontalDividerStyle(isDark)} />
+
+                  <View style={styles.footerSection}>
+                    <View style={styles.footerRow}>
+                      <View style={styles.footerDateItem}>
+                        <Feather name="calendar" size={14} color={isDark ? '#94A3B8' : '#64748B'} />
+                        <Text style={getFooterTextStyle(isDark)}>Joined {item.joinedDate}</Text>
+                      </View>
+                      <Text style={getFooterTextStyle(isDark)}>
+                        Last working day: {item.lastWorkingDay}
+                      </Text>
+                    </View>
+
+                    <Text style={getFooterTextStyle(isDark, true)}>
+                      Relieved: {item.relievedDate}
+                    </Text>
+                  </View>
+                </React.Fragment>
+              ))
+            ) : !historyError ? (
+              <View style={styles.emptyStateBox} testID="employment-history-empty">
+                <Text style={getEmptyStateTextStyle(isDark)}>No employment history available.</Text>
               </View>
-
-              <Text style={getSubOrganisationTextStyle(isDark)}>
-                {history.organisation} &nbsp;|&nbsp; {history.office} &nbsp;|&nbsp;{' '}
-                {history.department}
-              </Text>
-            </View>
-
-            <View style={getHorizontalDividerStyle(isDark)} />
-
-            {/* 2-Column Info Grid */}
-            <View style={styles.infoGrid}>
-              <View style={styles.gridRow}>
-                {/* Column 1: Employment Type */}
-                <View style={styles.gridCol}>
-                  <Text style={getFieldLabelStyle(isDark)}>
-                    EMPLOYMENT TYPE
-                  </Text>
-                  <Text style={getFieldValueStyle(isDark)}>
-                    {history.employmentType}
-                  </Text>
-                </View>
-
-                {/* Column 2: Work Arrangement */}
-                <View style={styles.gridCol}>
-                  <Text style={getFieldLabelStyle(isDark)}>
-                    WORK ARRANGEMENT
-                  </Text>
-                  <Text style={getFieldValueStyle(isDark)}>
-                    {history.workArrangement}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={getGridRowSpacingStyle()}>
-                {/* Column 1: Effective Period */}
-                <View style={styles.gridCol}>
-                  <Text style={getFieldLabelStyle(isDark)}>
-                    EFFECTIVE PERIOD
-                  </Text>
-                  <Text style={getFieldValueStyle(isDark)}>
-                    {history.effectivePeriod}
-                  </Text>
-                </View>
-
-                {/* Column 2: Confirmation */}
-                <View style={styles.gridCol}>
-                  <Text style={getFieldLabelStyle(isDark)}>
-                    CONFIRMATION
-                  </Text>
-                  <Text style={getFieldValueStyle(isDark)}>
-                    {history.confirmation}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={getHorizontalDividerStyle(isDark)} />
-
-            {/* Footer Metadata */}
-            <View style={styles.footerSection}>
-              <View style={styles.footerRow}>
-                <View style={styles.footerDateItem}>
-                  <Feather name="calendar" size={14} color={isDark ? '#94A3B8' : '#64748B'} />
-                  <Text style={getFooterTextStyle(isDark)}>
-                    Joined {history.joinedDate}
-                  </Text>
-                </View>
-                <Text style={getFooterTextStyle(isDark)}>
-                  Last working day: {history.lastWorkingDay}
-                </Text>
-              </View>
-
-              <Text style={getFooterTextStyle(isDark, true)}>
-                Relieved: {history.relievedDate}
-              </Text>
-            </View>
-          </GlassCard>
-        </KeyboardAvoidingScrollView>
+            ) : null}
+          </View>
+        </ScrollView>
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
+
+export default EmploymentDetailsScreen;

@@ -14,6 +14,7 @@ import { TeamMember, TomorrowPlan, WorkLocationType } from '../../domain/types';
 export interface TeamRadarCardProps {
   onMemberPress?: (member: TeamMember) => void;
   onPingPress?: (member: TeamMember) => void;
+  showMemberDetailSheet?: boolean;
 }
 
 export function useTeamRadarCard({ onMemberPress, onPingPress }: TeamRadarCardProps) {

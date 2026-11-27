@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/features/auth';
+import { confirmAndSignOut, useAuthStore } from '@/features/auth';
 import { useAppTheme } from '@/shared/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';
@@ -6,9 +6,11 @@ import { Alert } from 'react-native';
 
 export function useProfileScreen() {
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const theme = useAppTheme();
   const isDark = theme.isDark;
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const displayName = user?.name || 'Peter S';
   const nameParts = displayName.trim().split(/\s+/);
@@ -39,7 +41,24 @@ export function useProfileScreen() {
   };
 
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)');
+    }
+  };
+
+  const handleOpenSettings = () => {
+    router.push('/(app)/settings');
+  };
+
+  const handleSignOut = () => {
+    if (isLoggingOut) return;
+    confirmAndSignOut({
+      logout,
+      onStart: () => setIsLoggingOut(true),
+      onFinish: () => setIsLoggingOut(false),
+    });
   };
 
   const handleOpenAddressModal = () => {
@@ -65,9 +84,12 @@ export function useProfileScreen() {
     address,
     initials,
     isAddressModalOpen,
+    isLoggingOut,
     handleCopy,
     handleEditDisabled,
     handleBack,
+    handleOpenSettings,
+    handleSignOut,
     handleOpenAddressModal,
     handleCloseAddressModal,
   };

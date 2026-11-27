@@ -1,77 +1,205 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import React from 'react';
+import { useAuthStore } from '@/features/auth';
+import { ApiError } from '@/shared/api';
+import { leaveApi } from '../../../api/leaveApi';
 import { LeaveHistoryScreen } from '../LeaveHistoryScreen';
 
+jest.mock('../../../api/leaveApi', () => ({
+  leaveApi: {
+    getLeaveRequests: jest.fn(),
+  },
+}));
+
+const mockedLeaveApi = leaveApi as jest.Mocked<typeof leaveApi>;
+
+function toMonthKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function toYmd(date: Date, day: number): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
 describe('LeaveHistoryScreen', () => {
+  const initialAuthState = useAuthStore.getState();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    useAuthStore.setState({ ...initialAuthState, session: null, user: null });
   });
 
-  it('renders header, leave by month summary metric, and pie chart slices according to reference design', async () => {
+  afterEach(() => {
+    cleanup();
+    useAuthStore.setState(initialAuthState);
+  });
+
+  it('renders empty state without dummy data when employmentId is missing', async () => {
     const { getAllByText, getByText, getByTestId } = await render(<LeaveHistoryScreen />);
 
-    // Header and Card title
     expect(getAllByText('Leave History').length).toBeGreaterThanOrEqual(2);
     expect(getByTestId('leave-history-back-btn')).toBeTruthy();
-
-    // Summary Metric
-    expect(getByText('Leave by month')).toBeTruthy();
-    expect(getByText('5.5 days')).toBeTruthy();
+    expect(getByText('0 days')).toBeTruthy();
     expect(getByText('Approved leave taken')).toBeTruthy();
-
-    // Filter pill
     expect(getByText('Last 3 months')).toBeTruthy();
-    expect(getByText('Sep-Nov 2026')).toBeTruthy();
-
-    // Pie chart container (react-native-gifted-charts)
-    expect(getByTestId('gifted-pie-chart-container')).toBeTruthy();
-
-    // Month Selector Buttons
-    expect(getByTestId('month-btn-sep')).toBeTruthy();
-    expect(getByTestId('month-btn-oct')).toBeTruthy();
-    expect(getByTestId('month-btn-nov')).toBeTruthy();
-
-    // Default November list (3 items)
-    expect(getByText('20')).toBeTruthy();
-    expect(getByText('11-12')).toBeTruthy();
-    expect(getByText('10')).toBeTruthy();
-    expect(getByText('1 of 1')).toBeTruthy();
+    expect(getByTestId('leave-history-empty')).toBeTruthy();
+    expect(getByText('No leave requests found for this period.')).toBeTruthy();
+    expect(mockedLeaveApi.getLeaveRequests).not.toHaveBeenCalled();
   });
 
-  it('filters leave history items when another month is selected', async () => {
-    const { getByTestId, queryByText, findByText, findAllByText } = await render(
+  it('loads backend leave requests, supports error retry, filters by month, and paginates', async () => {
+    const now = new Date();
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 4, 1);
+
+    useAuthStore.setState({
+      ...initialAuthState,
+      isAuthenticated: true,
+      session: {
+        tenantId: 10,
+        memberId: 42,
+        employmentId: 105,
+        employmentPublicId: 'emp_pub_105',
+      },
+    });
+
+    mockedLeaveApi.getLeaveRequests.mockRejectedValueOnce(
+      new ApiError({ status: 503, message: 'Leave service unavailable' }),
+    );
+
+    const { getByTestId, findByTestId, findByText, findAllByText, queryByText } = await render(
       <LeaveHistoryScreen />,
     );
 
-    // Tap Oct
-    fireEvent.press(getByTestId('month-btn-oct'));
-    expect(await findByText('15')).toBeTruthy();
-    expect((await findAllByText('Oct')).length).toBeGreaterThanOrEqual(2);
-    expect(queryByText('20')).toBeNull();
+    await waitFor(() => {
+      expect(mockedLeaveApi.getLeaveRequests).toHaveBeenCalledWith(105);
+    });
 
-    // Tap Sep
-    fireEvent.press(getByTestId('month-btn-sep'));
-    expect(await findByText('28')).toBeTruthy();
-    expect(await findByText('05')).toBeTruthy();
-  });
+    const retryBanner = await findByTestId('leave-history-retry');
 
-  it('displays all records and paginates through them when View all is pressed', async () => {
-    const { getByTestId, findByText } = await render(<LeaveHistoryScreen />);
+    mockedLeaveApi.getLeaveRequests.mockResolvedValueOnce([
+      {
+        leaveRequestId: 101,
+        leaveTypeId: 1,
+        leaveTypeName: 'Casual leave',
+        startDate: toYmd(now, 20),
+        endDate: toYmd(now, 20),
+        totalDaysApplied: 1,
+        status: 'APPROVED',
+        reason: 'Family function',
+      },
+      {
+        leaveRequestId: 102,
+        leaveTypeId: 2,
+        leaveTypeName: 'Sick leave',
+        startDate: toYmd(now, 11),
+        endDate: toYmd(now, 12),
+        totalDaysApplied: 2,
+        status: 'APPROVED',
+        reason: 'Medical checkup and rest',
+      },
+      {
+        leaveRequestId: 103,
+        leaveTypeId: 1,
+        leaveTypeName: 'Casual leave',
+        startDate: toYmd(now, 5),
+        endDate: toYmd(now, 5),
+        totalDaysApplied: 1,
+        status: 'PENDING',
+        reason: 'Personal errand',
+      },
+      {
+        leaveRequestId: 104,
+        leaveTypeId: 3,
+        leaveTypeName: 'Annual leave',
+        startDate: toYmd(prevMonth, 15),
+        endDate: toYmd(prevMonth, 15),
+        totalDaysApplied: 1,
+        status: 'APPROVED',
+        reason: 'Short break',
+      },
+      {
+        leaveRequestId: 105,
+        leaveTypeId: 3,
+        leaveTypeName: 'Annual leave',
+        startDate: toYmd(sixMonthsAgo, 18),
+        endDate: toYmd(sixMonthsAgo, 19),
+        totalDaysApplied: 2,
+        status: 'APPROVED',
+        reason: 'Summer travel',
+      },
+    ]);
 
-    // Press View all 6
-    fireEvent.press(getByTestId('view-all-leaves-btn'));
+    fireEvent.press(retryBanner);
 
-    // 6 records with 3 per page means 2 pages
+    await waitFor(() => {
+      expect(getByTestId('summary-total-days')).toHaveTextContent('4 days');
+    });
     expect(await findByText('1 of 2')).toBeTruthy();
+    expect(await findByText('20')).toBeTruthy();
+    expect(await findByText('11-12')).toBeTruthy();
 
-    // Press Next page
     fireEvent.press(getByTestId('next-page-btn'));
     expect(await findByText('2 of 2')).toBeTruthy();
+    expect((await findAllByText('15')).length).toBeGreaterThanOrEqual(1);
 
-    // Press Prev page
-    fireEvent.press(getByTestId('prev-page-btn'));
+    fireEvent.press(getByTestId(`month-btn-${toMonthKey(prevMonth).toLowerCase()}`));
+    expect((await findAllByText('15')).length).toBeGreaterThanOrEqual(1);
+    expect(queryByText('20')).toBeNull();
+
+    fireEvent.press(getByTestId('view-all-leaves-btn'));
     expect(await findByText('1 of 2')).toBeTruthy();
+
+    fireEvent.press(getByTestId('filter-duration-btn'));
+    fireEvent.press(await findByTestId('duration-option-6months'));
+    await waitFor(() => {
+      expect(getByTestId('summary-total-days')).toHaveTextContent('6 days');
+    });
+  });
+
+  it('opens the leave detail modal when clicking a leave card and closes on close button', async () => {
+    const now = new Date();
+
+    useAuthStore.setState({
+      ...initialAuthState,
+      isAuthenticated: true,
+      session: {
+        tenantId: 10,
+        memberId: 42,
+        employmentId: 105,
+        employmentPublicId: 'emp_pub_105',
+      },
+    });
+
+    mockedLeaveApi.getLeaveRequests.mockResolvedValueOnce([
+      {
+        leaveRequestId: 202,
+        leaveTypeId: 2,
+        leaveTypeName: 'Sick leave',
+        startDate: toYmd(now, 11),
+        endDate: toYmd(now, 12),
+        totalDaysApplied: 2,
+        status: 'APPROVED',
+        reason: 'Medical checkup',
+      },
+    ]);
+
+    const { getByTestId, findByText, findAllByText, findByTestId, queryByTestId } = await render(
+      <LeaveHistoryScreen />,
+    );
+
+    const card = await findByTestId('leave-record-202');
+    fireEvent.press(card);
+
+    expect(await findByTestId('leave-detail-bottom-sheet')).toBeTruthy();
+    expect(await findByText('Sick leave')).toBeTruthy();
+    expect((await findAllByText('Medical checkup')).length).toBeGreaterThanOrEqual(2);
+
+    fireEvent.press(getByTestId('leave-detail-close-btn'));
+    await waitFor(() => {
+      expect(queryByTestId('leave-detail-bottom-sheet')).toBeNull();
+    });
   });
 
   it('navigates back when back button is pressed', async () => {
@@ -79,64 +207,5 @@ describe('LeaveHistoryScreen', () => {
 
     fireEvent.press(getByTestId('leave-history-back-btn'));
     expect(router.back).toHaveBeenCalled();
-  });
-
-  it('updates duration to 6 months and 1 year dynamically recalculating metrics and pie chart data', async () => {
-    const { getByTestId, findByText, findByTestId } = await render(<LeaveHistoryScreen />);
-
-    // Initial state: 3 months
-    expect(await findByText('5.5 days')).toBeTruthy();
-
-    // Open duration picker
-    fireEvent.press(getByTestId('filter-duration-btn'));
-
-    // Select 6 months
-    fireEvent.press(await findByTestId('duration-option-6months'));
-
-    // Verify dynamic update for 6 months
-    expect(await findByText('10 days')).toBeTruthy();
-    expect(await findByText('Jun-Nov 2026')).toBeTruthy();
-    expect(await findByTestId('month-btn-jun')).toBeTruthy();
-
-    // Open duration picker again and select 1 year
-    fireEvent.press(getByTestId('filter-duration-btn'));
-    fireEvent.press(await findByTestId('duration-option-1year'));
-
-    // Verify dynamic update for 1 year
-    expect(await findByText('16.5 days')).toBeTruthy();
-    expect(await findByText('Dec 2025-Nov 2026')).toBeTruthy();
-    expect(await findByTestId('month-btn-dec')).toBeTruthy();
-  });
-
-  it('opens the leave detail modal when clicking on a leave history card and closes on close button', async () => {
-    const { getByTestId, findByText, findAllByText, findByTestId, queryByTestId } = await render(
-      <LeaveHistoryScreen />,
-    );
-
-    // Click on 11-12 Nov record card
-    fireEvent.press(getByTestId('leave-record-leave-2'));
-
-    // Modal is opened
-    expect(await findByTestId('leave-detail-bottom-sheet')).toBeTruthy();
-    expect(await findByText('11 - 12 Nov')).toBeTruthy();
-    expect((await findAllByText('2 days')).length).toBeGreaterThanOrEqual(2);
-    expect(await findByText('Sick leave')).toBeTruthy();
-    expect(await findByText('Number of days')).toBeTruthy();
-    expect(await findByText('Date of leave')).toBeTruthy();
-    expect(await findByText('Leave type')).toBeTruthy();
-
-    // Close button dismisses modal
-    fireEvent.press(getByTestId('leave-detail-close-btn'));
-    await waitFor(() => {
-      expect(queryByTestId('leave-detail-bottom-sheet')).toBeNull();
-    });
-  });
-
-  it('opens the leave detail modal when clicking on leave history section header', async () => {
-    const { getByTestId, findByText, findByTestId } = await render(<LeaveHistoryScreen />);
-
-    fireEvent.press(getByTestId('leave-history-header-btn'));
-    expect(await findByTestId('leave-detail-bottom-sheet')).toBeTruthy();
-    expect(await findByText('Sick leave')).toBeTruthy();
   });
 });

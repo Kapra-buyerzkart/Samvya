@@ -1,5 +1,5 @@
 import { FontFamily } from '@/shared/theme';
-import { type ImageStyle, Platform, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 export const styles = StyleSheet.create({
   backgroundImage: {
@@ -14,9 +14,22 @@ export const styles = StyleSheet.create({
   navBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 12,
+  },
+  navLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingsBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   backButton: {
     padding: 2,
@@ -34,30 +47,24 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 96,
+    paddingBottom: 110,
     flexGrow: 1,
   },
   heroCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.95)',
-    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 16,
     paddingHorizontal: 16,
-    marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#1E40AF',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 0,
-      },
-    }),
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   avatarWrapper: {
     position: 'relative',
@@ -108,23 +115,17 @@ export const styles = StyleSheet.create({
     marginTop: 3,
   },
   card: {
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 22,
-    borderWidth: 1.5,
-    borderColor: '#DBEAFE',
-    padding: 16,
-    marginBottom: 16,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#1E40AF',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 0,
-      },
-    }),
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 18,
+    marginBottom: 14,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -204,7 +205,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: '#E2E8F0',
     padding: 12,
   },
   subCardIconBox: {
@@ -265,7 +266,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#DBEAFE',
+    borderColor: '#E2E8F0',
     padding: 12,
   },
   subContainerHalf: {
@@ -337,12 +338,26 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     marginTop: 4,
-    marginBottom: 28,
+    marginBottom: 14,
     shadowColor: '#1D4ED8',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
+  },
+  logoutButton: {
+    borderRadius: 14,
+    height: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    marginBottom: 24,
+  },
+  logoutButtonText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 15,
   },
   bottomEditBtnText: {
     fontFamily: FontFamily.headingBold,
@@ -371,13 +386,7 @@ export const styles = StyleSheet.create({
 
 export function getBackgroundImageStyle(isDark: boolean): ViewStyle {
   return {
-    backgroundColor: isDark ? '#020617' : '#F8FAFC',
-  };
-}
-
-export function getBackgroundImageProps(isDark: boolean): ImageStyle {
-  return {
-    opacity: isDark ? 0.05 : 1,
+    backgroundColor: isDark ? '#020617' : '#F2F4F8',
   };
 }
 
@@ -463,7 +472,10 @@ export function getSubCardLabelStyle(isDark: boolean): TextStyle | undefined {
   return isDark ? { color: '#94A3B8' } : undefined;
 }
 
-export function getSubCardActionTextStyle(isDark: boolean, hasValue: boolean): (TextStyle | undefined)[] {
+export function getSubCardActionTextStyle(
+  isDark: boolean,
+  hasValue: boolean,
+): (TextStyle | undefined)[] {
   return [
     hasValue ? styles.subCardActionText : styles.notSetText,
     isDark ? { color: hasValue ? '#60A5FA' : '#64748B' } : undefined,
@@ -507,9 +519,43 @@ export function getAddAddressBtnTextStyle(isDark: boolean): TextStyle | undefine
 }
 
 export function getBottomEditBtnStyle(isDark: boolean): (ViewStyle | undefined)[] {
-  return [styles.bottomEditBtn, styles.bottomEditBtnDisabled, isDark ? styles.bottomEditBtnDisabledDark : undefined];
+  return [
+    styles.bottomEditBtn,
+    styles.bottomEditBtnDisabled,
+    isDark ? styles.bottomEditBtnDisabledDark : undefined,
+  ];
 }
 
 export function getBottomEditBtnTextStyle(isDark: boolean): (TextStyle | undefined)[] {
-  return [styles.bottomEditBtnText, styles.bottomEditBtnTextDisabled, isDark ? { color: '#64748B' } : undefined];
+  return [
+    styles.bottomEditBtnText,
+    styles.bottomEditBtnTextDisabled,
+    isDark ? { color: '#64748B' } : undefined,
+  ];
+}
+
+export function getSettingsBtnStyle(isDark: boolean): ViewStyle {
+  return {
+    backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+    borderColor: isDark ? '#334155' : '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  };
+}
+
+export function getLogoutButtonStyle(isDark: boolean, isLoggingOut: boolean): ViewStyle {
+  return {
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.14)' : '#FEF2F2',
+    borderColor: isDark ? 'rgba(239, 68, 68, 0.35)' : '#FECACA',
+    opacity: isLoggingOut ? 0.65 : 1,
+  };
+}
+
+export function getLogoutTextStyle(isDark: boolean): TextStyle {
+  return {
+    color: isDark ? '#F87171' : '#DC2626',
+  };
 }

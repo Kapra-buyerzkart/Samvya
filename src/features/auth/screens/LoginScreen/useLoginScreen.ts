@@ -1,148 +1,138 @@
-import { useAuthStore } from '../../store/authStore';
-import { useAppTheme } from '@/shared/theme';
+import { useState } from 'react';
+import { Keyboard } from 'react-native';
 import { router } from 'expo-router';
-import React, { useRef, useState } from 'react';
-import { Alert, Keyboard, type NativeSyntheticEvent, type TextInput } from 'react-native';
+import { isApiError } from '@/shared/api';
+import { useAppTheme } from '@/shared/theme';
+import { type EntityId } from '../../api/authApi';
+import { useAuthStore } from '../../store/authStore';
 
-export type AuthMethod = 'phone' | 'email';
+const DEV_TEST_CREDENTIALS = __DEV__
+  ? {
+      username: 'backupssajil@gmail.com',
+      password: 'Password@123',
+    }
+  : null;
 
 export function useLoginScreen() {
   const theme = useAppTheme();
   const isDark = theme.isDark;
 
-  const [method, setMethod] = useState<AuthMethod>('phone');
-  const [identifier, setIdentifier] = useState('');
-  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '']);
-  const [countdown, setCountdown] = useState(0);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [focusedOtpIndex, setFocusedOtpIndex] = useState<number | null>(null);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [switchingTenantId, setSwitchingTenantId] = useState<EntityId | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const otpInputsRef = useRef<(React.ElementRef<typeof TextInput> | null)[]>([]);
   const login = useAuthStore((s) => s.login);
+  const selectOrganization = useAuthStore((s) => s.selectOrganization);
+  const cancelOrganizationSelection = useAuthStore((s) => s.cancelOrganizationSelection);
+  const requiresOrganizationSelection = useAuthStore(
+    (s) => s.requiresOrganizationSelection,
+  );
+  const organizations = useAuthStore((s) => s.organizations);
 
-  const handleSelectMethod = (selectedMethod: AuthMethod): void => {
-    setMethod(selectedMethod);
-    setIdentifier('');
-    setOtpDigits(['', '', '', '', '']);
+  const handleUsernameChange = (value: string): void => {
+    setUsername(value);
+    if (errorMessage) setErrorMessage(null);
   };
 
-  const handleSendOtp = async (): Promise<void> => {
-    if (!identifier.trim()) {
-      Alert.alert(
-        'Required',
-        method === 'phone'
-          ? 'Please enter your mobile phone number.'
-          : 'Please enter your work email or employee code.',
-      );
+  const handlePasswordChange = (value: string): void => {
+    setPassword(value);
+    if (errorMessage) setErrorMessage(null);
+  };
+
+  const handleTogglePasswordVisibility = (): void => {
+    setShowPassword((prev) => !prev);
+  };
+
+  const handleFillTestCredentials = (): void => {
+    if (!DEV_TEST_CREDENTIALS) return;
+    setUsername(DEV_TEST_CREDENTIALS.username);
+    setPassword(DEV_TEST_CREDENTIALS.password);
+    if (errorMessage) setErrorMessage(null);
+  };
+
+  const handleSignIn = async (): Promise<void> => {
+    const trimmedEmail = username.trim();
+    if (!trimmedEmail) {
+      setErrorMessage('Please enter your staff email.');
       return;
     }
 
-    setIsSendingOtp(true);
+    if (!password) {
+      setErrorMessage('Please enter your password.');
+      return;
+    }
+
     Keyboard.dismiss();
+    setErrorMessage(null);
+    setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSendingOtp(false);
-      setCountdown(30);
-
-      const timer = setInterval(() => {
-        setCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      setOtpDigits(['1', '2', '3', '4', '5']);
-
-      Alert.alert(
-        'OTP Sent Successfully',
-        method === 'phone'
-          ? `A 5-digit verification code has been sent by SMS to ${identifier}.\n\n(Demo code: 12345)`
-          : `A 5-digit verification code has been sent to your registered work email (${identifier}).\n\n(Demo code: 12345)`,
-      );
-
-      otpInputsRef.current[0]?.focus();
-    }, 600);
-  };
-
-  const handleOtpChange = (value: string, index: number): void => {
-    const cleaned = value.replace(/[^0-9]/g, '');
-
-    if (cleaned.length >= 5) {
-      const pasted = cleaned.slice(0, 5).split('');
-      setOtpDigits(pasted);
-      otpInputsRef.current[4]?.focus();
-      return;
-    }
-
-    const newDigits = [...otpDigits];
-    newDigits[index] = cleaned.slice(-1);
-    setOtpDigits(newDigits);
-
-    if (cleaned && index < 4) {
-      otpInputsRef.current[index + 1]?.focus();
-    }
-  };
-
-  const handleOtpKeyPress = (e: NativeSyntheticEvent<{ key: string }>, index: number): void => {
-    if (e.nativeEvent.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      otpInputsRef.current[index - 1]?.focus();
-    }
-  };
-
-  const handleVerify = async (): Promise<void> => {
-    const code = otpDigits.join('');
-
-    if (!identifier.trim()) {
-      Alert.alert(
-        'Required',
-        method === 'phone'
-          ? 'Please enter your registered phone number first.'
-          : 'Please enter your registered work email or employee code first.',
-      );
-      return;
-    }
-
-    if (code.length < 5) {
-      Alert.alert('Incomplete Code', 'Please enter the complete 5-digit verification code.');
-      return;
-    }
-
-    setIsVerifying(true);
     try {
-      await login({
-        identifier: identifier.trim(),
-        method,
-        otp: code,
+      const result = await login({
+        username: trimmedEmail,
+        password,
       });
 
-      router.replace('/(app)');
-    } catch {
-      Alert.alert('Verification Failed', 'Invalid code or authentication error. Please try again.');
+      if (!result.requiresOrganizationSelection) {
+        router.replace('/(app)');
+      }
+    } catch (error) {
+      if (isApiError(error)) {
+        setErrorMessage(
+          error.status === 401
+            ? 'Invalid email or password. Please check your credentials and try again.'
+            : error.message,
+        );
+      } else {
+        setErrorMessage('Unable to sign in right now. Please try again.');
+      }
     } finally {
-      setIsVerifying(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const handleSelectOrganization = async (tenantId: EntityId): Promise<void> => {
+    setErrorMessage(null);
+    setSwitchingTenantId(tenantId);
+
+    try {
+      await selectOrganization(tenantId);
+      router.replace('/(app)');
+    } catch (error) {
+      setErrorMessage(
+        isApiError(error)
+          ? error.message
+          : 'Unable to switch organization. Please try again.',
+      );
+    } finally {
+      setSwitchingTenantId(null);
+    }
+  };
+
+  const handleCloseOrganizationPicker = (): void => {
+    if (switchingTenantId !== null) return;
+    cancelOrganizationSelection().catch(() => {});
   };
 
   return {
-    method,
-    identifier,
-    otpDigits,
-    countdown,
-    isSendingOtp,
-    isVerifying,
-    focusedOtpIndex,
-    otpInputsRef,
     isDark,
-    setIdentifier,
-    setFocusedOtpIndex,
-    handleSendOtp,
-    handleOtpChange,
-    handleOtpKeyPress,
-    handleVerify,
-    handleSelectMethod,
+    username,
+    password,
+    showPassword,
+    isSubmitting,
+    switchingTenantId,
+    errorMessage,
+    requiresOrganizationSelection,
+    organizations,
+    canFillTestCredentials: Boolean(DEV_TEST_CREDENTIALS),
+    handleUsernameChange,
+    handlePasswordChange,
+    handleTogglePasswordVisibility,
+    handleFillTestCredentials,
+    handleSignIn,
+    handleSelectOrganization,
+    handleCloseOrganizationPicker,
   };
 }

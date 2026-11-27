@@ -10,9 +10,6 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  flexOne: {
-    flex: 1,
-  },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
@@ -22,7 +19,7 @@ export const styles = StyleSheet.create({
   },
   header: {
     marginTop: 8,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   brandTitle: {
     fontFamily: FontFamily.headingBold,
@@ -35,55 +32,6 @@ export const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: 15,
     color: '#475569',
-  },
-  switcherWrapper: {
-    marginBottom: 20,
-  },
-  pillContainer: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderRadius: 999,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  pillTab: {
-    flex: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillTabActive: {
-    backgroundColor: '#1D4ED8',
-  },
-  pillTabInactive: {
-    backgroundColor: 'transparent',
-  },
-  pillText: {
-    fontFamily: FontFamily.medium,
-    fontSize: 14,
-  },
-  pillTextActive: {
-    color: '#FFFFFF',
-    fontFamily: FontFamily.semiBold,
-  },
-  pillTextInactive: {
-    color: '#475569',
-    fontFamily: FontFamily.medium,
-  },
-  switcherHint: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-    color: '#64748B',
-    marginTop: 8,
-    textAlign: 'left',
   },
   card: {
     borderRadius: 28,
@@ -101,16 +49,21 @@ export const styles = StyleSheet.create({
   },
   cardTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 20,
+    fontSize: 21,
     color: '#0F172A',
     marginBottom: 6,
   },
   cardSubtitle: {
     fontFamily: FontFamily.regular,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 13.5,
+    lineHeight: 19,
     color: '#64748B',
-    marginBottom: 16,
+    marginBottom: 20,
+  },
+  fieldLabel: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 13.5,
+    marginBottom: 8,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -121,9 +74,10 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     height: 52,
     paddingHorizontal: 14,
+    marginBottom: 16,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   textInput: {
     flex: 1,
@@ -132,76 +86,33 @@ export const styles = StyleSheet.create({
     color: '#0F172A',
     paddingVertical: 8,
   },
-  sendOtpRow: {
+  eyeButton: {
+    padding: 6,
+    marginLeft: 4,
+  },
+  errorBanner: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: 8,
-    marginBottom: 8,
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 4,
   },
-  sendOtpButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 2,
+  errorText: {
+    flex: 1,
+    fontFamily: FontFamily.medium,
+    fontSize: 13,
+    lineHeight: 18,
   },
-  sendOtpText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 14,
-    color: '#1D4ED8',
-  },
-  otpLabel: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 15,
-    color: '#0F172A',
-    marginTop: 12,
-    marginBottom: 10,
-  },
-  otpRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  otpBox: {
-    width: 52,
-    height: 56,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#CBD5E1',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    textAlign: 'center',
-    fontFamily: FontFamily.headingBold,
-    fontSize: 22,
-    color: '#0F172A',
-    fontVariant: ['tabular-nums'],
-    padding: 0,
-    includeFontPadding: false,
-  },
-  otpBoxFocused: {
-    borderColor: '#1D4ED8',
-    backgroundColor: '#EFF6FF',
-  },
-  otpBoxFilled: {
-    borderColor: '#93C5FD',
-    backgroundColor: '#FFFFFF',
-  },
-  otpBoxDark: {
-    backgroundColor: '#1E293B',
-    borderColor: '#334155',
-    color: '#F8FAFC',
-  },
-  otpBoxFocusedDark: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#1E3A5F',
-  },
-  otpBoxFilledDark: {
-    borderColor: '#60A5FA',
-    backgroundColor: '#1E293B',
-  },
-  verifyButton: {
+  signInButton: {
     backgroundColor: '#1D4ED8',
     height: 52,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 18,
+    marginTop: 14,
     shadowColor: '#1D4ED8',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -211,10 +122,25 @@ export const styles = StyleSheet.create({
   buttonDisabled: {
     opacity: 0.7,
   },
-  verifyButtonText: {
+  signInButtonText: {
     color: '#FFFFFF',
     fontFamily: FontFamily.semiBold,
     fontSize: 16,
+  },
+  devFillBtn: {
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  devFillBtnText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12.5,
   },
   footer: {
     alignItems: 'center',
@@ -251,23 +177,6 @@ export function getBrandSubtitleStyle(isDark: boolean): TextStyle {
   };
 }
 
-export function getPillContainerStyle(isDark: boolean): ViewStyle {
-  return {
-    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-    borderColor: isDark ? '#334155' : '#E2E8F0',
-  };
-}
-
-export function getPillTabStyle(isActive: boolean): ViewStyle {
-  return isActive ? styles.pillTabActive : styles.pillTabInactive;
-}
-
-export function getPillTextStyle(isActive: boolean, isDark: boolean): (TextStyle | { color: string })[] {
-  return isActive
-    ? [styles.pillText, styles.pillTextActive]
-    : [styles.pillText, styles.pillTextInactive, { color: isDark ? '#94A3B8' : '#475569' }];
-}
-
 export function getCardStyle(isDark: boolean): ViewStyle | undefined {
   if (isDark) {
     return {
@@ -290,6 +199,12 @@ export function getCardSubtitleStyle(isDark: boolean): TextStyle {
   };
 }
 
+export function getFieldLabelStyle(isDark: boolean): TextStyle {
+  return {
+    color: isDark ? '#E2E8F0' : '#1E293B',
+  };
+}
+
 export function getInputContainerStyle(isDark: boolean): ViewStyle | undefined {
   if (isDark) {
     return {
@@ -309,37 +224,32 @@ export function getTextInputStyle(isDark: boolean): TextStyle | undefined {
   return undefined;
 }
 
-export function getSendOtpTextStyle(isDark: boolean): TextStyle | undefined {
-  if (isDark) {
-    return {
-      color: '#60A5FA',
-    };
-  }
-  return undefined;
-}
-
-export function getOtpLabelStyle(isDark: boolean): TextStyle {
+export function getErrorBannerStyle(isDark: boolean): ViewStyle {
   return {
-    color: isDark ? '#F8FAFC' : '#0F172A',
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.14)' : '#FEF2F2',
+    borderColor: isDark ? 'rgba(248, 113, 113, 0.4)' : '#FECACA',
   };
 }
 
-export function getOtpBoxStyle(
-  isDark: boolean,
-  isFocused: boolean,
-  hasDigit: boolean
-): (ViewStyle | TextStyle)[] {
-  const list: (ViewStyle | TextStyle)[] = [styles.otpBox];
-  if (isDark) list.push(styles.otpBoxDark);
-  if (isFocused) {
-    list.push(isDark ? styles.otpBoxFocusedDark : styles.otpBoxFocused);
-  }
-  if (hasDigit && !isFocused) {
-    list.push(isDark ? styles.otpBoxFilledDark : styles.otpBoxFilled);
-  }
-  return list;
+export function getErrorTextStyle(isDark: boolean): TextStyle {
+  return {
+    color: isDark ? '#FCA5A5' : '#DC2626',
+  };
 }
 
-export function getVerifyButtonStyle(isVerifying: boolean): (ViewStyle | undefined)[] {
-  return [styles.verifyButton, isVerifying ? styles.buttonDisabled : undefined];
+export function getSignInButtonStyle(isSubmitting: boolean): (ViewStyle | undefined)[] {
+  return [styles.signInButton, isSubmitting ? styles.buttonDisabled : undefined];
+}
+
+export function getDevFillBtnStyle(isDark: boolean): ViewStyle {
+  return {
+    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#EFF6FF',
+    borderColor: isDark ? '#334155' : '#BFDBFE',
+  };
+}
+
+export function getDevFillBtnTextStyle(isDark: boolean): TextStyle {
+  return {
+    color: isDark ? '#93C5FD' : '#1D4ED8',
+  };
 }

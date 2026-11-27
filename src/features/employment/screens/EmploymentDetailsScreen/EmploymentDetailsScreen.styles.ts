@@ -2,12 +2,13 @@ import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { FontFamily } from '@/shared/theme';
 
 export const styles = StyleSheet.create({
-  backgroundImage: {
+  screenContainer: {
     flex: 1,
-    width: '100%',
-    height: '100%',
   },
   safeArea: {
+    flex: 1,
+  },
+  scrollView: {
     flex: 1,
   },
   navBar: {
@@ -27,17 +28,36 @@ export const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 36,
+    paddingBottom: 116,
+    flexGrow: 1,
   },
   card: {
-    borderRadius: 28,
+    borderRadius: 24,
+    borderWidth: 1,
     padding: 20,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 14,
+    elevation: 3,
   },
   cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     marginBottom: 16,
+  },
+  monthErrorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  monthErrorText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12,
+    color: '#B91C1C',
   },
   headerIconBadge: {
     width: 44,
@@ -192,32 +212,64 @@ export const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: 12,
   },
+  emptyStateBox: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 13,
+    textAlign: 'center',
+  },
 });
 
-export const getBackgroundImageStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.backgroundImage,
-  { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
+export const getBackgroundStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string })[] => [
+  styles.screenContainer,
+  { backgroundColor: isDark ? '#020617' : '#F4F6FA' },
 ];
-
-export const getImageStyle = (isDark: boolean) => ({
-  opacity: isDark ? 0.05 : 1,
-});
 
 export const getNavTitleStyle = (isDark: boolean): TextStyle[] => [
   styles.navTitle,
   { color: isDark ? '#F8FAFC' : '#0F172A' },
 ];
 
-export const getCardStyle = (isDark: boolean, hasMarginTop?: boolean): (ViewStyle | { backgroundColor?: string; borderColor?: string; marginTop?: number })[] => {
-  const result: (ViewStyle | { backgroundColor?: string; borderColor?: string; marginTop?: number })[] = [styles.card];
+export const getCardStyle = (
+  isDark: boolean,
+  hasMarginTop?: boolean,
+): (ViewStyle | {
+  backgroundColor: string;
+  borderColor: string;
+  shadowColor: string;
+  shadowOpacity: number;
+  marginTop?: number;
+})[] => {
+  const result: (ViewStyle | {
+    backgroundColor: string;
+    borderColor: string;
+    shadowColor: string;
+    shadowOpacity: number;
+    marginTop?: number;
+  })[] = [
+    styles.card,
+    isDark
+      ? {
+          backgroundColor: '#0F172A',
+          borderColor: '#1E293B',
+          shadowColor: '#000000',
+          shadowOpacity: 0.25,
+        }
+      : {
+          backgroundColor: '#FFFFFF',
+          borderColor: '#E2E8F0',
+          shadowColor: '#0F1E36',
+          shadowOpacity: 0.06,
+        },
+  ];
   if (hasMarginTop) {
     result.push({ marginTop: 18 });
-  }
-  if (isDark) {
-    result.push({
-      backgroundColor: 'rgba(15, 23, 42, 0.85)',
-      borderColor: 'rgba(51, 65, 85, 0.8)',
-    });
   }
   return result;
 };
@@ -225,16 +277,16 @@ export const getCardStyle = (isDark: boolean, hasMarginTop?: boolean): (ViewStyl
 export const getHeaderIconBadgeStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.headerIconBadge,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(239, 246, 255, 1)',
-    borderColor: isDark ? '#334155' : 'rgba(191, 219, 254, 1)',
+    backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+    borderColor: isDark ? '#334155' : '#DBEAFE',
   },
 ];
 
 export const getHistoryHeaderIconBadgeStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.headerIconBadge,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(239, 246, 255, 0.85)',
-    borderColor: isDark ? '#334155' : 'rgba(191, 219, 254, 0.95)',
+    backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+    borderColor: isDark ? '#334155' : '#DBEAFE',
   },
 ];
 
@@ -246,8 +298,8 @@ export const getCardTitleStyle = (isDark: boolean): TextStyle[] => [
 export const getCounterPillStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.counterPill,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(239, 246, 255, 0.85)',
-    borderColor: isDark ? '#334155' : 'rgba(191, 219, 254, 0.95)',
+    backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+    borderColor: isDark ? '#334155' : '#BFDBFE',
   },
 ];
 
@@ -259,16 +311,16 @@ export const getCounterPillTextStyle = (isDark: boolean): TextStyle[] => [
 export const getMonthNavBtnStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.navArrowBtn,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.85)',
-    borderColor: isDark ? '#334155' : 'rgba(203, 213, 225, 0.85)',
+    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+    borderColor: isDark ? '#334155' : '#E2E8F0',
   },
 ];
 
 export const getMonthPillStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.monthPill,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(255, 255, 255, 0.85)',
-    borderColor: isDark ? '#334155' : 'rgba(203, 213, 225, 0.85)',
+    backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+    borderColor: isDark ? '#334155' : '#E2E8F0',
   },
 ];
 
@@ -363,3 +415,8 @@ export const getFooterTextStyle = (isDark: boolean, hasMarginTop?: boolean): Tex
   }
   return result;
 };
+
+export const getEmptyStateTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.emptyStateText,
+  { color: isDark ? '#94A3B8' : '#64748B' },
+];

@@ -1,4 +1,10 @@
+import {
+  LEGACY_SHIFT_TIMER_STORAGE_KEY,
+  SHIFT_TIMER_STORAGE_KEY,
+} from '@/shared/constants';
 import { appStorage } from '@/shared/storage';
+
+export { SHIFT_TIMER_STORAGE_KEY };
 
 export type ShiftStatus = 'punched_out' | 'punched_in' | 'on_break';
 
@@ -20,25 +26,26 @@ export interface ShiftMetrics {
   progressFraction: number;
 }
 
-export const SHIFT_TIMER_STORAGE_KEY = 'samavya-persisted-shift-timer';
-
 export const DEFAULT_SHIFT_TARGET_SECONDS = 8 * 3600; // 8 hours
 
-export function getDefaultShiftState(): PersistedShiftState {
-  const defaultStartTime = Date.now() - 5400 * 1000; // Default 1h 30m worked
+export function getDefaultShiftState(nowMs: number = Date.now()): PersistedShiftState {
   return {
-    status: 'punched_in',
-    punchedInAt: defaultStartTime,
+    status: 'punched_out',
+    punchedInAt: null,
     currentBreakStartedAt: null,
-    accumulatedBreakSeconds: 20 * 60, // 20m break
+    accumulatedBreakSeconds: 0,
     shiftTargetSeconds: DEFAULT_SHIFT_TARGET_SECONDS,
     hoursType: 'Regular',
     workLocation: 'Work from home',
-    lastActiveTimestamp: Date.now(),
+    lastActiveTimestamp: nowMs,
   };
 }
 
 export function loadShiftState(): PersistedShiftState {
+  if (appStorage.contains(LEGACY_SHIFT_TIMER_STORAGE_KEY)) {
+    appStorage.remove(LEGACY_SHIFT_TIMER_STORAGE_KEY);
+  }
+
   const raw = appStorage.getString(SHIFT_TIMER_STORAGE_KEY);
   if (!raw) {
     const initialState = getDefaultShiftState();
@@ -53,6 +60,13 @@ export function loadShiftState(): PersistedShiftState {
     saveShiftState(fallback);
     return fallback;
   }
+}
+
+export function resetShiftState(nowMs: number = Date.now()): PersistedShiftState {
+  appStorage.remove(LEGACY_SHIFT_TIMER_STORAGE_KEY);
+  const initialState = getDefaultShiftState(nowMs);
+  saveShiftState(initialState);
+  return initialState;
 }
 
 type ShiftStateListener = (state: PersistedShiftState) => void;

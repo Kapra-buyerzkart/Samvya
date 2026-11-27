@@ -1,5 +1,5 @@
 import { FontFamily } from '@/shared/theme';
-import { type ImageStyle, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 export const styles = StyleSheet.create({
   backgroundImage: {
@@ -14,8 +14,8 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: 18,
+    paddingTop: 10,
     paddingBottom: 110,
     flexGrow: 1,
   },
@@ -44,6 +44,25 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
+  monthTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  errorBannerText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12.5,
+    color: '#B91C1C',
+  },
   monthTitle: {
     fontFamily: FontFamily.headingBold,
     fontSize: 22,
@@ -56,15 +75,24 @@ export const styles = StyleSheet.create({
   navChevronBtn: {
     width: 36,
     height: 36,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   card: {
-    borderRadius: 28,
+    borderRadius: 22,
+    borderWidth: 1,
     padding: 20,
     marginBottom: 16,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 3,
   },
   weekdaysRow: {
     flexDirection: 'row',
@@ -120,10 +148,10 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   selectedDayNumberText: {
     fontFamily: FontFamily.headingBold,
@@ -226,20 +254,67 @@ export const styles = StyleSheet.create({
   },
   punchTime: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 16,
-    letterSpacing: -0.2,
+    fontSize: 17,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -0.3,
+  },
+  summaryCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    marginBottom: 16,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    justifyContent: 'space-between',
+  },
+  summaryMetric: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  summaryValue: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 20,
+    fontVariant: ['tabular-nums'],
+    letterSpacing: -0.5,
+  },
+  summaryLabel: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12,
+    marginTop: 4,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 32,
+  },
+  rejectedStatusText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 14,
+    color: '#DC2626',
+  },
+  emptyStatusText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 13,
+  },
+  workedHoursPill: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  workedHoursText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 12,
   },
 });
 
 export function getBackgroundImageStyle(isDark: boolean): ViewStyle {
   return {
-    backgroundColor: isDark ? '#020617' : '#F8FAFC',
-  };
-}
-
-export function getBackgroundImageProps(isDark: boolean): ImageStyle {
-  return {
-    opacity: isDark ? 0.05 : 1,
+    backgroundColor: isDark ? '#020617' : '#F8FAFF',
   };
 }
 
@@ -250,12 +325,31 @@ export function getSafeAreaStyle(isDark: boolean): ViewStyle {
 }
 
 export function getTextColor(isDark: boolean): string {
-  return isDark ? '#F8FAFC' : '#0F172A';
+  return isDark ? '#F8FAFC' : '#0F1E36';
 }
 
 export function getTextColorStyle(isDark: boolean): TextStyle {
   return {
-    color: isDark ? '#F8FAFC' : '#0F172A',
+    color: isDark ? '#F8FAFC' : '#0F1E36',
+  };
+}
+
+export function getSummaryCardStyle(isDark: boolean): ViewStyle {
+  if (isDark) {
+    return {
+      backgroundColor: 'rgba(30, 41, 59, 0.78)',
+      borderColor: '#334155',
+    };
+  }
+  return {
+    backgroundColor: '#EDF2FD',
+    borderColor: '#D6E2FA',
+  };
+}
+
+export function getSummaryDividerStyle(isDark: boolean): ViewStyle {
+  return {
+    backgroundColor: isDark ? '#334155' : '#CBD5E1',
   };
 }
 
@@ -266,14 +360,21 @@ export function getNavChevronBtnStyle(isDark: boolean): ViewStyle {
   };
 }
 
-export function getCardStyle(isDark: boolean): ViewStyle | undefined {
+export function getCardStyle(isDark: boolean): ViewStyle {
   if (isDark) {
     return {
-      backgroundColor: 'rgba(15, 23, 42, 0.85)',
-      borderColor: 'rgba(51, 65, 85, 0.8)',
+      backgroundColor: '#0F172A',
+      borderColor: '#1E293B',
+      shadowColor: '#000000',
+      shadowOpacity: 0.25,
     };
   }
-  return undefined;
+  return {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOpacity: 0.05,
+  };
 }
 
 export function getWeekdayTextStyle(isDark: boolean): TextStyle {
@@ -303,6 +404,8 @@ export function getPunchCardSubtitleStyle(isDark: boolean): TextStyle {
 export function getPunchIconBoxStyle(isDark: boolean): ViewStyle {
   return {
     backgroundColor: isDark ? '#1E293B' : '#EFF6FF',
+    borderWidth: 1,
+    borderColor: isDark ? '#334155' : '#DBEAFE',
   };
 }
 

@@ -89,6 +89,7 @@ const TOMORROW_OPTIONS: {
 export function TeamRadarCard({
   onMemberPress,
   onPingPress,
+  showMemberDetailSheet = true,
 }: TeamRadarCardProps): React.JSX.Element {
   const {
     isDark,
@@ -309,7 +310,7 @@ export function TeamRadarCard({
         </View>
       </View>
 
-      {selectedMember && (
+      {showMemberDetailSheet && selectedMember && (
         <AppBottomSheet
           isOpen={Boolean(selectedMember)}
           onClose={() => setSelectedMember(null)}

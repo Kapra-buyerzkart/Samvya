@@ -1,5 +1,5 @@
-import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { FontFamily } from '@/shared/theme';
+import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 
 export const styles = StyleSheet.create({
   backgroundImage: {
@@ -13,24 +13,35 @@ export const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 18,
     paddingTop: 12,
-    paddingBottom: 110,
+    paddingBottom: 112,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    alignItems: 'flex-end',
+    marginBottom: 14,
   },
-  brandTitle: {
+  greetingCol: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  greetingText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12.5,
+    color: '#64748B',
+    marginBottom: 1,
+  },
+  greetingName: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 26,
+    fontSize: 21,
     color: '#0F1E36',
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
   },
   headerDate: {
     fontFamily: FontFamily.medium,
-    fontSize: 14,
-    color: '#1E293B',
+    fontSize: 12.5,
+    color: '#334155',
+    paddingBottom: 2,
   },
   dropdownsRow: {
     flexDirection: 'row',
@@ -42,10 +53,10 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 12,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 1 },
@@ -61,25 +72,25 @@ export const styles = StyleSheet.create({
   },
   dropdownLabel: {
     fontFamily: FontFamily.regular,
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#64748B',
     marginBottom: 1,
   },
   dropdownValue: {
     fontFamily: FontFamily.semiBold,
-    fontSize: 14,
+    fontSize: 13.5,
     color: '#0F172A',
   },
   shiftBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(238, 242, 255, 0.7)',
-    borderRadius: 12,
+    backgroundColor: '#E4ECFC',
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#D8B4FE',
-    paddingVertical: 10,
+    borderColor: '#D6E2FA',
+    paddingVertical: 9,
     paddingHorizontal: 14,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   shiftLeft: {
     flexDirection: 'row',
@@ -88,18 +99,18 @@ export const styles = StyleSheet.create({
   },
   shiftLabel: {
     fontFamily: FontFamily.medium,
-    fontSize: 14,
+    fontSize: 13.5,
     color: '#475569',
   },
   shiftDivider: {
     width: 1,
-    height: 16,
-    backgroundColor: '#CBD5E1',
+    height: 15,
+    backgroundColor: '#B8C7E0',
     marginHorizontal: 12,
   },
   shiftTime: {
     fontFamily: FontFamily.semiBold,
-    fontSize: 14,
+    fontSize: 13.5,
     color: '#0F172A',
   },
   statusIndicatorRow: {
@@ -107,11 +118,23 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 16,
+    marginBottom: 14,
+  },
+  statusDotOuter: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statusDotInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   statusIndicatorText: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 18,
+    fontSize: 16.5,
     color: '#0F172A',
   },
   statusTextBreak: {
@@ -123,38 +146,38 @@ export const styles = StyleSheet.create({
   dialWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginVertical: 18,
   },
   workedLabel: {
-    fontFamily: FontFamily.medium,
-    fontSize: 13,
-    color: '#64748B',
+    fontFamily: FontFamily.regular,
+    fontSize: 12.5,
+    color: 'rgba(255, 255, 255, 0.85)',
     marginBottom: 2,
   },
   workedTime: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 28,
-    color: '#0F172A',
-    letterSpacing: -0.3,
+    fontSize: 30,
+    color: '#FFFFFF',
+    letterSpacing: -0.4,
     fontVariant: ['tabular-nums'],
     textAlign: 'center',
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
   },
   workedTarget: {
     fontFamily: FontFamily.regular,
-    fontSize: 13,
-    color: '#64748B',
+    fontSize: 12.5,
+    color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 2,
   },
   infoBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(238, 242, 255, 0.65)',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginBottom: 18,
+    backgroundColor: '#EDF2FD',
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    marginBottom: 16,
   },
   infoBarItem: {
     flexDirection: 'row',
@@ -162,17 +185,17 @@ export const styles = StyleSheet.create({
   },
   infoBarTextMuted: {
     fontFamily: FontFamily.regular,
-    fontSize: 13,
+    fontSize: 12.5,
     color: '#64748B',
   },
   infoBarTextBold: {
     fontFamily: FontFamily.bold,
-    fontSize: 13,
+    fontSize: 12.5,
     color: '#0F172A',
   },
   infoBarDivider: {
     width: 1,
-    height: 16,
+    height: 14,
     backgroundColor: '#CBD5E1',
     marginHorizontal: 14,
   },
@@ -189,21 +212,21 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#2563EB',
-    height: 50,
-    borderRadius: 14,
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: '#1D4ED8',
+    height: 46,
+    borderRadius: 11,
+    shadowColor: '#1D4ED8',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 2,
   },
   breakButtonActive: {
-    backgroundColor: '#1D4ED8',
+    backgroundColor: '#1E40AF',
   },
   breakButtonText: {
     fontFamily: FontFamily.semiBold,
-    fontSize: 15,
+    fontSize: 14.5,
     color: '#FFFFFF',
   },
   punchOutButton: {
@@ -214,18 +237,18 @@ export const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#0F172A',
-    height: 50,
-    borderRadius: 14,
+    borderColor: '#1E293B',
+    height: 46,
+    borderRadius: 11,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 1,
   },
   punchOutButtonText: {
     fontFamily: FontFamily.semiBold,
-    fontSize: 15,
+    fontSize: 14.5,
     color: '#0F172A',
   },
   punchInStyle: {
@@ -240,10 +263,10 @@ export const styles = StyleSheet.create({
   },
   punchNote: {
     fontFamily: FontFamily.regular,
-    fontSize: 12,
+    fontSize: 11.5,
     color: '#64748B',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   sectionDivider: {
     height: 1,
@@ -251,116 +274,39 @@ export const styles = StyleSheet.create({
     backgroundColor: '#E2E8F0',
     marginBottom: 16,
   },
-  weeklyCard: {
-    marginBottom: 16,
-  },
-  weeklyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  weeklyTitleRow: {
+  leaveStatusCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
-  weeklyTitle: {
-    fontFamily: FontFamily.medium,
-    fontSize: 14,
-    color: '#475569',
-  },
-  weeklyStats: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 14,
-    color: '#0F172A',
-  },
-  progressBarTrack: {
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: '#E0E7FF',
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3.5,
-    backgroundColor: '#2563EB',
-  },
-  leaveSection: {
-    marginBottom: 20,
-  },
-  leaveHeaderBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(238, 242, 255, 0.7)',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'transparent',
-    paddingVertical: 11,
     paddingHorizontal: 14,
+    paddingVertical: 12,
     marginBottom: 16,
+    gap: 12,
+    shadowColor: '#0F1E36',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  leaveHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  leaveHeaderTitle: {
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: 15,
-    color: '#0F172A',
-  },
-  leaveMetricsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  leaveMetricCol: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  leaveMetricNumber: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 34,
-    color: '#0F172A',
-    marginBottom: 2,
-    fontVariant: ['tabular-nums'],
-  },
-  leaveMetricBlue: {
-    color: '#1D4ED8',
-  },
-  leaveMetricLabel: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-    color: '#64748B',
-    textAlign: 'center',
-  },
-  metricDivider: {
-    width: 1,
+  leaveStatusIconBox: {
+    width: 38,
     height: 38,
-    backgroundColor: '#CBD5E1',
-  },
-  viewHistoryButton: {
-    flexDirection: 'row',
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: '#1D4ED8',
-    height: 52,
-    borderRadius: 14,
-    marginTop: 6,
-    marginBottom: 20,
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
   },
-  viewHistoryButtonText: {
+  leaveStatusTextCol: {
+    flex: 1,
+  },
+  leaveStatusTitle: {
     fontFamily: FontFamily.semiBold,
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: 14,
+  },
+  leaveStatusSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: 12,
+    marginTop: 1,
   },
   sheetList: {
     paddingBottom: 8,
@@ -381,34 +327,40 @@ export const styles = StyleSheet.create({
   },
 });
 
-export const getBackgroundImageStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
+export const getBackgroundImageStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string })[] => [
   styles.backgroundImage,
-  { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
+  { backgroundColor: isDark ? '#020617' : '#F8FAFF' },
 ];
 
 export const getImageStyle = (isDark: boolean) => ({
-  opacity: isDark ? 0.05 : 1,
+  opacity: isDark ? 0.05 : 0.9,
 });
 
-export const getScrollContentStyle = (isPunchedOut: boolean): ViewStyle[] => {
-  const result: ViewStyle[] = [styles.scrollContent];
-  if (!isPunchedOut) {
-    result.push({ paddingTop: 40 });
-  }
-  return result;
-};
+export const getScrollContentStyle = (isPunchedOut: boolean): ViewStyle[] => [
+  styles.scrollContent,
+  { paddingTop: isPunchedOut ? 12 : 14 },
+];
 
-export const getBrandTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.brandTitle,
+export const getGreetingTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.greetingText,
+  { color: isDark ? '#94A3B8' : '#64748B' },
+];
+
+export const getGreetingNameStyle = (isDark: boolean): TextStyle[] => [
+  styles.greetingName,
   { color: isDark ? '#F8FAFC' : '#0F1E36' },
 ];
 
 export const getHeaderDateStyle = (isDark: boolean): TextStyle[] => [
   styles.headerDate,
-  { color: isDark ? '#94A3B8' : '#1E293B' },
+  { color: isDark ? '#CBD5E1' : '#334155' },
 ];
 
-export const getDropdownCardStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+export const getDropdownCardStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.dropdownCard,
   {
     backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
@@ -426,11 +378,13 @@ export const getDropdownValueStyle = (isDark: boolean): TextStyle[] => [
   { color: isDark ? '#F8FAFC' : '#0F172A' },
 ];
 
-export const getShiftBannerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+export const getShiftBannerStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.shiftBanner,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(238, 242, 255, 0.7)',
-    borderColor: isDark ? '#334155' : '#D8B4FE',
+    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.78)' : '#E4ECFC',
+    borderColor: isDark ? '#334155' : '#D6E2FA',
   },
 ];
 
@@ -439,9 +393,11 @@ export const getShiftLabelStyle = (isDark: boolean): TextStyle[] => [
   { color: isDark ? '#94A3B8' : '#475569' },
 ];
 
-export const getShiftDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
+export const getShiftDividerStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string })[] => [
   styles.shiftDivider,
-  { backgroundColor: isDark ? '#334155' : '#CBD5E1' },
+  { backgroundColor: isDark ? '#334155' : '#B8C7E0' },
 ];
 
 export const getShiftTimeStyle = (isDark: boolean): TextStyle[] => [
@@ -467,25 +423,10 @@ export const getStatusIndicatorTextStyle = (
   return result;
 };
 
-export const getWorkedLabelStyle = (isDark: boolean): TextStyle[] => [
-  styles.workedLabel,
-  { color: isDark ? '#94A3B8' : '#64748B' },
-];
-
-export const getWorkedTimeStyle = (isDark: boolean): TextStyle[] => [
-  styles.workedTime,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getWorkedTargetStyle = (isDark: boolean): TextStyle[] => [
-  styles.workedTarget,
-  { color: isDark ? '#94A3B8' : '#64748B' },
-];
-
 export const getInfoBarStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
   styles.infoBar,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(238, 242, 255, 0.65)',
+    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.78)' : '#EDF2FD',
   },
 ];
 
@@ -499,7 +440,9 @@ export const getInfoBarTextBoldStyle = (isDark: boolean): TextStyle[] => [
   { color: isDark ? '#F8FAFC' : '#0F172A' },
 ];
 
-export const getInfoBarDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
+export const getInfoBarDividerStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string })[] => [
   styles.infoBarDivider,
   { backgroundColor: isDark ? '#334155' : '#CBD5E1' },
 ];
@@ -515,16 +458,23 @@ export const getBreakButtonStyle = (isOnBreak: boolean, isPunchedOut: boolean): 
   return result;
 };
 
-export const getPunchOutButtonStyle = (isDark: boolean, isPunchedOut: boolean): ViewStyle[] => {
+export const getPunchOutButtonStyle = (
+  isDark: boolean,
+  isPunchedOut: boolean,
+  isDisabled = false,
+): ViewStyle[] => {
   const result: ViewStyle[] = [
     styles.punchOutButton,
     {
       backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-      borderColor: isDark ? '#334155' : '#0F172A',
+      borderColor: isDark ? '#334155' : '#1E293B',
     },
   ];
   if (isPunchedOut) {
     result.push(styles.punchInStyle);
+  }
+  if (isDisabled) {
+    result.push(styles.buttonDisabled);
   }
   return result;
 };
@@ -545,67 +495,38 @@ export const getPunchNoteStyle = (isDark: boolean): TextStyle[] => [
   { color: isDark ? '#94A3B8' : '#64748B' },
 ];
 
-export const getSectionDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
+export const getSectionDividerStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string })[] => [
   styles.sectionDivider,
   { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
 ];
 
-export const getWeeklyTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.weeklyTitle,
-  { color: isDark ? '#F8FAFC' : '#475569' },
-];
-
-export const getWeeklyStatsStyle = (isDark: boolean): TextStyle[] => [
-  styles.weeklyStats,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getProgressBarTrackStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.progressBarTrack,
-  { backgroundColor: isDark ? '#1E293B' : '#E0E7FF' },
-];
-
-export const getProgressBarFillStyle = (isDark: boolean): (ViewStyle | { width: string; backgroundColor: string })[] => [
-  styles.progressBarFill,
+export const getLeaveStatusCardStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+  styles.leaveStatusCard,
   {
-    width: '63.75%',
-    backgroundColor: isDark ? '#3B82F6' : '#2563EB',
+    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+    borderColor: isDark ? '#1E293B' : '#E7EEFC',
   },
 ];
 
-export const getLeaveHeaderBannerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
-  styles.leaveHeaderBanner,
-  {
-    backgroundColor: isDark ? '#0F172A' : 'rgba(238, 242, 255, 0.7)',
-    borderColor: isDark ? '#1E293B' : 'transparent',
-  },
+export const getLeaveStatusIconBoxStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string })[] => [
+  styles.leaveStatusIconBox,
+  { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF4FF' },
 ];
 
-export const getLeaveHeaderTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.leaveHeaderTitle,
+export const getLeaveStatusTitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.leaveStatusTitle,
   { color: isDark ? '#F8FAFC' : '#0F172A' },
 ];
 
-export const getLeaveMetricLabelStyle = (isDark: boolean): TextStyle[] => [
-  styles.leaveMetricLabel,
+export const getLeaveStatusSubtitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.leaveStatusSubtitle,
   { color: isDark ? '#94A3B8' : '#64748B' },
-];
-
-export const getLeaveMetricAllocatedStyle = (isDark: boolean): TextStyle[] => [
-  styles.leaveMetricNumber,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getLeaveMetricDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.metricDivider,
-  { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
-];
-
-export const getViewHistoryButtonStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.viewHistoryButton,
-  {
-    backgroundColor: isDark ? '#2563EB' : '#1D4ED8',
-  },
 ];
 
 export const getModalItemStyle = (isDark: boolean, isSelected: boolean): ViewStyle[] => {
@@ -619,10 +540,7 @@ export const getModalItemStyle = (isDark: boolean, isSelected: boolean): ViewSty
 };
 
 export const getModalItemTextStyle = (isDark: boolean, isSelected: boolean): TextStyle[] => {
-  const result: TextStyle[] = [
-    styles.modalItemText,
-    { color: isDark ? '#E2E8F0' : '#334155' },
-  ];
+  const result: TextStyle[] = [styles.modalItemText, { color: isDark ? '#E2E8F0' : '#334155' }];
   if (isSelected) {
     result.push({
       color: isDark ? '#60A5FA' : '#1D4ED8',

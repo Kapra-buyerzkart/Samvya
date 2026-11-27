@@ -1,9 +1,16 @@
-import { BottomTabBar } from '@/shared/components';
-import { Stack } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { Redirect, Stack } from 'expo-router';
+import { useAuthStore } from '@/features/auth';
+import { BottomTabBar } from '@/shared/components';
 
 export default function AppLayout(): React.JSX.Element {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <View style={styles.container}>
       <Stack screenOptions={{ headerShown: false }}>

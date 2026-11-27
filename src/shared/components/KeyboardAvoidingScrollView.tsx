@@ -71,6 +71,8 @@ export const KeyboardAvoidingScrollView = forwardRef<
     headerComponent,
     footerComponent,
     keyboardShouldPersistTaps = 'handled',
+    keyboardDismissMode = 'on-drag',
+    nestedScrollEnabled = true,
     showsVerticalScrollIndicator = false,
     contentContainerStyle,
     style,
@@ -81,17 +83,35 @@ export const KeyboardAvoidingScrollView = forwardRef<
 ) {
   const defaultBehavior = Platform.OS === 'ios' ? 'padding' : undefined;
 
+  const innerContent = dismissKeyboardOnTap ? (
+    <TouchableWithoutFeedback
+      onPress={Keyboard.dismiss}
+      accessible={false}
+    >
+      <View
+        style={styles.innerContent}
+        testID={testID ? `${testID}-dismiss-touchable` : undefined}
+      >
+        {children}
+      </View>
+    </TouchableWithoutFeedback>
+  ) : (
+    children
+  );
+
   const scrollContent = (
     <ScrollView
       ref={ref}
       testID={testID}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
+      keyboardDismissMode={keyboardDismissMode}
+      nestedScrollEnabled={nestedScrollEnabled}
       showsVerticalScrollIndicator={showsVerticalScrollIndicator}
       contentContainerStyle={contentContainerStyle}
       style={[styles.scroll, style]}
       {...scrollViewProps}
     >
-      {children}
+      {innerContent}
     </ScrollView>
   );
 
@@ -104,21 +124,7 @@ export const KeyboardAvoidingScrollView = forwardRef<
       {...keyboardAvoidingViewProps}
     >
       {headerComponent}
-      {dismissKeyboardOnTap ? (
-        <TouchableWithoutFeedback
-          onPress={Keyboard.dismiss}
-          accessible={false}
-        >
-          <View
-            style={styles.scrollWrapper}
-            testID={testID ? `${testID}-dismiss-touchable` : undefined}
-          >
-            {scrollContent}
-          </View>
-        </TouchableWithoutFeedback>
-      ) : (
-        <View style={styles.scrollWrapper}>{scrollContent}</View>
-      )}
+      <View style={styles.scrollWrapper}>{scrollContent}</View>
       {footerComponent}
     </KeyboardAvoidingView>
   );
@@ -133,5 +139,8 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flex: 1,
+  },
+  innerContent: {
+    flexGrow: 1,
   },
 });

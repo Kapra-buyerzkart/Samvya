@@ -1,7 +1,9 @@
+export * from './api/attendanceApi';
 export * from './db/attendanceQueue';
 export * from './domain/shiftTimer';
 export * from './hooks/usePersistentShiftTimer';
 export * from './services/liveActivityService';
+export * from './services/punchService';
 export * from './components/DynamicIslandPill';
 export { PunchSuccessScreen, usePunchSuccessScreen } from './screens/PunchSuccessScreen';
 export { AttendanceStatusScreen, useAttendanceStatusScreen } from './screens/AttendanceStatusScreen';

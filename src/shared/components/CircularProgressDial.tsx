@@ -20,7 +20,10 @@ interface CircularProgressDialProps {
   knobSize?: number;
   isActive?: boolean;
   showAura?: boolean;
+  showKnob?: boolean;
   centerDiscColor?: string;
+  centerDiscGap?: number;
+  showCenterShadow?: boolean;
   children?: React.ReactNode;
 }
 
@@ -35,7 +38,10 @@ export function CircularProgressDial({
   knobSize = 16,
   isActive = true,
   showAura = true,
+  showKnob = true,
   centerDiscColor,
+  centerDiscGap = 16,
+  showCenterShadow = true,
   children,
 }: CircularProgressDialProps): React.JSX.Element {
   const radius = size / 2;
@@ -52,7 +58,7 @@ export function CircularProgressDial({
   const rightAngle = Math.min(180, angleDeg) - 45;
   const leftAngle = Math.max(0, angleDeg - 180) - 45;
 
-  const innerDiscSize = size - strokeWidth * 2 - 16;
+  const innerDiscSize = Math.max(0, size - strokeWidth * 2 - centerDiscGap);
   const innerDiscRadius = innerDiscSize / 2;
 
   // Micro-animation: knob halo breathing glow
@@ -189,7 +195,7 @@ export function CircularProgressDial({
       )}
 
       {/* 5. Interactive Knob Halo Breathing Glow & Knob */}
-      {isActive && (
+      {showKnob && isActive && (
         <Animated.View
           style={[
             styles.knobHalo,
@@ -205,26 +211,29 @@ export function CircularProgressDial({
           ]}
         />
       )}
-      <View
-        style={[
-          styles.knob,
-          {
-            left: knobLeft,
-            top: knobTop,
-            width: knobSize,
-            height: knobSize,
-            borderRadius: knobSize / 2,
-            backgroundColor: knobColor,
-            borderColor: knobBorderColor,
-            borderWidth: 3.5,
-          },
-        ]}
-      />
+      {showKnob && (
+        <View
+          style={[
+            styles.knob,
+            {
+              left: knobLeft,
+              top: knobTop,
+              width: knobSize,
+              height: knobSize,
+              borderRadius: knobSize / 2,
+              backgroundColor: knobColor,
+              borderColor: knobBorderColor,
+              borderWidth: 3.5,
+            },
+          ]}
+        />
+      )}
 
       {/* 6. Center Disc with Subtle Depth Shadow */}
       <View
         style={[
           styles.centerDisc,
+          !showCenterShadow && styles.centerDiscFlat,
           {
             width: innerDiscSize,
             height: innerDiscSize,
@@ -291,5 +300,10 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
     zIndex: 1,
+  },
+  centerDiscFlat: {
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
 });

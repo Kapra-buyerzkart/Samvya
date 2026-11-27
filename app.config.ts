@@ -170,6 +170,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ...(process.env.EAS_PROJECT_ID
       ? { eas: { projectId: process.env.EAS_PROJECT_ID } }
       : {}),
-    apiBaseUrl: process.env.EXPO_PUBLIC_API_URL || 'https://api.hrms.internal/v1',
+    apiBaseUrl: process.env.EXPO_PUBLIC_API_URL || 'https://hrmsapi.samagra360.com',
   },
 });

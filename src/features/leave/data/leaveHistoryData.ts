@@ -1,4 +1,5 @@
 import { type pieDataItem } from 'react-native-gifted-charts';
+import { type LeaveRequestHistoryItem } from '../api/leaveApi';
 
 export type DurationKey = '3months' | '6months' | '1year';
 
@@ -36,333 +37,6 @@ export interface LeaveDurationData {
   records: LeaveHistoryRecord[];
 }
 
-export const DURATION_OPTIONS: DurationOption[] = [
-  {
-    key: '3months',
-    label: 'Last 3 months',
-    dateRange: 'Sep-Nov 2026',
-    totalDays: 5.5,
-  },
-  {
-    key: '6months',
-    label: 'Last 6 months',
-    dateRange: 'Jun-Nov 2026',
-    totalDays: 10,
-  },
-  {
-    key: '1year',
-    label: 'Last 1 year',
-    dateRange: 'Dec 2025-Nov 2026',
-    totalDays: 16.5,
-  },
-];
-
-const LEAVE_RECORDS_BY_DURATION: Record<
-  DurationKey,
-  {
-    totalDays: number;
-    months: MonthSegment[];
-    records: LeaveHistoryRecord[];
-  }
-> = {
-  '3months': {
-    totalDays: 5.5,
-    months: [
-      { key: 'Sep', label: 'Sep', days: 0.5, color: '#93C5FD' },
-      { key: 'Oct', label: 'Oct', days: 1, color: '#3B82F6' },
-      { key: 'Nov', label: 'Nov', days: 4, color: '#1D4ED8' },
-    ],
-    records: [
-      {
-        id: 'leave-1',
-        dateDisplay: '20',
-        monthDisplay: 'Nov',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
-        monthKey: 'Nov',
-        leaveType: 'Casual\nleave',
-      },
-      {
-        id: 'leave-2',
-        dateDisplay: '11-12',
-        monthDisplay: 'Nov',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque',
-        monthKey: 'Nov',
-        leaveType: 'Sick\nleave',
-      },
-      {
-        id: 'leave-3',
-        dateDisplay: '10',
-        monthDisplay: 'Nov',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
-        monthKey: 'Nov',
-        leaveType: 'Annual\nleave',
-      },
-      {
-        id: 'leave-4',
-        dateDisplay: '15',
-        monthDisplay: 'Oct',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Personal appointment and family health checkup session at city medical center.',
-        monthKey: 'Oct',
-      },
-      {
-        id: 'leave-5',
-        dateDisplay: '28',
-        monthDisplay: 'Sep',
-        durationDays: 0.5,
-        durationLabel: '0.5 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Half-day afternoon emergency leave for home maintenance and electric inspections.',
-        monthKey: 'Sep',
-      },
-      {
-        id: 'leave-6',
-        dateDisplay: '05',
-        monthDisplay: 'Sep',
-        durationDays: 0.5,
-        durationLabel: '0.5 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Official document verification and personal legal errand in the morning.',
-        monthKey: 'Sep',
-      },
-    ],
-  },
-  '6months': {
-    totalDays: 10,
-    months: [
-      { key: 'Jun', label: 'Jun', days: 1, color: '#DBEAFE' },
-      { key: 'Jul', label: 'Jul', days: 1.5, color: '#BFDBFE' },
-      { key: 'Aug', label: 'Aug', days: 2, color: '#60A5FA' },
-      { key: 'Sep', label: 'Sep', days: 0.5, color: '#93C5FD' },
-      { key: 'Oct', label: 'Oct', days: 1, color: '#3B82F6' },
-      { key: 'Nov', label: 'Nov', days: 4, color: '#1D4ED8' },
-    ],
-    records: [
-      {
-        id: 'leave-1',
-        dateDisplay: '20',
-        monthDisplay: 'Nov',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
-        monthKey: 'Nov',
-      },
-      {
-        id: 'leave-2',
-        dateDisplay: '11-12',
-        monthDisplay: 'Nov',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Attending annual family wedding ceremony out of town.',
-        monthKey: 'Nov',
-      },
-      {
-        id: 'leave-3',
-        dateDisplay: '10',
-        monthDisplay: 'Nov',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Home maintenance work and urgent utility installations.',
-        monthKey: 'Nov',
-      },
-      {
-        id: 'leave-4',
-        dateDisplay: '15',
-        monthDisplay: 'Oct',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Personal appointment and family health checkup session.',
-        monthKey: 'Oct',
-      },
-      {
-        id: 'leave-5',
-        dateDisplay: '28',
-        monthDisplay: 'Sep',
-        durationDays: 0.5,
-        durationLabel: '0.5 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Half-day afternoon medical visit and prescription review.',
-        monthKey: 'Sep',
-      },
-      {
-        id: 'leave-7',
-        dateDisplay: '22-23',
-        monthDisplay: 'Aug',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Mid-year relaxation break and family visit.',
-        monthKey: 'Aug',
-      },
-      {
-        id: 'leave-8',
-        dateDisplay: '14-15',
-        monthDisplay: 'Jul',
-        durationDays: 1.5,
-        durationLabel: '1.5 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Domestic apartment shifting and lease registration formalities.',
-        monthKey: 'Jul',
-      },
-      {
-        id: 'leave-9',
-        dateDisplay: '18',
-        monthDisplay: 'Jun',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Attending sibling university graduation ceremony.',
-        monthKey: 'Jun',
-      },
-    ],
-  },
-  '1year': {
-    totalDays: 16.5,
-    months: [
-      { key: 'Feb', label: 'Feb', days: 2, color: '#E0E7FF' },
-      { key: 'May', label: 'May', days: 2.5, color: '#C7D2FE' },
-      { key: 'Jun', label: 'Jun', days: 1, color: '#DBEAFE' },
-      { key: 'Jul', label: 'Jul', days: 1.5, color: '#BFDBFE' },
-      { key: 'Aug', label: 'Aug', days: 2, color: '#60A5FA' },
-      { key: 'Sep', label: 'Sep', days: 0.5, color: '#93C5FD' },
-      { key: 'Oct', label: 'Oct', days: 1, color: '#3B82F6' },
-      { key: 'Nov', label: 'Nov', days: 4, color: '#1D4ED8' },
-      { key: 'Dec', label: 'Dec', days: 2, color: '#1E3A8A' },
-    ],
-    records: [
-      {
-        id: 'leave-1',
-        dateDisplay: '20',
-        monthDisplay: 'Nov',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription:
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.........',
-        monthKey: 'Nov',
-      },
-      {
-        id: 'leave-2',
-        dateDisplay: '11-12',
-        monthDisplay: 'Nov',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Attending annual family wedding ceremony.',
-        monthKey: 'Nov',
-      },
-      {
-        id: 'leave-3',
-        dateDisplay: '10',
-        monthDisplay: 'Nov',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Home maintenance work and urgent utility installations.',
-        monthKey: 'Nov',
-      },
-      {
-        id: 'leave-4',
-        dateDisplay: '15',
-        monthDisplay: 'Oct',
-        durationDays: 1,
-        durationLabel: '1 day',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Personal appointment and family health checkup session.',
-        monthKey: 'Oct',
-      },
-      {
-        id: 'leave-7',
-        dateDisplay: '22-23',
-        monthDisplay: 'Aug',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Mid-year summer vacation and travel with family.',
-        monthKey: 'Aug',
-      },
-      {
-        id: 'leave-10',
-        dateDisplay: '12-14',
-        monthDisplay: 'May',
-        durationDays: 2.5,
-        durationLabel: '2.5 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Traditional annual religious festival and home ceremony.',
-        monthKey: 'May',
-      },
-      {
-        id: 'leave-11',
-        dateDisplay: '08-09',
-        monthDisplay: 'Feb',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Winter medical rest and health recovery.',
-        monthKey: 'Feb',
-      },
-      {
-        id: 'leave-12',
-        dateDisplay: '24-25',
-        monthDisplay: 'Dec',
-        durationDays: 2,
-        durationLabel: '2 days',
-        status: 'Approved',
-        reasonTitle: 'Reason requested',
-        reasonDescription: 'Year-end Christmas and winter festival holidays.',
-        monthKey: 'Dec',
-      },
-    ],
-  },
-};
-
-export function getLeaveDataForDuration(duration: DurationKey): LeaveDurationData {
-  return LEAVE_RECORDS_BY_DURATION[duration] ?? LEAVE_RECORDS_BY_DURATION['3months'];
-}
-
 export interface LeavePieDataItem extends pieDataItem {
   monthKey: string;
   monthLabel: string;
@@ -370,22 +44,230 @@ export interface LeavePieDataItem extends pieDataItem {
   showInnerLabel: boolean;
 }
 
+const SHORT_MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+] as const;
+
+const MONTH_COLORS = [
+  '#E0E7FF',
+  '#C7D2FE',
+  '#DBEAFE',
+  '#BFDBFE',
+  '#93C5FD',
+  '#60A5FA',
+  '#3B82F6',
+  '#2563EB',
+  '#1D4ED8',
+  '#1E40AF',
+  '#1E3A8A',
+  '#172554',
+] as const;
+
+const LIGHT_SLICE_COLORS = new Set(['#93C5FD', '#DBEAFE', '#E0E7FF', '#C7D2FE', '#BFDBFE']);
+
+function getWindowBounds(
+  duration: DurationKey,
+  referenceDate: Date,
+): { start: Date; end: Date; monthCount: number } {
+  const monthCount = duration === '3months' ? 3 : duration === '6months' ? 6 : 12;
+  const end = new Date(referenceDate.getFullYear(), referenceDate.getMonth() + 1, 0, 23, 59, 59, 999);
+  const start = new Date(referenceDate.getFullYear(), referenceDate.getMonth() - (monthCount - 1), 1, 0, 0, 0, 0);
+  return { start, end, monthCount };
+}
+
+function formatWindowRangeLabel(start: Date, end: Date): string {
+  const startMonth = SHORT_MONTHS[start.getMonth()] ?? 'Jan';
+  const endMonth = SHORT_MONTHS[end.getMonth()] ?? 'Dec';
+  if (start.getFullYear() === end.getFullYear()) {
+    return `${startMonth}-${endMonth} ${end.getFullYear()}`;
+  }
+  return `${startMonth} ${start.getFullYear()}-${endMonth} ${end.getFullYear()}`;
+}
+
+function parseItemDate(raw: string | undefined): Date | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  const ymdMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+  if (ymdMatch) {
+    const year = Number(ymdMatch[1]);
+    const month = Number(ymdMatch[2]);
+    const day = Number(ymdMatch[3]);
+    if (Number.isInteger(year) && Number.isInteger(month) && Number.isInteger(day)) {
+      return new Date(year, month - 1, day);
+    }
+  }
+  const ms = Date.parse(trimmed);
+  return Number.isFinite(ms) ? new Date(ms) : null;
+}
+
+function normalizeStatus(rawStatus: string): 'Approved' | 'Pending' | 'Rejected' {
+  const normalized = rawStatus.trim().toLowerCase();
+  if (
+    normalized.includes('reject') ||
+    normalized.includes('declin') ||
+    normalized.includes('deni') ||
+    normalized.includes('cancel') ||
+    normalized.includes('withdraw')
+  ) {
+    return 'Rejected';
+  }
+  if (normalized.includes('approv')) {
+    return 'Approved';
+  }
+  return 'Pending';
+}
+
+function formatDateDisplay(start: Date, end: Date | null): string {
+  const startDay = String(start.getDate()).padStart(2, '0');
+  if (!end || (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth() && start.getDate() === end.getDate())) {
+    return startDay;
+  }
+  const endDay = String(end.getDate()).padStart(2, '0');
+  if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) {
+    return `${startDay}-${endDay}`;
+  }
+  const startMon = SHORT_MONTHS[start.getMonth()] ?? '';
+  const endMon = SHORT_MONTHS[end.getMonth()] ?? '';
+  return `${startDay} ${startMon}-${endDay} ${endMon}`;
+}
+
+function formatDurationLabel(days: number): string {
+  const rounded = Number(days.toFixed(1));
+  return `${rounded} ${rounded === 1 ? 'day' : 'days'}`;
+}
+
+export function buildDurationOptions(
+  requests: LeaveRequestHistoryItem[],
+  referenceDate: Date = new Date(),
+): DurationOption[] {
+  const configs: { key: DurationKey; label: string }[] = [
+    { key: '3months', label: 'Last 3 months' },
+    { key: '6months', label: 'Last 6 months' },
+    { key: '1year', label: 'Last 1 year' },
+  ];
+
+  return configs.map(({ key, label }) => {
+    const { start, end } = getWindowBounds(key, referenceDate);
+    let approvedDays = 0;
+
+    for (const item of requests) {
+      const itemDate = parseItemDate(item.startDate) ?? parseItemDate(item.createdAtUtc);
+      if (!itemDate || itemDate < start || itemDate > end) continue;
+      if (normalizeStatus(item.status) === 'Approved') {
+        approvedDays += item.totalDaysApplied ?? 0;
+      }
+    }
+
+    return {
+      key,
+      label,
+      dateRange: formatWindowRangeLabel(start, end),
+      totalDays: Number(approvedDays.toFixed(1)),
+    };
+  });
+}
+
+export function buildLeaveDataForDuration(
+  requests: LeaveRequestHistoryItem[],
+  duration: DurationKey,
+  referenceDate: Date = new Date(),
+): LeaveDurationData {
+  const { start, end, monthCount } = getWindowBounds(duration, referenceDate);
+
+  const inWindow: { item: LeaveRequestHistoryItem; date: Date }[] = [];
+  for (const item of requests) {
+    const date = parseItemDate(item.startDate) ?? parseItemDate(item.createdAtUtc);
+    if (!date || date < start || date > end) continue;
+    inWindow.push({ item, date });
+  }
+
+  inWindow.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const monthBuckets = new Map<string, { label: string; days: number; order: number }>();
+  for (let i = 0; i < monthCount; i++) {
+    const mDate = new Date(start.getFullYear(), start.getMonth() + i, 1);
+    const key = `${mDate.getFullYear()}-${String(mDate.getMonth() + 1).padStart(2, '0')}`;
+    const label = SHORT_MONTHS[mDate.getMonth()] ?? 'Jan';
+    monthBuckets.set(key, { label, days: 0, order: i });
+  }
+
+  let totalApprovedDays = 0;
+  const records: LeaveHistoryRecord[] = inWindow.map(({ item, date }, idx) => {
+    const endDate = parseItemDate(item.endDate);
+    const status = normalizeStatus(item.status);
+    const durationDays = item.totalDaysApplied ?? 1;
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthDisplay = SHORT_MONTHS[date.getMonth()] ?? 'Jan';
+
+    if (status === 'Approved') {
+      totalApprovedDays += durationDays;
+    }
+
+    const bucket = monthBuckets.get(monthKey);
+    if (bucket && status !== 'Rejected') {
+      bucket.days += durationDays;
+    }
+
+    return {
+      id: item.leaveRequestId !== null && item.leaveRequestId !== undefined
+        ? String(item.leaveRequestId)
+        : `leave-${idx}`,
+      dateDisplay: formatDateDisplay(date, endDate),
+      monthDisplay,
+      durationDays,
+      durationLabel: formatDurationLabel(durationDays),
+      status,
+      reasonTitle: 'Reason requested',
+      reasonDescription: item.reason?.trim() || 'No reason provided',
+      monthKey,
+      leaveType: item.leaveTypeName,
+    };
+  });
+
+  const activeBuckets = Array.from(monthBuckets.entries()).filter(([, b]) => b.days > 0);
+  const months: MonthSegment[] = activeBuckets.map(([key, b], idx) => {
+    const colorIndex = Math.min(
+      MONTH_COLORS.length - 1,
+      Math.max(0, MONTH_COLORS.length - activeBuckets.length + idx),
+    );
+    return {
+      key,
+      label: b.label,
+      days: Number(b.days.toFixed(1)),
+      color: MONTH_COLORS[colorIndex] ?? '#1D4ED8',
+    };
+  });
+
+  const roundedApproved = Number(totalApprovedDays.toFixed(1));
+  return {
+    totalDays: roundedApproved,
+    totalApprovedDays: roundedApproved,
+    months,
+    records,
+  };
+}
+
 export function buildPieChartData(
   months: MonthSegment[],
   selectedMonth: string,
   onSelectMonth: (monthKey: string) => void,
 ): LeavePieDataItem[] {
-  // Preserve chronological order with latest month (Nov) first
-  const ordered = [...months].sort((a, b) => {
-    if (a.key === 'Nov') return -1;
-    if (b.key === 'Nov') return 1;
-    return 0;
-  });
-
+  const ordered = [...months].reverse();
   const total = ordered.reduce((sum, m) => sum + m.days, 0);
 
-  return ordered.map((m) => {
-    const isNov = m.key === 'Nov';
+  return ordered.map((m, idx) => {
+    const isLatest = idx === 0;
     const isSmall = m.days <= 0.5;
     const percentage = total > 0 ? (m.days / total) * 100 : 0;
     const showInnerLabel = ordered.length <= 4 || (percentage >= 7 && m.days >= 1);
@@ -396,16 +278,10 @@ export function buildPieChartData(
       value: m.days,
       color: m.color,
       text: `${m.label} · ${daysLabel}`,
-      textColor:
-        m.color === '#93C5FD' ||
-        m.color === '#DBEAFE' ||
-        m.color === '#E0E7FF' ||
-        m.color === '#BFDBFE'
-          ? '#0F172A'
-          : '#FFFFFF',
-      textSize: isNov ? 12 : isSmall ? 9 : 11,
+      textColor: LIGHT_SLICE_COLORS.has(m.color) ? '#0F172A' : '#FFFFFF',
+      textSize: isLatest || m.key === selectedMonth ? 12 : isSmall ? 9 : 11,
       fontWeight: 'bold',
-      focused: false, // Never extrude slice - keeps pie clean and contiguous
+      focused: false,
       monthKey: m.key,
       monthLabel: m.label,
       daysLabel,

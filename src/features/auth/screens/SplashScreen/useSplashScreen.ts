@@ -1,13 +1,13 @@
-import { useAuthStore } from '../../store/authStore';
-import { useAppTheme } from '@/shared/theme';
-import { router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Easing } from 'react-native';
+import { router } from 'expo-router';
+import { useAppTheme } from '@/shared/theme';
+import { useAuthStore } from '../../store/authStore';
 
 export function useSplashScreen() {
   const theme = useAppTheme();
   const isDark = theme.isDark;
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const hydrateAuthOnStartup = useAuthStore((s) => s.hydrateAuthOnStartup);
 
   const [logoOpacity] = useState(() => new Animated.Value(0));
   const [logoScale] = useState(() => new Animated.Value(0.88));
@@ -17,12 +17,18 @@ export function useSplashScreen() {
   const [screenFadeOut] = useState(() => new Animated.Value(1));
 
   const hasNavigatedRef = useRef(false);
+  const hydrationPromiseRef = useRef<Promise<boolean> | null>(null);
 
   useEffect(() => {
-    const navigateNext = () => {
+    hydrationPromiseRef.current = hydrateAuthOnStartup().catch(() => false);
+
+    const navigateNext = async () => {
       if (hasNavigatedRef.current) return;
       hasNavigatedRef.current = true;
-      router.replace(isAuthenticated ? '/(app)' : '/(auth)/login');
+      const hydrated = hydrationPromiseRef.current
+        ? await hydrationPromiseRef.current
+        : useAuthStore.getState().isAuthenticated;
+      router.replace(hydrated ? '/(app)' : '/(auth)/login');
     };
 
     const animation = Animated.sequence([
@@ -70,14 +76,14 @@ export function useSplashScreen() {
     ]);
 
     animation.start(() => {
-      navigateNext();
+      void navigateNext();
     });
 
     return () => {
       animation.stop();
     };
   }, [
-    isAuthenticated,
+    hydrateAuthOnStartup,
     logoOpacity,
     logoScale,
     textOpacity,
@@ -86,10 +92,13 @@ export function useSplashScreen() {
     screenFadeOut,
   ]);
 
-  const handleSkipPress = () => {
+  const handleSkipPress = async () => {
     if (hasNavigatedRef.current) return;
     hasNavigatedRef.current = true;
-    router.replace(isAuthenticated ? '/(app)' : '/(auth)/login');
+    const hydrated = hydrationPromiseRef.current
+      ? await hydrationPromiseRef.current
+      : useAuthStore.getState().isAuthenticated;
+    router.replace(hydrated ? '/(app)' : '/(auth)/login');
   };
 
   return {

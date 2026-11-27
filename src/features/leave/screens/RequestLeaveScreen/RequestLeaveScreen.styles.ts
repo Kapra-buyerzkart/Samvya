@@ -1,27 +1,21 @@
+import { FontFamily, palette } from '@/shared/theme';
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
-import { FontFamily } from '@/shared/theme';
 
 export const styles = StyleSheet.create({
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingHorizontal: 16,
+    paddingTop: 10,
     paddingBottom: 96,
   },
   navBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
-    paddingTop: 6,
+    marginBottom: 18,
+    paddingTop: 4,
   },
   navLeft: {
     flexDirection: 'row',
@@ -29,7 +23,7 @@ export const styles = StyleSheet.create({
     gap: 6,
   },
   backButton: {
-    padding: 2,
+    padding: 4,
     marginLeft: -6,
   },
   navTitle: {
@@ -37,28 +31,42 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     letterSpacing: -0.2,
   },
-  approvalStatusBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  availableBadge: {
     borderRadius: 20,
-    borderWidth: 1.5,
+    borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  approvalStatusBtnText: {
+  availableBadgeText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 12,
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  errorBannerText: {
     fontFamily: FontFamily.medium,
     fontSize: 12.5,
+    color: '#B91C1C',
   },
-  summaryCard: {
+  summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 14,
+    borderRadius: 18,
     borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 2,
   },
   summaryCol: {
     flex: 1,
@@ -66,106 +74,103 @@ export const styles = StyleSheet.create({
   },
   summaryLabel: {
     fontFamily: FontFamily.medium,
-    fontSize: 13,
+    fontSize: 12,
     marginBottom: 3,
   },
   summaryValue: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 16,
+    fontSize: 17,
     fontVariant: ['tabular-nums'],
+    letterSpacing: -0.3,
   },
   summaryDivider: {
     width: 1,
     height: 28,
   },
-  durationRow: {
-    marginBottom: 14,
-  },
-  durationToggleContainer: {
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    borderRadius: 24,
-    borderWidth: 1.5,
-    padding: 3,
-  },
-  durationToggleBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  durationToggleBtnActive: {
-    backgroundColor: '#1D4ED8',
-  },
-  durationToggleText: {
-    fontFamily: FontFamily.medium,
-    fontSize: 14,
-  },
-  durationToggleTextActive: {
-    fontFamily: FontFamily.semiBold,
-    color: '#FFFFFF',
-  },
-  datesRowCard: {
+  leaveTypeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 2,
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    marginBottom: 14,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 2,
   },
-  datePickerCol: {
-    flex: 1,
+  leaveTypeLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  datePickerTextCol: {
     flex: 1,
   },
-  datePickerLabel: {
-    fontFamily: FontFamily.medium,
-    fontSize: 12,
+  leaveTypeIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leaveTypeTextCol: {
+    flex: 1,
+  },
+  leaveTypeTitle: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 15,
     marginBottom: 2,
   },
-  datePickerValue: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 14.5,
-  },
-  datesVerticalDivider: {
-    width: 1,
-    height: 30,
-    marginHorizontal: 12,
+  leaveTypeSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: 12.5,
   },
   sectionSeparator: {
     height: 1,
-    marginVertical: 12,
+    marginVertical: 16,
+  },
+  calendarCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    elevation: 3,
   },
   monthHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
+    paddingHorizontal: 2,
   },
   monthTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 22,
+    fontSize: 20,
     letterSpacing: -0.3,
   },
   monthNavButtons: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   navChevronBtn: {
     width: 36,
     height: 36,
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  card: {
-    borderRadius: 28,
-    padding: 20,
-    marginBottom: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   weekdaysRow: {
     flexDirection: 'row',
@@ -192,6 +197,17 @@ export const styles = StyleSheet.create({
     marginVertical: 2,
   },
   unselectedDayContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todayOutlineContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -199,27 +215,23 @@ export const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: 15,
   },
-  emptyDotPlaceholder: {
-    height: 5,
-    marginTop: 4,
-  },
-  selectedCircle: {
+  selectedDayBox: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#1D4ED8',
+    backgroundColor: palette.blue700,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowColor: palette.blue700,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   selectedDayNumberText: {
     fontFamily: FontFamily.headingBold,
     fontSize: 15,
-    color: '#FFFFFF',
+    color: palette.white,
     lineHeight: 18,
   },
   selectedCheckIcon: {
@@ -227,60 +239,222 @@ export const styles = StyleSheet.create({
   },
   inRangeContainer: {
     width: '100%',
-    height: 44,
-    borderRadius: 10,
+    height: 36,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   inRangeDayNumberText: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 15,
-    color: '#1D4ED8',
+    fontSize: 14.5,
+  },
+  breakdownCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 14,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  breakdownHeader: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 11.5,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+  },
+  breakdownRowDivider: {
+    height: 1,
+  },
+  breakdownLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  dateBadge: {
+    width: 40,
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: 'hidden',
+    alignItems: 'center',
+  },
+  dateBadgeMonthBar: {
+    width: '100%',
+    backgroundColor: palette.blue600,
+    paddingVertical: 2,
+    alignItems: 'center',
+  },
+  dateBadgeMonthText: {
+    fontFamily: FontFamily.bold,
+    fontSize: 9,
+    color: palette.white,
+    letterSpacing: 0.4,
+  },
+  dateBadgeDayBody: {
+    width: '100%',
+    paddingVertical: 3,
+    alignItems: 'center',
+  },
+  dateBadgeDayText: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 14,
+  },
+  breakdownMetaCol: {
+    gap: 4,
+    alignItems: 'flex-start',
+  },
+  breakdownWeekday: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 14,
+  },
+  breakdownDurationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  breakdownDurationText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12,
+  },
+  breakdownRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  breakdownDaysValue: {
+    fontFamily: FontFamily.medium,
+    fontSize: 13,
+    fontVariant: ['tabular-nums'],
+  },
+  breakdownRemoveBtn: {
+    padding: 4,
+  },
+  breakdownEmptyText: {
+    fontFamily: FontFamily.regular,
+    fontSize: 13,
+    marginBottom: 8,
+  },
+  addDateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingTop: 10,
+    alignSelf: 'flex-start',
+  },
+  addDateBtnText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 13.5,
   },
   reasonSection: {
-    marginBottom: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 14,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 2,
   },
   reasonHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   reasonTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 16.5,
+    fontSize: 17,
   },
-  availableBadge: {
-    borderRadius: 16,
+  leaveStatusBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
-  availableBadgeText: {
-    fontFamily: FontFamily.medium,
-    fontSize: 12,
+  leaveStatusBtnText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 12.5,
   },
   reasonInputContainer: {
-    paddingHorizontal: 0,
-    paddingVertical: 4,
-    minHeight: 46,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    minHeight: 92,
   },
   reasonInput: {
     fontFamily: FontFamily.regular,
     fontSize: 14,
-    minHeight: 40,
+    minHeight: 72,
+  },
+  totalsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 18,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  totalsCol: {
+    flex: 1,
+  },
+  totalsDivider: {
+    width: 1,
+    height: 32,
+    marginHorizontal: 16,
+  },
+  totalsLabel: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  totalsValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 5,
+  },
+  totalsValue: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 16,
+    fontVariant: ['tabular-nums'],
+  },
+  totalsBalanceValue: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 16,
+    fontVariant: ['tabular-nums'],
+  },
+  totalsLeftLabel: {
+    fontFamily: FontFamily.regular,
+    fontSize: 12.5,
   },
   submitButton: {
-    backgroundColor: '#1D4ED8',
-    borderRadius: 16,
-    paddingVertical: 14,
+    backgroundColor: palette.blue700,
+    borderRadius: 14,
+    paddingVertical: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    shadowColor: '#1D4ED8',
+    gap: 8,
+    shadowColor: palette.blue700,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.28,
+    shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 4,
     marginBottom: 20,
@@ -291,178 +465,248 @@ export const styles = StyleSheet.create({
   submitButtonText: {
     fontFamily: FontFamily.semiBold,
     fontSize: 16,
-    color: '#FFFFFF',
+    color: palette.white,
+  },
+  sheetList: {
+    gap: 10,
+    paddingTop: 4,
+    paddingBottom: 12,
+  },
+  sheetItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  sheetItemTextCol: {
+    flex: 1,
+    gap: 2,
+  },
+  sheetItemTitle: {
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 15,
+  },
+  sheetItemSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: 12.5,
   },
 });
 
-export const getBackgroundImageStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.backgroundImage,
-  { backgroundColor: isDark ? '#020617' : '#F8FAFC' },
-];
-
-export const getImageStyle = (isDark: boolean) => ({
-  opacity: isDark ? 0.05 : 1,
-});
-
-export const getSafeAreaStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
+export const getSafeAreaStyle = (isDark: boolean): ViewStyle[] => [
   styles.safeArea,
-  { backgroundColor: isDark ? '#020617' : 'transparent' },
+  { backgroundColor: isDark ? palette.slate950 : '#F2F4F8' },
 ];
 
 export const getNavTitleStyle = (isDark: boolean): TextStyle[] => [
   styles.navTitle,
-  { color: isDark ? '#F8FAFC' : '#0F1E36' },
+  { color: isDark ? palette.slate50 : palette.slate900 },
 ];
 
-export const getApprovalStatusBtnStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
-  styles.approvalStatusBtn,
-  {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : 'rgba(239, 246, 255, 0.85)',
-    borderColor: isDark ? '#334155' : '#BFDBFE',
-  },
-];
-
-export const getApprovalStatusBtnTextStyle = (isDark: boolean): TextStyle[] => [
-  styles.approvalStatusBtnText,
-  { color: isDark ? '#93C5FD' : '#2563EB' },
-];
-
-export const getSummaryCardStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
-  styles.summaryCard,
-  {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.6)' : 'rgba(219, 234, 254, 0.55)',
-    borderColor: isDark ? '#334155' : '#BFDBFE',
-  },
-];
-
-export const getSummaryLabelStyle = (isDark: boolean): TextStyle[] => [
-  styles.summaryLabel,
-  { color: isDark ? '#60A5FA' : '#2563EB' },
-];
-
-export const getSummaryValueStyle = (isDark: boolean): TextStyle[] => [
-  styles.summaryValue,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getSummaryDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.summaryDivider,
-  { backgroundColor: isDark ? '#334155' : '#BFDBFE' },
-];
-
-export const getDurationToggleContainerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
-  styles.durationToggleContainer,
-  {
-    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
-    borderColor: isDark ? '#334155' : '#BFDBFE',
-  },
-];
-
-export const getDurationToggleBtnStyle = (isActive: boolean): ViewStyle[] => {
-  const result: ViewStyle[] = [styles.durationToggleBtn];
-  if (isActive) {
-    result.push(styles.durationToggleBtnActive);
-    result.push({ backgroundColor: '#1D4ED8' });
-  }
-  return result;
-};
-
-export const getDurationToggleTextStyle = (isDark: boolean, isActive: boolean): TextStyle[] => {
-  const result: TextStyle[] = [
-    styles.durationToggleText,
-    { color: isDark ? '#94A3B8' : '#0F172A' },
-  ];
-  if (isActive) {
-    result.push(styles.durationToggleTextActive);
-  }
-  return result;
-};
-
-export const getDatePickerLabelStyle = (isDark: boolean): TextStyle[] => [
-  styles.datePickerLabel,
-  { color: isDark ? '#60A5FA' : '#2563EB' },
-];
-
-export const getDatePickerValueStyle = (isDark: boolean): TextStyle[] => [
-  styles.datePickerValue,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getDatesVerticalDividerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.datesVerticalDivider,
-  { backgroundColor: isDark ? '#334155' : '#CBD5E1' },
-];
-
-export const getSectionSeparatorStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.sectionSeparator,
-  { backgroundColor: isDark ? '#1E293B' : '#E2E8F0' },
-];
-
-export const getMonthTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.monthTitle,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getNavChevronBtnStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
-  styles.navChevronBtn,
-  {
-    backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-    borderColor: isDark ? '#334155' : '#E2E8F0',
-  },
-];
-
-export const getCardStyle = (isDark: boolean): (ViewStyle | { backgroundColor?: string; borderColor?: string })[] => {
-  const result: (ViewStyle | { backgroundColor?: string; borderColor?: string })[] = [styles.card];
-  if (isDark) {
-    result.push({
-      backgroundColor: 'rgba(15, 23, 42, 0.85)',
-      borderColor: 'rgba(51, 65, 85, 0.8)',
-    });
-  }
-  return result;
-};
-
-export const getWeekdayTextStyle = (isDark: boolean): TextStyle[] => [
-  styles.weekdayText,
-  { color: isDark ? '#94A3B8' : '#64748B' },
-];
-
-export const getDayNumberTextStyle = (isDark: boolean): TextStyle[] => [
-  styles.dayNumberText,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getInRangeContainerStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string })[] => [
-  styles.inRangeContainer,
-  { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' },
-];
-
-export const getInRangeDayNumberTextStyle = (isDark: boolean): TextStyle[] => [
-  styles.inRangeDayNumberText,
-  { color: isDark ? '#60A5FA' : '#1D4ED8' },
-];
-
-export const getReasonTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.reasonTitle,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
-];
-
-export const getAvailableBadgeStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+export const getAvailableBadgeStyle = (isDark: boolean): ViewStyle[] => [
   styles.availableBadge,
   {
-    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : '#EFF6FF',
-    borderColor: isDark ? '#334155' : '#BFDBFE',
+    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : palette.white,
+    borderColor: isDark ? palette.slate700 : '#BFDBFE',
   },
 ];
 
 export const getAvailableBadgeTextStyle = (isDark: boolean): TextStyle[] => [
   styles.availableBadgeText,
-  { color: isDark ? '#93C5FD' : '#1D4ED8' },
+  { color: isDark ? '#60A5FA' : palette.blue600 },
+];
+
+export const getSummaryLabelStyle = (isDark: boolean): TextStyle[] => [
+  styles.summaryLabel,
+  { color: isDark ? '#60A5FA' : palette.blue600 },
+];
+
+export const getSummaryValueStyle = (isDark: boolean): TextStyle[] => [
+  styles.summaryValue,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getSummaryDividerStyle = (isDark: boolean): ViewStyle[] => [
+  styles.summaryDivider,
+  { backgroundColor: isDark ? palette.slate700 : palette.slate200 },
+];
+
+export const getSurfaceCardStyle = (isDark: boolean): ViewStyle =>
+  isDark
+    ? {
+        backgroundColor: palette.slate900,
+        borderColor: palette.slate800,
+        shadowColor: palette.black,
+        shadowOpacity: 0.25,
+      }
+    : {
+        backgroundColor: palette.white,
+        borderColor: palette.slate200,
+        shadowColor: '#0F1E36',
+        shadowOpacity: 0.05,
+      };
+
+export const getLeaveTypeIconBoxStyle = (isDark: boolean): ViewStyle[] => [
+  styles.leaveTypeIconBox,
+  { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.18)' : palette.blue50 },
+];
+
+export const getLeaveTypeTitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.leaveTypeTitle,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getLeaveTypeSubtitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.leaveTypeSubtitle,
+  { color: isDark ? palette.slate400 : palette.slate500 },
+];
+
+export const getSectionSeparatorStyle = (isDark: boolean): ViewStyle[] => [
+  styles.sectionSeparator,
+  { backgroundColor: isDark ? palette.slate800 : '#DBEAFE' },
+];
+
+export const getMonthTitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.monthTitle,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getWeekdayTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.weekdayText,
+  { color: isDark ? '#60A5FA' : palette.blue500 },
+];
+
+export const getDayNumberTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.dayNumberText,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getTodayOutlineStyle = (isDark: boolean): ViewStyle[] => [
+  styles.todayOutlineContainer,
+  { borderColor: isDark ? '#60A5FA' : palette.blue600 },
+];
+
+export const getInRangeContainerStyle = (isDark: boolean): ViewStyle[] => [
+  styles.inRangeContainer,
+  { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : palette.blue50 },
+];
+
+export const getInRangeDayNumberTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.inRangeDayNumberText,
+  { color: isDark ? '#60A5FA' : palette.blue700 },
+];
+
+export const getBreakdownHeaderStyle = (isDark: boolean): TextStyle[] => [
+  styles.breakdownHeader,
+  { color: isDark ? palette.slate400 : palette.slate500 },
+];
+
+export const getBreakdownDividerStyle = (isDark: boolean): ViewStyle[] => [
+  styles.breakdownRowDivider,
+  { backgroundColor: isDark ? palette.slate800 : palette.slate100 },
+];
+
+export const getDateBadgeStyle = (isDark: boolean): ViewStyle[] => [
+  styles.dateBadge,
+  { borderColor: isDark ? palette.slate700 : palette.slate300 },
+];
+
+export const getDateBadgeDayBodyStyle = (isDark: boolean): ViewStyle[] => [
+  styles.dateBadgeDayBody,
+  { backgroundColor: isDark ? palette.slate800 : palette.white },
+];
+
+export const getDateBadgeDayTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.dateBadgeDayText,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getBreakdownWeekdayStyle = (isDark: boolean): TextStyle[] => [
+  styles.breakdownWeekday,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getBreakdownDurationPillStyle = (isDark: boolean): ViewStyle[] => [
+  styles.breakdownDurationPill,
+  { backgroundColor: isDark ? palette.slate800 : palette.slate100 },
+];
+
+export const getBreakdownDurationTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.breakdownDurationText,
+  { color: isDark ? palette.slate300 : palette.slate600 },
+];
+
+export const getBreakdownDaysValueStyle = (isDark: boolean): TextStyle[] => [
+  styles.breakdownDaysValue,
+  { color: isDark ? palette.slate300 : palette.slate600 },
+];
+
+export const getBreakdownEmptyTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.breakdownEmptyText,
+  { color: isDark ? palette.slate400 : palette.slate500 },
+];
+
+export const getAddDateBtnTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.addDateBtnText,
+  { color: isDark ? '#60A5FA' : palette.blue600 },
+];
+
+export const getReasonTitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.reasonTitle,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getLeaveStatusBtnStyle = (isDark: boolean): ViewStyle[] => [
+  styles.leaveStatusBtn,
+  {
+    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.7)' : palette.blue50,
+    borderColor: isDark ? palette.slate700 : '#BFDBFE',
+  },
+];
+
+export const getLeaveStatusBtnTextStyle = (isDark: boolean): TextStyle[] => [
+  styles.leaveStatusBtnText,
+  { color: isDark ? '#93C5FD' : palette.blue600 },
+];
+
+export const getReasonInputContainerStyle = (isDark: boolean): ViewStyle[] => [
+  styles.reasonInputContainer,
+  {
+    backgroundColor: isDark ? palette.slate900 : palette.white,
+    borderColor: isDark ? palette.slate700 : palette.slate970,
+  },
 ];
 
 export const getReasonInputStyle = (isDark: boolean): TextStyle[] => [
   styles.reasonInput,
-  { color: isDark ? '#F8FAFC' : '#0F172A' },
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getTotalsLabelStyle = (isDark: boolean): TextStyle[] => [
+  styles.totalsLabel,
+  { color: isDark ? palette.slate400 : palette.slate500 },
+];
+
+export const getTotalsValueStyle = (isDark: boolean): TextStyle[] => [
+  styles.totalsValue,
+  { color: isDark ? palette.slate50 : palette.slate900 },
+];
+
+export const getTotalsBalanceValueStyle = (isDark: boolean): TextStyle[] => [
+  styles.totalsBalanceValue,
+  { color: isDark ? '#60A5FA' : palette.blue600 },
+];
+
+export const getTotalsLeftLabelStyle = (isDark: boolean): TextStyle[] => [
+  styles.totalsLeftLabel,
+  { color: isDark ? palette.slate400 : palette.slate500 },
+];
+
+export const getTotalsDividerStyle = (isDark: boolean): ViewStyle[] => [
+  styles.totalsDivider,
+  { backgroundColor: isDark ? palette.slate800 : palette.slate200 },
 ];
 
 export const getSubmitButtonStyle = (isSubmitting: boolean): ViewStyle[] => {
@@ -472,3 +716,41 @@ export const getSubmitButtonStyle = (isSubmitting: boolean): ViewStyle[] => {
   }
   return result;
 };
+
+export const getSheetItemStyle = (isDark: boolean, isSelected: boolean): ViewStyle[] => [
+  styles.sheetItem,
+  {
+    backgroundColor: isSelected
+      ? isDark
+        ? 'rgba(37, 99, 235, 0.16)'
+        : palette.blue50
+      : isDark
+        ? palette.slate900
+        : palette.white,
+    borderColor: isSelected
+      ? isDark
+        ? '#60A5FA'
+        : palette.blue600
+      : isDark
+        ? palette.slate800
+        : palette.slate200,
+  },
+];
+
+export const getSheetItemTitleStyle = (isDark: boolean, isSelected: boolean): TextStyle[] => [
+  styles.sheetItemTitle,
+  {
+    color: isSelected
+      ? isDark
+        ? '#93C5FD'
+        : palette.blue700
+      : isDark
+        ? palette.slate50
+        : palette.slate900,
+  },
+];
+
+export const getSheetItemSubtitleStyle = (isDark: boolean): TextStyle[] => [
+  styles.sheetItemSubtitle,
+  { color: isDark ? palette.slate400 : palette.slate500 },
+];

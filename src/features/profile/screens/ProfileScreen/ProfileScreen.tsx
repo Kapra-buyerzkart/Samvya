@@ -1,9 +1,9 @@
 import { AddressBottomSheet } from '../../components/AddressBottomSheet';
 import { TactilePressable } from '@/shared/animations';
 import { Feather } from '@expo/vector-icons';
-import { Image, ImageBackground } from 'expo-image';
+import { Image } from 'expo-image';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   getAddAddressBtnStyle,
@@ -13,7 +13,6 @@ import {
   getAddressVerticalDividerStyle,
   getAvatarCircleStyle,
   getAvatarTextStyle,
-  getBackgroundImageProps,
   getBackgroundImageStyle,
   getBottomEditBtnStyle,
   getBottomEditBtnTextStyle,
@@ -28,10 +27,13 @@ import {
   getHeroCardStyle,
   getHeroNameStyle,
   getHeroSubtitleStyle,
+  getLogoutButtonStyle,
+  getLogoutTextStyle,
   getNavTitleStyle,
   getNotSetTextStyle,
   getRowIconBoxStyle,
   getSafeAreaStyle,
+  getSettingsBtnStyle,
   getSubCardActionTextStyle,
   getSubCardIconBoxStyle,
   getSubCardLabelStyle,
@@ -60,33 +62,48 @@ export function ProfileScreen(): React.JSX.Element {
     address,
     initials,
     isAddressModalOpen,
+    isLoggingOut,
     handleCopy,
     handleEditDisabled,
     handleBack,
+    handleOpenSettings,
+    handleSignOut,
     handleOpenAddressModal,
     handleCloseAddressModal,
   } = useProfileScreen();
 
   return (
-    <ImageBackground
-      source={require('../../../../../assets/images/background_home.png')}
-      style={[styles.backgroundImage, getBackgroundImageStyle(isDark)]}
-      imageStyle={getBackgroundImageProps(isDark)}
-      contentFit="cover"
-    >
+    <View style={[styles.backgroundImage, getBackgroundImageStyle(isDark)]}>
       <SafeAreaView
         style={[styles.safeArea, getSafeAreaStyle(isDark)]}
       >
         <View style={styles.navBar}>
+          <View style={styles.navLeft}>
+            <TouchableOpacity
+              onPress={handleBack}
+              style={styles.backButton}
+              activeOpacity={0.7}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              testID="profile-back-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Feather name="chevron-left" size={28} color={getTextColor(isDark)} />
+            </TouchableOpacity>
+            <Text style={[styles.navTitle, getNavTitleStyle(isDark)]}>Profile</Text>
+          </View>
+
           <TouchableOpacity
-            onPress={handleBack}
-            style={styles.backButton}
-            activeOpacity={0.7}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            onPress={handleOpenSettings}
+            style={[styles.settingsBtn, getSettingsBtnStyle(isDark)]}
+            activeOpacity={0.75}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            testID="profile-settings-btn"
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
           >
-            <Feather name="chevron-left" size={28} color={getTextColor(isDark)} />
+            <Feather name="settings" size={18} color={getTextColor(isDark)} />
           </TouchableOpacity>
-          <Text style={[styles.navTitle, getNavTitleStyle(isDark)]}>Profile</Text>
         </View>
 
         <ScrollView
@@ -365,6 +382,25 @@ export function ProfileScreen(): React.JSX.Element {
               Edit Profile (Disabled)
             </Text>
           </TactilePressable>
+
+          <TactilePressable
+            style={[styles.logoutButton, getLogoutButtonStyle(isDark, isLoggingOut)]}
+            onPress={handleSignOut}
+            disabled={isLoggingOut}
+            activeScale={0.97}
+            testID="profile-logout-btn"
+            accessibilityRole="button"
+            accessibilityLabel="Log out"
+          >
+            {isLoggingOut ? (
+              <ActivityIndicator size="small" color={isDark ? '#F87171' : '#DC2626'} />
+            ) : (
+              <Feather name="log-out" size={18} color={isDark ? '#F87171' : '#DC2626'} />
+            )}
+            <Text style={[styles.logoutButtonText, getLogoutTextStyle(isDark)]}>
+              {isLoggingOut ? 'Signing out...' : 'Log out'}
+            </Text>
+          </TactilePressable>
         </ScrollView>
 
         <AddressBottomSheet
@@ -372,7 +408,7 @@ export function ProfileScreen(): React.JSX.Element {
           onClose={handleCloseAddressModal}
         />
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

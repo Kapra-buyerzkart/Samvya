@@ -2,7 +2,7 @@ import { TactilePressable } from '@/shared/animations';
 import { KeyboardAvoidingScrollView } from '@/shared/components';
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
-import { Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   getBackButtonStyle,
@@ -29,6 +29,7 @@ export function SettingsScreen(): React.JSX.Element {
     displayName,
     displayEmail,
     initials,
+    isSigningOut,
     handleSignOut,
     handleBack,
     handleProfilePress,
@@ -321,11 +322,19 @@ export function SettingsScreen(): React.JSX.Element {
             getSignOutButtonStyle(theme.isDark),
           ]}
           onPress={handleSignOut}
+          disabled={isSigningOut}
           activeScale={0.96}
+          testID="settings-logout-btn"
+          accessibilityRole="button"
+          accessibilityLabel="Sign Out of Samavya"
         >
-          <Feather name="log-out" size={18} color={theme.isDark ? '#F87171' : '#DC2626'} />
+          {isSigningOut ? (
+            <ActivityIndicator size="small" color={theme.isDark ? '#F87171' : '#DC2626'} />
+          ) : (
+            <Feather name="log-out" size={18} color={theme.isDark ? '#F87171' : '#DC2626'} />
+          )}
           <Text style={[styles.signOutText, getSignOutTextStyle(theme.isDark)]}>
-            Sign Out of Samavya
+            {isSigningOut ? 'Signing out...' : 'Sign Out of Samavya'}
           </Text>
         </TactilePressable>
       </KeyboardAvoidingScrollView>

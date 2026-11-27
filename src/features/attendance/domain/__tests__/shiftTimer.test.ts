@@ -3,11 +3,16 @@ import {
   loadShiftState,
   punchInShift,
   punchOutShift,
+  resetShiftState,
   resumeShiftWork,
   saveShiftState,
   startShiftBreak,
   type PersistedShiftState,
 } from '../shiftTimer';
+import {
+  LEGACY_SHIFT_TIMER_STORAGE_KEY,
+  SHIFT_TIMER_STORAGE_KEY,
+} from '@/shared/constants';
 import { appStorage } from '@/shared/storage';
 
 describe('Persistent Shift Timer Domain', () => {
@@ -15,11 +20,30 @@ describe('Persistent Shift Timer Domain', () => {
     appStorage.clearAll();
   });
 
-  it('initializes default state with 1h 30m worked if storage empty', () => {
+  it('initializes default state as punched_out if storage is empty', () => {
     const state = loadShiftState();
-    expect(state.status).toBe('punched_in');
-    expect(state.punchedInAt).not.toBeNull();
-    expect(state.accumulatedBreakSeconds).toBe(1200); // 20m
+    expect(state.status).toBe('punched_out');
+    expect(state.punchedInAt).toBeNull();
+    expect(state.accumulatedBreakSeconds).toBe(0);
+  });
+
+  it('clears legacy punched_in seed and resets active shift back to punched_out', () => {
+    appStorage.set(
+      LEGACY_SHIFT_TIMER_STORAGE_KEY,
+      JSON.stringify({ status: 'punched_in', punchedInAt: 1731410000000 }),
+    );
+    const loaded = loadShiftState();
+    expect(loaded.status).toBe('punched_out');
+    expect(appStorage.contains(LEGACY_SHIFT_TIMER_STORAGE_KEY)).toBe(false);
+    expect(appStorage.contains(SHIFT_TIMER_STORAGE_KEY)).toBe(true);
+
+    punchInShift('Headquarters', 'Regular', 1731410000000);
+    expect(loadShiftState().status).toBe('punched_in');
+
+    const reset = resetShiftState();
+    expect(reset.status).toBe('punched_out');
+    expect(reset.punchedInAt).toBeNull();
+    expect(loadShiftState().status).toBe('punched_out');
   });
 
   it('computes accurate elapsed time based on wall clock timestamp after simulated app kill', () => {

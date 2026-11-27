@@ -1,8 +1,9 @@
-import { useAuthStore } from '@/features/auth';
-import { useAppTheme, useThemeStore, type ThemePreference } from '@/shared/theme';
+import { useState } from 'react';
+import { Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Alert } from 'react-native';
+import { confirmAndSignOut, useAuthStore } from '@/features/auth';
+import { useAppTheme, useThemeStore, type ThemePreference } from '@/shared/theme';
 
 export function useSettingsScreen() {
   const user = useAuthStore((s) => s.user);
@@ -11,6 +12,7 @@ export function useSettingsScreen() {
   const themePreference = useThemeStore((s) => s.themePreference);
   const setThemePreference = useThemeStore((s) => s.setThemePreference);
   const toggleDarkMode = useThemeStore((s) => s.toggleDarkMode);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const displayName = user?.name || 'Aarav Sharma';
   const displayEmail = user?.email || 'aarav.sharma@samavya.internal';
@@ -22,21 +24,20 @@ export function useSettingsScreen() {
     .toUpperCase();
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of Samavya HRMS?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: () => {
-          logout();
-          router.replace('/(auth)/login');
-        },
-      },
-    ]);
+    if (isSigningOut) return;
+    confirmAndSignOut({
+      logout,
+      onStart: () => setIsSigningOut(true),
+      onFinish: () => setIsSigningOut(false),
+    });
   };
 
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)');
+    }
   };
 
   const handleProfilePress = () => {
@@ -72,6 +73,7 @@ export function useSettingsScreen() {
     displayName,
     displayEmail,
     initials,
+    isSigningOut,
     handleSignOut,
     handleBack,
     handleProfilePress,

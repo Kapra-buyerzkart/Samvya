@@ -5,6 +5,7 @@ import {
   loadShiftState,
   punchInShift,
   punchOutShift,
+  resetShiftState,
   resumeShiftWork,
   saveShiftState,
   startShiftBreak,
@@ -70,8 +71,9 @@ export function usePersistentShiftTimer() {
     (
       loc: 'Work from home' | 'Headquarters' | 'Client site' = shiftState.workLocation,
       hours: 'Regular' | 'Overtime' | 'Flexible' = shiftState.hoursType,
+      nowMs: number = Date.now(),
     ) => {
-      const updated = punchInShift(loc, hours);
+      const updated = punchInShift(loc, hours, nowMs);
       setShiftState(updated);
       setNow(Date.now());
     },
@@ -90,11 +92,20 @@ export function usePersistentShiftTimer() {
     setNow(Date.now());
   }, [shiftState]);
 
-  const handlePunchOut = useCallback(() => {
-    const updated = punchOutShift(shiftState);
+  const handlePunchOut = useCallback(
+    (nowMs: number = Date.now()) => {
+      const updated = punchOutShift(shiftState, nowMs);
+      setShiftState(updated);
+      setNow(Date.now());
+    },
+    [shiftState],
+  );
+
+  const handleResetShift = useCallback(() => {
+    const updated = resetShiftState();
     setShiftState(updated);
     setNow(Date.now());
-  }, [shiftState]);
+  }, []);
 
   const setHoursType = useCallback(
     (type: 'Regular' | 'Overtime' | 'Flexible') => {
@@ -148,6 +159,7 @@ export function usePersistentShiftTimer() {
     startBreak: handleStartBreak,
     resumeWork: handleResumeWork,
     punchOut: handlePunchOut,
+    resetShift: handleResetShift,
     setHoursType,
     setWorkLocation,
     refreshMetrics,

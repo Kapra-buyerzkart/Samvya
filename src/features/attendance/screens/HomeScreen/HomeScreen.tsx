@@ -1,102 +1,146 @@
-import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { ImageBackground } from 'expo-image';
 import { TactilePressable } from '@/shared/animations';
+import { CircularProgressDial } from '@/shared/components';
+import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { HomeLeaveInsights } from './components/HomeLeaveInsights';
+import { HomeModals } from './components/HomeModals';
+import { HomeQuickActions } from './components/HomeQuickActions';
+import { WeeklyWorkCard } from './components/WeeklyWorkCard';
 import {
-  AppBottomSheet,
-  CircularProgressDial,
-} from '@/shared/components';
-import { useHomeScreen } from './useHomeScreen';
-import {
-  styles,
   getBackgroundImageStyle,
-  getImageStyle,
-  getScrollContentStyle,
-  getBrandTitleStyle,
-  getHeaderDateStyle,
+  getBreakButtonStyle,
   getDropdownCardStyle,
   getDropdownLabelStyle,
   getDropdownValueStyle,
-  getShiftBannerStyle,
-  getShiftLabelStyle,
-  getShiftDividerStyle,
-  getShiftTimeStyle,
-  getStatusIndicatorTextStyle,
-  getWorkedLabelStyle,
-  getWorkedTimeStyle,
-  getWorkedTargetStyle,
-  getInfoBarStyle,
-  getInfoBarTextMutedStyle,
-  getInfoBarTextBoldStyle,
+  getGreetingNameStyle,
+  getGreetingTextStyle,
+  getHeaderDateStyle,
   getInfoBarDividerStyle,
-  getBreakButtonStyle,
+  getInfoBarStyle,
+  getInfoBarTextBoldStyle,
+  getInfoBarTextMutedStyle,
+  getLeaveStatusCardStyle,
+  getLeaveStatusIconBoxStyle,
+  getLeaveStatusSubtitleStyle,
+  getLeaveStatusTitleStyle,
+  getPunchNoteStyle,
   getPunchOutButtonStyle,
   getPunchOutButtonTextStyle,
-  getPunchNoteStyle,
+  getScrollContentStyle,
   getSectionDividerStyle,
-  getWeeklyTitleStyle,
-  getWeeklyStatsStyle,
-  getProgressBarTrackStyle,
-  getProgressBarFillStyle,
-  getLeaveHeaderBannerStyle,
-  getLeaveHeaderTitleStyle,
-  getLeaveMetricLabelStyle,
-  getLeaveMetricAllocatedStyle,
-  getLeaveMetricDividerStyle,
-  getViewHistoryButtonStyle,
-  getModalItemStyle,
-  getModalItemTextStyle,
+  getShiftBannerStyle,
+  getShiftDividerStyle,
+  getShiftLabelStyle,
+  getShiftTimeStyle,
+  getStatusIndicatorTextStyle,
+  styles,
 } from './HomeScreen.styles';
+import { useHomeScreen } from './useHomeScreen';
 
 export function HomeScreen(): React.JSX.Element {
   const {
     timer,
     isDark,
+    isPunchSubmitting,
+    isRefreshing,
+    greetingLabel,
+    displayName,
+    formattedDateLabel,
     showHoursModal,
     showLocationModal,
+    showHolidayModal,
+    showPayslipModal,
+    showTeamModal,
     hoursOptions,
     locationOptions,
+    weeklyLoggedDisplay,
+    weeklyTargetHours,
+    weeklyProgressPercent,
+    weeklyDays,
+    selectedWeeklyDayId,
+    leaveRings,
+    holidays,
+    holidayRemainingCount,
+    holidayObservedCount,
+    holidayTotalCount,
+    leaveHistoryTotal,
+    leaveDaysTaken,
+    leaveDaysLeft,
+    payslipPreview,
     setShowHoursModal,
     setShowLocationModal,
+    setShowHolidayModal,
+    setShowPayslipModal,
+    setShowTeamModal,
+    setSelectedWeeklyDayId,
     handleToggleBreak,
     handlePunchOut,
     handlePunchIn,
-    handleRequestLeave,
+    handleApplyLeave,
+    handleOpenTimeSheet,
+    handleOpenPayslip,
+    handleOpenTeam,
+    handleLeaveStatus,
     handleViewLeaveHistory,
     handleOpenWeeklyDetails,
+    handleOpenHolidayCalendar,
     handleSelectHoursType,
     handleSelectLocation,
+    handleRefresh,
   } = useHomeScreen();
 
+  const statusOuterColor = timer.isOnBreak
+    ? isDark
+      ? 'rgba(217, 119, 6, 0.25)'
+      : '#FEF3C7'
+    : timer.isWorking
+      ? isDark
+        ? 'rgba(59, 130, 246, 0.25)'
+        : '#D8E3FC'
+      : isDark
+        ? 'rgba(100, 116, 139, 0.25)'
+        : '#E2E8F0';
+
+  const statusInnerColor = timer.isOnBreak ? '#D97706' : timer.isWorking ? '#1D4ED8' : '#64748B';
+
   return (
-    <ImageBackground
-      source={require('../../../../../assets/images/background.png')}
-      style={getBackgroundImageStyle(isDark)}
-      imageStyle={getImageStyle(isDark)}
-      contentFit="cover"
-    >
+    <View style={getBackgroundImageStyle(isDark)}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
           contentContainerStyle={getScrollContentStyle(timer.isPunchedOut)}
           showsVerticalScrollIndicator={false}
           bounces={true}
           keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={isDark ? '#60A5FA' : '#1D4ED8'}
+              colors={['#1D4ED8']}
+            />
+          }
         >
-          {/* Header Row: Brand and Date */}
+          {/* Header Row: Personal Greeting and Date */}
           <View style={styles.headerRow}>
-            <Text style={getBrandTitleStyle(isDark)}>
-              Samavya
-            </Text>
-            <Text style={getHeaderDateStyle(isDark)}>
-              Thu 12 Nov 2026
+            <View style={styles.greetingCol}>
+              <Text style={getGreetingTextStyle(isDark)}>{greetingLabel}</Text>
+              <Text
+                style={getGreetingNameStyle(isDark)}
+                numberOfLines={1}
+                testID="home-greeting-name"
+              >
+                Hello, {displayName}
+              </Text>
+            </View>
+            <Text style={getHeaderDateStyle(isDark)} testID="home-header-date">
+              {formattedDateLabel}
             </Text>
           </View>
 
           {/* Top Dropdowns: Hours & Location */}
           <View style={styles.dropdownsRow}>
-            {/* Hours Selector */}
             <TactilePressable
               style={getDropdownCardStyle(isDark)}
               onPress={() => setShowHoursModal(true)}
@@ -105,20 +149,15 @@ export function HomeScreen(): React.JSX.Element {
               accessibilityLabel="Select Work Hours"
             >
               <View style={styles.dropdownIconContainer}>
-                <Feather name="clock" size={20} color={isDark ? '#60A5FA' : '#0F172A'} />
+                <Feather name="clock" size={18} color={isDark ? '#60A5FA' : '#475569'} />
               </View>
               <View style={styles.dropdownTextCol}>
-                <Text style={getDropdownLabelStyle(isDark)}>
-                  Hours
-                </Text>
-                <Text style={getDropdownValueStyle(isDark)}>
-                  {timer.hoursType}
-                </Text>
+                <Text style={getDropdownLabelStyle(isDark)}>Hours</Text>
+                <Text style={getDropdownValueStyle(isDark)}>{timer.hoursType}</Text>
               </View>
-              <Feather name="chevron-down" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+              <Feather name="chevron-down" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
             </TactilePressable>
 
-            {/* Location Selector */}
             <TactilePressable
               style={getDropdownCardStyle(isDark)}
               onPress={() => setShowLocationModal(true)}
@@ -127,44 +166,33 @@ export function HomeScreen(): React.JSX.Element {
               accessibilityLabel="Select Work Location"
             >
               <View style={styles.dropdownIconContainer}>
-                <Feather name="home" size={20} color={isDark ? '#60A5FA' : '#0F172A'} />
+                <Feather name="home" size={18} color={isDark ? '#60A5FA' : '#475569'} />
               </View>
               <View style={styles.dropdownTextCol}>
-                <Text style={getDropdownLabelStyle(isDark)}>
-                  Location
-                </Text>
-                <Text
-                  style={getDropdownValueStyle(isDark)}
-                  numberOfLines={1}
-                >
+                <Text style={getDropdownLabelStyle(isDark)}>Location</Text>
+                <Text style={getDropdownValueStyle(isDark)} numberOfLines={1}>
                   {timer.workLocation}
                 </Text>
               </View>
-              <Feather name="chevron-down" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+              <Feather name="chevron-down" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
             </TactilePressable>
           </View>
 
           {/* Shift Banner */}
           <View style={getShiftBannerStyle(isDark)} pointerEvents="none">
             <View style={styles.shiftLeft}>
-              <Feather name="calendar" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
-              <Text style={getShiftLabelStyle(isDark)}>
-                Shift
-              </Text>
+              <Feather name="calendar" size={15} color={isDark ? '#94A3B8' : '#475569'} />
+              <Text style={getShiftLabelStyle(isDark)}>Shift</Text>
             </View>
             <View style={getShiftDividerStyle(isDark)} />
-            <Text style={getShiftTimeStyle(isDark)}>
-              09:00 AM - 06 : 00 PM
-            </Text>
+            <Text style={getShiftTimeStyle(isDark)}>09:00 AM - 06 : 00 PM</Text>
           </View>
 
           {/* Working Status Indicator */}
           <View style={styles.statusIndicatorRow} pointerEvents="none">
-            <Feather
-              name={timer.isOnBreak ? 'coffee' : 'clock'}
-              size={18}
-              color={timer.isOnBreak ? '#D97706' : timer.isWorking ? '#2563EB' : '#64748B'}
-            />
+            <View style={[styles.statusDotOuter, { backgroundColor: statusOuterColor }]}>
+              <View style={[styles.statusDotInner, { backgroundColor: statusInnerColor }]} />
+            </View>
             <Text
               style={getStatusIndicatorTextStyle(
                 isDark,
@@ -179,54 +207,39 @@ export function HomeScreen(): React.JSX.Element {
           {/* Circular Progress Hero Dial */}
           <View style={styles.dialWrapper} pointerEvents="none">
             <CircularProgressDial
-              size={220}
-              strokeWidth={10}
+              size={212}
+              strokeWidth={11}
+              centerDiscGap={0}
               progress={timer.progressFraction}
-              trackColor={isDark ? '#1E293B' : '#DDEBFC'}
-              progressColor={isDark ? '#3B82F6' : '#1D4ED8'}
+              trackColor={isDark ? '#1E293B' : '#B5CBF7'}
+              progressColor={isDark ? '#3B82F6' : '#3B6FE2'}
               knobColor={isDark ? '#1E293B' : '#FFFFFF'}
-              knobBorderColor={isDark ? '#3B82F6' : '#1D4ED8'}
-              centerDiscColor={isDark ? '#0F172A' : '#FFFFFF'}
-              knobSize={18}
+              knobBorderColor={isDark ? '#60A5FA' : '#1D4ED8'}
+              centerDiscColor={isDark ? '#1E3A8A' : '#1945B5'}
+              knobSize={16}
               isActive={timer.isWorking}
               showAura={true}
             >
-              <Text style={getWorkedLabelStyle(isDark)}>
-                Worked today
-              </Text>
-              <Text
-                style={getWorkedTimeStyle(isDark)}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
+              <Text style={styles.workedLabel}>Worked today</Text>
+              <Text style={styles.workedTime} numberOfLines={1} adjustsFontSizeToFit>
                 {timer.workedDisplay}
               </Text>
-              <Text style={getWorkedTargetStyle(isDark)}>
-                of 8h
-              </Text>
+              <Text style={styles.workedTarget}>of 8h</Text>
             </CircularProgressDial>
           </View>
 
           {/* Break and Remaining Info Bar */}
           <View style={getInfoBarStyle(isDark)} pointerEvents="none">
             <View style={styles.infoBarItem}>
-              <Feather name="coffee" size={16} color={isDark ? '#94A3B8' : '#475569'} />
-              <Text style={getInfoBarTextMutedStyle(isDark)}>
-                {' '}Break{' '}
-              </Text>
-              <Text style={getInfoBarTextBoldStyle(isDark)}>
-                {timer.breakDisplay}
-              </Text>
+              <Feather name="coffee" size={15} color={isDark ? '#94A3B8' : '#64748B'} />
+              <Text style={getInfoBarTextMutedStyle(isDark)}> Break </Text>
+              <Text style={getInfoBarTextBoldStyle(isDark)}>{timer.breakDisplay}</Text>
             </View>
             <View style={getInfoBarDividerStyle(isDark)} />
             <View style={styles.infoBarItem}>
-              <Feather name="clock" size={16} color={isDark ? '#94A3B8' : '#475569'} />
-              <Text style={getInfoBarTextBoldStyle(isDark)}>
-                {' '}{timer.remainingDisplay}{' '}
-              </Text>
-              <Text style={getInfoBarTextMutedStyle(isDark)}>
-                remaining
-              </Text>
+              <Feather name="clock" size={15} color={isDark ? '#94A3B8' : '#64748B'} />
+              <Text style={getInfoBarTextBoldStyle(isDark)}> {timer.remainingDisplay} </Text>
+              <Text style={getInfoBarTextMutedStyle(isDark)}>remaining</Text>
             </View>
           </View>
 
@@ -242,28 +255,42 @@ export function HomeScreen(): React.JSX.Element {
               accessibilityLabel={timer.isOnBreak ? 'Resume work' : 'Start break'}
               testID="btn-break-toggle"
             >
-              <Feather name={timer.isOnBreak ? 'play' : 'pause'} size={18} color="#FFFFFF" />
+              <Feather name={timer.isOnBreak ? 'play' : 'pause'} size={17} color="#FFFFFF" />
               <Text style={styles.breakButtonText}>
                 {timer.isOnBreak ? 'Resume work' : 'Start break'}
               </Text>
             </TactilePressable>
 
             <TactilePressable
-              style={getPunchOutButtonStyle(isDark, Boolean(timer.isPunchedOut))}
+              style={getPunchOutButtonStyle(isDark, Boolean(timer.isPunchedOut), isPunchSubmitting)}
               onPress={timer.isPunchedOut ? handlePunchIn : handlePunchOut}
+              disabled={isPunchSubmitting}
               activeScale={0.95}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               accessibilityRole="button"
               accessibilityLabel={timer.isPunchedOut ? 'Punch in' : 'Punch out'}
               testID="btn-punch-action"
             >
-              <Feather
-                name={timer.isPunchedOut ? 'log-in' : 'log-out'}
-                size={18}
-                color={timer.isPunchedOut ? '#FFFFFF' : isDark ? '#F8FAFC' : '#0F172A'}
-              />
+              {isPunchSubmitting ? (
+                <ActivityIndicator
+                  size="small"
+                  color={timer.isPunchedOut ? '#FFFFFF' : isDark ? '#F8FAFC' : '#0F172A'}
+                />
+              ) : (
+                <Feather
+                  name={timer.isPunchedOut ? 'log-in' : 'log-out'}
+                  size={17}
+                  color={timer.isPunchedOut ? '#FFFFFF' : isDark ? '#F8FAFC' : '#0F172A'}
+                />
+              )}
               <Text style={getPunchOutButtonTextStyle(isDark, Boolean(timer.isPunchedOut))}>
-                {timer.isPunchedOut ? 'Punch in' : 'Punch out'}
+                {isPunchSubmitting
+                  ? timer.isPunchedOut
+                    ? 'Punching in...'
+                    : 'Punching out...'
+                  : timer.isPunchedOut
+                    ? 'Punch in'
+                    : 'Punch out'}
               </Text>
             </TactilePressable>
           </View>
@@ -278,157 +305,87 @@ export function HomeScreen(): React.JSX.Element {
           {/* Subtle Horizontal Divider */}
           <View style={getSectionDividerStyle(isDark)} />
 
-          {/* Weekly Work Progress -> Tap to open Employment Details */}
+          {/* Quick Actions Grid */}
+          <HomeQuickActions
+            isDark={isDark}
+            onApplyLeave={handleApplyLeave}
+            onTimeSheet={handleOpenTimeSheet}
+            onPayslip={handleOpenPayslip}
+            onTeam={handleOpenTeam}
+          />
+
+          {/* Immediate Access: Leave Status */}
           <TactilePressable
-            style={styles.weeklyCard}
-            onPress={handleOpenWeeklyDetails}
-            activeScale={0.99}
+            style={getLeaveStatusCardStyle(isDark)}
+            onPress={handleLeaveStatus}
+            activeScale={0.98}
             accessibilityRole="button"
-            accessibilityLabel="View employment details and weekly work hours"
+            accessibilityLabel="Leave status"
+            testID="home-leave-status-btn"
           >
-            <View style={styles.weeklyHeader}>
-              <View style={styles.weeklyTitleRow}>
-                <Feather name="calendar" size={16} color={isDark ? '#94A3B8' : '#475569'} />
-                <Text style={getWeeklyTitleStyle(isDark)}>
-                  Weekly work
-                </Text>
-              </View>
-              <Text style={getWeeklyStatsStyle(isDark)}>
-                25h 30m / 40h
+            <View style={getLeaveStatusIconBoxStyle(isDark)}>
+              <Feather name="check-circle" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+            </View>
+            <View style={styles.leaveStatusTextCol}>
+              <Text style={getLeaveStatusTitleStyle(isDark)}>Leave status</Text>
+              <Text style={getLeaveStatusSubtitleStyle(isDark)}>
+                Check leave approvals, calendar & balances
               </Text>
             </View>
-            <View style={getProgressBarTrackStyle(isDark)}>
-              <View style={getProgressBarFillStyle(isDark)} />
-            </View>
+            <Feather name="chevron-right" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
           </TactilePressable>
 
-          {/* Subtle Horizontal Divider */}
-          <View style={getSectionDividerStyle(isDark)} />
+          {/* Weekly Work Card with Interactive Daily Bars */}
+          <WeeklyWorkCard
+            isDark={isDark}
+            loggedDisplay={weeklyLoggedDisplay}
+            targetHours={weeklyTargetHours}
+            progressPercent={weeklyProgressPercent}
+            days={weeklyDays}
+            selectedDayId={selectedWeeklyDayId}
+            onSelectDay={setSelectedWeeklyDayId}
+            onOpenEmploymentDetails={handleOpenWeeklyDetails}
+          />
 
-          {/* Leave Balance Section */}
-          <View style={styles.leaveSection}>
-            <TactilePressable
-              style={getLeaveHeaderBannerStyle(isDark)}
-              onPress={handleRequestLeave}
-              activeScale={0.98}
-              accessibilityRole="button"
-              accessibilityLabel="Request leave"
-            >
-              <View style={styles.leaveHeaderLeft}>
-                <Feather name="calendar" size={16} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                <Text style={getLeaveHeaderTitleStyle(isDark)}>
-                  Leave balance
-                </Text>
-              </View>
-              <Feather name="chevron-right" size={18} color={isDark ? '#94A3B8' : '#475569'} />
-            </TactilePressable>
-
-            <TactilePressable
-              style={styles.leaveMetricsRow}
-              onPress={handleRequestLeave}
-              activeScale={0.98}
-            >
-              {/* Days Remaining */}
-              <View style={styles.leaveMetricCol}>
-                <Text style={[styles.leaveMetricNumber, styles.leaveMetricBlue]}>
-                  14
-                </Text>
-                <Text style={getLeaveMetricLabelStyle(isDark)}>
-                  days remaining
-                </Text>
-              </View>
-
-              <View style={getLeaveMetricDividerStyle(isDark)} />
-
-              {/* Days Allocated */}
-              <View style={styles.leaveMetricCol}>
-                <Text style={getLeaveMetricAllocatedStyle(isDark)}>
-                  18
-                </Text>
-                <Text style={getLeaveMetricLabelStyle(isDark)}>
-                  days allocated
-                </Text>
-              </View>
-
-              <View style={getLeaveMetricDividerStyle(isDark)} />
-
-              {/* Days Taken */}
-              <View style={styles.leaveMetricCol}>
-                <Text style={getLeaveMetricAllocatedStyle(isDark)}>
-                  4
-                </Text>
-                <Text style={getLeaveMetricLabelStyle(isDark)}>
-                  days taken
-                </Text>
-              </View>
-            </TactilePressable>
-          </View>
-
-          {/* View Leave History Action Button */}
-          <TactilePressable
-            style={getViewHistoryButtonStyle(isDark)}
-            onPress={handleViewLeaveHistory}
-            activeScale={0.97}
-            accessibilityRole="button"
-            accessibilityLabel="View Leave history"
-          >
-            <Text style={styles.viewHistoryButtonText}>View Leave history</Text>
-            <Feather name="arrow-right" size={18} color="#FFFFFF" />
-          </TactilePressable>
+          {/* Employment Details, 3-Ring Leave Balance, Holiday & Leave History Bento */}
+          <HomeLeaveInsights
+            isDark={isDark}
+            leaveRings={leaveRings}
+            holidayRemainingCount={holidayRemainingCount}
+            holidayObservedCount={holidayObservedCount}
+            holidayTotalCount={holidayTotalCount}
+            leaveHistoryTotal={leaveHistoryTotal}
+            leaveDaysTaken={leaveDaysTaken}
+            leaveDaysLeft={leaveDaysLeft}
+            onOpenEmploymentDetails={handleOpenWeeklyDetails}
+            onOpenLeaveStatus={handleLeaveStatus}
+            onOpenHolidayCalendar={handleOpenHolidayCalendar}
+            onOpenLeaveHistory={handleViewLeaveHistory}
+          />
         </ScrollView>
       </SafeAreaView>
 
-      {/* Hours Selector Bottom Sheet */}
-      <AppBottomSheet
-        isOpen={showHoursModal}
-        onClose={() => setShowHoursModal(false)}
-        title="Select Work Hours"
-        testID="hours-bottom-sheet"
-      >
-        <View style={styles.sheetList}>
-          {hoursOptions.map((type) => (
-            <TouchableOpacity
-              key={type}
-              style={getModalItemStyle(isDark, timer.hoursType === type)}
-              onPress={() => handleSelectHoursType(type)}
-              activeOpacity={0.7}
-            >
-              <Text style={getModalItemTextStyle(isDark, timer.hoursType === type)}>
-                {type}
-              </Text>
-              {timer.hoursType === type && (
-                <Feather name="check" size={18} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </AppBottomSheet>
-
-      {/* Location Selector Bottom Sheet */}
-      <AppBottomSheet
-        isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
-        title="Select Work Location"
-        testID="location-bottom-sheet"
-      >
-        <View style={styles.sheetList}>
-          {locationOptions.map((loc) => (
-            <TouchableOpacity
-              key={loc}
-              style={getModalItemStyle(isDark, timer.workLocation === loc)}
-              onPress={() => handleSelectLocation(loc)}
-              activeOpacity={0.7}
-            >
-              <Text style={getModalItemTextStyle(isDark, timer.workLocation === loc)}>
-                {loc}
-              </Text>
-              {timer.workLocation === loc && (
-                <Feather name="check" size={18} color={isDark ? '#60A5FA' : '#1D4ED8'} />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </AppBottomSheet>
-    </ImageBackground>
+      <HomeModals
+        isDark={isDark}
+        showHoursModal={showHoursModal}
+        showLocationModal={showLocationModal}
+        showHolidayModal={showHolidayModal}
+        showPayslipModal={showPayslipModal}
+        showTeamModal={showTeamModal}
+        hoursType={timer.hoursType}
+        workLocation={timer.workLocation}
+        hoursOptions={hoursOptions}
+        locationOptions={locationOptions}
+        holidays={holidays}
+        payslipPreview={payslipPreview}
+        onCloseHours={() => setShowHoursModal(false)}
+        onCloseLocation={() => setShowLocationModal(false)}
+        onCloseHoliday={() => setShowHolidayModal(false)}
+        onClosePayslip={() => setShowPayslipModal(false)}
+        onCloseTeam={() => setShowTeamModal(false)}
+        onSelectHoursType={handleSelectHoursType}
+        onSelectLocation={handleSelectLocation}
+      />
+    </View>
   );
 }

@@ -1,17 +1,17 @@
-import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
-import { Feather } from '@expo/vector-icons';
-import { ImageBackground } from 'expo-image';
 import React from 'react';
 import {
   ActivityIndicator,
   Image,
-  Pressable,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ImageBackground } from 'expo-image';
+import { Feather } from '@expo/vector-icons';
+import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
+import { OrganizationPickerSheet } from './components/OrganizationPickerSheet';
 import {
   getBackgroundImageStyle,
   getBrandSubtitleStyle,
@@ -19,38 +19,38 @@ import {
   getCardStyle,
   getCardSubtitleStyle,
   getCardTitleStyle,
+  getDevFillBtnStyle,
+  getDevFillBtnTextStyle,
+  getErrorBannerStyle,
+  getErrorTextStyle,
+  getFieldLabelStyle,
   getImageProps,
   getInputContainerStyle,
-  getOtpBoxStyle,
-  getOtpLabelStyle,
-  getPillContainerStyle,
-  getPillTabStyle,
-  getPillTextStyle,
-  getSendOtpTextStyle,
+  getSignInButtonStyle,
   getTextInputStyle,
-  getVerifyButtonStyle,
   styles,
 } from './LoginScreen.styles';
 import { useLoginScreen } from './useLoginScreen';
 
 export function LoginScreen(): React.JSX.Element {
   const {
-    method,
-    identifier,
-    otpDigits,
-    countdown,
-    isSendingOtp,
-    isVerifying,
-    focusedOtpIndex,
-    otpInputsRef,
     isDark,
-    setIdentifier,
-    setFocusedOtpIndex,
-    handleSendOtp,
-    handleOtpChange,
-    handleOtpKeyPress,
-    handleVerify,
-    handleSelectMethod,
+    username,
+    password,
+    showPassword,
+    isSubmitting,
+    switchingTenantId,
+    errorMessage,
+    requiresOrganizationSelection,
+    organizations,
+    canFillTestCredentials,
+    handleUsernameChange,
+    handlePasswordChange,
+    handleTogglePasswordVisibility,
+    handleFillTestCredentials,
+    handleSignIn,
+    handleSelectOrganization,
+    handleCloseOrganizationPicker,
   } = useLoginScreen();
 
   return (
@@ -62,57 +62,16 @@ export function LoginScreen(): React.JSX.Element {
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={[styles.brandTitle, getBrandTitleStyle(isDark)]}>
-              Samavya
-            </Text>
+            <Text style={[styles.brandTitle, getBrandTitleStyle(isDark)]}>Samavya</Text>
             <Text style={[styles.brandSubtitle, getBrandSubtitleStyle(isDark)]}>
               Human Resource Management System
-            </Text>
-          </View>
-
-          <View style={styles.switcherWrapper}>
-            <View
-              style={[
-                styles.pillContainer,
-                getPillContainerStyle(isDark),
-              ]}
-            >
-              <Pressable
-                style={[
-                  styles.pillTab,
-                  getPillTabStyle(method === 'phone'),
-                ]}
-                onPress={() => handleSelectMethod('phone')}
-              >
-                <Text style={getPillTextStyle(method === 'phone', isDark)}>
-                  Mobile number
-                </Text>
-              </Pressable>
-
-              <Pressable
-                style={[
-                  styles.pillTab,
-                  getPillTabStyle(method === 'email'),
-                ]}
-                onPress={() => handleSelectMethod('email')}
-              >
-                <Text style={getPillTextStyle(method === 'email', isDark)}>
-                  Email / EMP code
-                </Text>
-              </Pressable>
-            </View>
-            <Text style={styles.switcherHint}>
-              Switch between mobile number and email / employee code
             </Text>
           </View>
 
           <GlassCard
             intensity={20}
             tint={isDark ? 'dark' : 'light'}
-            style={[
-              styles.card,
-              getCardStyle(isDark),
-            ]}
+            style={[styles.card, getCardStyle(isDark)]}
           >
             <View style={styles.logoContainer}>
               <Image
@@ -123,97 +82,122 @@ export function LoginScreen(): React.JSX.Element {
             </View>
 
             <Text style={[styles.cardTitle, getCardTitleStyle(isDark)]}>
-              Log in to your account
+              Sign in to your account
             </Text>
             <Text style={[styles.cardSubtitle, getCardSubtitleStyle(isDark)]}>
-              {method === 'phone'
-                ? "Use the phone number registered with HR. We'll send your code by SMS."
-                : "Use your work email or employee code registered with HR. We'll send your code to your registered work email."}
+              Enter your registered staff email and password to continue.
             </Text>
 
-            <View
-              style={[
-                styles.inputContainer,
-                getInputContainerStyle(isDark),
-              ]}
-            >
+            {/* Staff Email */}
+            <Text style={[styles.fieldLabel, getFieldLabelStyle(isDark)]}>Staff email</Text>
+            <View style={[styles.inputContainer, getInputContainerStyle(isDark)]}>
               <View style={styles.inputIcon}>
-                <Feather
-                  name={method === 'phone' ? 'phone' : 'mail'}
-                  size={18}
-                  color={isDark ? '#94A3B8' : '#64748B'}
-                />
+                <Feather name="mail" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
               </View>
               <TextInput
                 style={[styles.textInput, getTextInputStyle(isDark)]}
-                placeholder={
-                  method === 'phone' ? 'Enter phone number' : 'Enter Email / employee code'
-                }
+                placeholder="name@company.com"
                 placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-                value={identifier}
-                onChangeText={setIdentifier}
-                keyboardType={method === 'phone' ? 'phone-pad' : 'email-address'}
+                value={username}
+                onChangeText={handleUsernameChange}
+                keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                autoComplete="email"
+                textContentType="username"
+                returnKeyType="next"
+                testID="login-email-input"
               />
             </View>
 
-            <View style={styles.sendOtpRow}>
+            {/* Password */}
+            <Text style={[styles.fieldLabel, getFieldLabelStyle(isDark)]}>Password</Text>
+            <View style={[styles.inputContainer, getInputContainerStyle(isDark)]}>
+              <View style={styles.inputIcon}>
+                <Feather name="lock" size={18} color={isDark ? '#94A3B8' : '#64748B'} />
+              </View>
+              <TextInput
+                style={[styles.textInput, getTextInputStyle(isDark)]}
+                placeholder="Enter your password"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                value={password}
+                onChangeText={handlePasswordChange}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="password"
+                textContentType="password"
+                returnKeyType="done"
+                onSubmitEditing={handleSignIn}
+                testID="login-password-input"
+              />
               <TouchableOpacity
-                onPress={handleSendOtp}
-                disabled={isSendingOtp || countdown > 0}
-                style={styles.sendOtpButton}
+                onPress={handleTogglePasswordVisibility}
+                style={styles.eyeButton}
                 activeOpacity={0.7}
+                testID="toggle-password-visibility-btn"
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
               >
-                {isSendingOtp ? (
-                  <ActivityIndicator size="small" color={isDark ? '#60A5FA' : '#1D4ED8'} />
-                ) : (
-                  <Text style={[styles.sendOtpText, getSendOtpTextStyle(isDark)]}>
-                    {countdown > 0 ? `Resend in ${countdown}s` : 'Send OTP >'}
-                  </Text>
-                )}
+                <Feather
+                  name={showPassword ? 'eye-off' : 'eye'}
+                  size={18}
+                  color={isDark ? '#94A3B8' : '#64748B'}
+                />
               </TouchableOpacity>
             </View>
 
-            <Text style={[styles.otpLabel, getOtpLabelStyle(isDark)]}>
-              5-digit code
-            </Text>
-
-            <View style={styles.otpRow}>
-              {otpDigits.map((digit, index) => {
-                const isFocused = focusedOtpIndex === index;
-                return (
-                  <TextInput
-                    key={index}
-                    ref={(ref) => {
-                      otpInputsRef.current[index] = ref;
-                    }}
-                    style={getOtpBoxStyle(isDark, isFocused, Boolean(digit))}
-                    keyboardType="number-pad"
-                    maxLength={index === 0 ? 5 : 1}
-                    value={digit}
-                    onChangeText={(val) => handleOtpChange(val, index)}
-                    onKeyPress={(e) => handleOtpKeyPress(e, index)}
-                    onFocus={() => setFocusedOtpIndex(index)}
-                    onBlur={() => setFocusedOtpIndex(null)}
-                    selectTextOnFocus
-                  />
-                );
-              })}
-            </View>
+            {errorMessage ? (
+              <View
+                style={[styles.errorBanner, getErrorBannerStyle(isDark)]}
+                testID="login-error-banner"
+              >
+                <Feather
+                  name="alert-circle"
+                  size={16}
+                  color={isDark ? '#FCA5A5' : '#DC2626'}
+                />
+                <Text style={[styles.errorText, getErrorTextStyle(isDark)]}>
+                  {errorMessage}
+                </Text>
+              </View>
+            ) : null}
 
             <TouchableOpacity
-              style={getVerifyButtonStyle(isVerifying)}
-              onPress={handleVerify}
-              disabled={isVerifying}
+              style={getSignInButtonStyle(isSubmitting)}
+              onPress={handleSignIn}
+              disabled={isSubmitting}
               activeOpacity={0.85}
+              testID="login-submit-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Sign in"
             >
-              {isVerifying ? (
+              {isSubmitting ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.verifyButtonText}>Verify & sign in →</Text>
+                <Text style={styles.signInButtonText}>Sign in →</Text>
               )}
             </TouchableOpacity>
+
+            {canFillTestCredentials ? (
+              <TouchableOpacity
+                style={[styles.devFillBtn, getDevFillBtnStyle(isDark)]}
+                onPress={handleFillTestCredentials}
+                activeOpacity={0.75}
+                testID="fill-test-credentials-btn"
+                accessibilityRole="button"
+                accessibilityLabel="Fill test credentials"
+              >
+                <Feather
+                  name="zap"
+                  size={13}
+                  color={isDark ? '#93C5FD' : '#1D4ED8'}
+                />
+                <Text style={[styles.devFillBtnText, getDevFillBtnTextStyle(isDark)]}>
+                  Fill test credentials
+                </Text>
+              </TouchableOpacity>
+            ) : null}
           </GlassCard>
 
           <View style={styles.footer}>
@@ -221,6 +205,15 @@ export function LoginScreen(): React.JSX.Element {
           </View>
         </KeyboardAvoidingScrollView>
       </SafeAreaView>
+
+      <OrganizationPickerSheet
+        isOpen={requiresOrganizationSelection}
+        organizations={organizations}
+        switchingTenantId={switchingTenantId}
+        isDark={isDark}
+        onSelect={handleSelectOrganization}
+        onClose={handleCloseOrganizationPicker}
+      />
     </ImageBackground>
   );
 }

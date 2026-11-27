@@ -2,9 +2,10 @@ import { AppBottomSheet, GlassCard, KeyboardAvoidingScrollView } from '@/shared/
 import { Feather } from '@expo/vector-icons';
 import { ImageBackground } from 'expo-image';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AnimatedLeavePieChart } from '../../components/AnimatedLeavePieChart';
+import { LeaveHistoryShimmer } from '../../components/LeaveShimmers';
 import { LeaveDetailModal } from './components/LeaveDetailModal';
 import { LeaveMonthPill } from './components/LeaveMonthPill';
 import { LeavePaginationFooter } from './components/LeavePaginationFooter';
@@ -34,6 +35,8 @@ import { useLeaveHistoryScreen } from './useLeaveHistoryScreen';
 export function LeaveHistoryScreen(): React.JSX.Element {
   const {
     isDark,
+    isLoading,
+    loadError,
     durationKey,
     selectedMonth,
     currentPage,
@@ -48,6 +51,7 @@ export function LeaveHistoryScreen(): React.JSX.Element {
     durationOptions,
     setIsDurationModalOpen,
     handleBack,
+    handleRetryLoad,
     handleSelectDuration,
     handleSelectMonth,
     handlePrevPage,
@@ -68,6 +72,14 @@ export function LeaveHistoryScreen(): React.JSX.Element {
         <KeyboardAvoidingScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRetryLoad}
+              tintColor={isDark ? '#60A5FA' : '#1D4ED8'}
+              colors={['#1D4ED8']}
+            />
+          }
         >
           {/* 1. Header Row */}
           <View style={styles.headerRow}>
@@ -82,10 +94,34 @@ export function LeaveHistoryScreen(): React.JSX.Element {
               <Feather name="chevron-left" size={26} color={isDark ? '#F8FAFC' : '#0F294A'} />
               <Text style={getHeaderTitleStyle(isDark)}>Leave History</Text>
             </TouchableOpacity>
+            {isLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={isDark ? '#60A5FA' : '#1D4ED8'}
+                testID="leave-history-loading"
+              />
+            ) : null}
           </View>
 
-          {/* 2. Summary Metric Row */}
-          <LeaveSummaryMetric totalDays={durationData.totalDays} isDark={isDark} />
+          {loadError ? (
+            <TouchableOpacity
+              style={styles.errorBanner}
+              onPress={handleRetryLoad}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading leave history"
+              testID="leave-history-retry"
+            >
+              <Text style={styles.errorBannerText}>{loadError} Tap to retry.</Text>
+            </TouchableOpacity>
+          ) : null}
+
+          {isLoading ? (
+            <LeaveHistoryShimmer isDark={isDark} />
+          ) : (
+            <>
+              {/* 2. Summary Metric Row */}
+              <LeaveSummaryMetric totalDays={durationData.totalDays} isDark={isDark} />
 
           {/* 3. Card 1: Leave by month & Animated Pie Chart */}
           <GlassCard intensity={25} tint={isDark ? 'dark' : 'light'} style={getCardStyle(isDark)}>
@@ -199,16 +235,24 @@ export function LeaveHistoryScreen(): React.JSX.Element {
             </View>
 
             {/* List of Leave Record Cards */}
-            <View style={styles.recordsList}>
-              {pagedRecords.map((item) => (
-                <LeaveRecordCard
-                  key={item.id}
-                  item={item}
-                  isDark={isDark}
-                  onPress={handleRecordPress}
-                />
-              ))}
-            </View>
+            {pagedRecords.length > 0 ? (
+              <View style={styles.recordsList}>
+                {pagedRecords.map((item) => (
+                  <LeaveRecordCard
+                    key={item.id}
+                    item={item}
+                    isDark={isDark}
+                    onPress={handleRecordPress}
+                  />
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyStateBox} testID="leave-history-empty">
+                <Text style={[styles.emptyStateText, getChartPromptTextStyle(isDark)]}>
+                  No leave requests found for this period.
+                </Text>
+              </View>
+            )}
 
             {/* Pagination Controls Footer */}
             <LeavePaginationFooter
@@ -219,6 +263,8 @@ export function LeaveHistoryScreen(): React.JSX.Element {
               onNextPage={handleNextPage}
             />
           </GlassCard>
+            </>
+          )}
         </KeyboardAvoidingScrollView>
       </SafeAreaView>
 

@@ -18,8 +18,33 @@ export const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
     paddingTop: 4,
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 14,
+  },
+  errorBannerText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12.5,
+    color: '#B91C1C',
+  },
+  emptyStateBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 24,
+  },
+  emptyStateText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 13.5,
+    textAlign: 'center',
   },
   backButton: {
     flexDirection: 'row',

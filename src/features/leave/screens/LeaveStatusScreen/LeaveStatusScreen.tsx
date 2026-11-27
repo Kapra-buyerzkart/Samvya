@@ -1,72 +1,88 @@
 import React from 'react';
-import {
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ImageBackground } from 'expo-image';
 import { Feather } from '@expo/vector-icons';
 import { GlassCard, KeyboardAvoidingScrollView } from '@/shared/components';
-import {
-  MONTH_NAMES,
-  WEEKDAY_NAMES,
-  useLeaveStatusScreen,
-} from './useLeaveStatusScreen';
+import { LeaveStatusShimmer } from '../../components/LeaveShimmers';
+import { AnimatedCounterDigits } from './components/AnimatedCounterDigits';
+import { CarryForwardsSheet } from './components/CarryForwardsSheet';
+import { LeaveApprovalCard } from './components/LeaveApprovalCard';
+import { LeaveCalendarCard } from './components/LeaveCalendarCard';
+import { LeaveTypeSegmentedBar } from './components/LeaveTypeSegmentedBar';
+import { MONTH_NAMES, useLeaveStatusScreen } from './useLeaveStatusScreen';
 import {
   styles,
   getBackgroundImageStyle,
-  getImageStyle,
   getSafeAreaStyle,
   getHeaderTitleStyle,
+  getTopSummaryCardStyle,
+  getSummaryMetricValueStyle,
+  getSummaryMetricLabelStyle,
+  getSummaryMetricDividerStyle,
+  getCarryForwardBtnStyle,
+  getCarryForwardBtnTextStyle,
+  getViewHistoryBtnStyle,
   getMonthTitleStyle,
   getNavChevronBtnStyle,
   getFilterPillStyle,
+  getFilterPillTextStyle,
   getFilterDividerStyle,
-  getCardStyle,
-  getWeekdayTextStyle,
-  getDayNumberTextColorStyle,
-  getLegendRowStyle,
+  getApprovedLegendBoxStyle,
+  getLegendDividerStyle,
   getLegendTextStyle,
-  getStatusCardTitleStyle,
-  getRecordDividerStyle,
-  getTimelineStepLabelStyle,
-  getTimelineIconBadgeStyle,
+  getAttendancePillStyle,
+  getAttendancePillTextStyle,
 } from './LeaveStatusScreen.styles';
 
 export function LeaveStatusScreen(): React.JSX.Element {
   const {
     isDark,
+    isLoading,
+    loadError,
+    selectedLeaveType,
+    leaveTypeTabs,
+    leaveSummary,
     currentYear,
     currentMonth,
     selectedFilter,
     selectedDate,
+    formattedSelectedDate,
+    isCarryForwardsOpen,
+    carryForwardInfo,
     calendarDays,
     displayedRecords,
     approvedDates,
     pendingDates,
+    rejectedDates,
+    handleSelectLeaveType,
     handlePrevMonth,
     handleNextMonth,
     handleToggleFilter,
     handleSelectDatePress,
     handleDayPress,
+    handleOpenCarryForwards,
+    handleCloseCarryForwards,
+    handleViewLeaveHistory,
+    handleAttendancePress,
+    handleEditLeaveRequest,
+    handleRetryLoad,
     handleBack,
   } = useLeaveStatusScreen();
 
   return (
-    <ImageBackground
-      source={require('../../../../../assets/images/background.png')}
-      style={getBackgroundImageStyle(isDark)}
-      imageStyle={getImageStyle(isDark)}
-      contentFit="cover"
-    >
-      <SafeAreaView
-        style={getSafeAreaStyle(isDark)}
-        edges={['top', 'bottom']}
-      >
+    <View style={getBackgroundImageStyle(isDark)}>
+      <SafeAreaView style={getSafeAreaStyle(isDark)} edges={['top', 'bottom']}>
         <KeyboardAvoidingScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRetryLoad}
+              tintColor={isDark ? '#60A5FA' : '#1D4ED8'}
+              colors={['#1D4ED8']}
+            />
+          }
         >
           {/* Header */}
           <View style={styles.headerRow}>
@@ -75,27 +91,121 @@ export function LeaveStatusScreen(): React.JSX.Element {
               style={styles.backButton}
               activeOpacity={0.7}
               testID="leave-status-back-btn"
+              accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Feather
-                name="chevron-left"
-                size={24}
-                color={isDark ? '#F8FAFC' : '#0F172A'}
-              />
-              <Text style={getHeaderTitleStyle(isDark)}>
-                Leave status
-              </Text>
+              <Feather name="chevron-left" size={24} color={isDark ? '#F8FAFC' : '#0F172A'} />
+              <Text style={getHeaderTitleStyle(isDark)}>Leave status</Text>
             </TouchableOpacity>
           </View>
 
+          {loadError ? (
+            <TouchableOpacity
+              style={styles.errorBanner}
+              onPress={handleRetryLoad}
+              activeOpacity={0.75}
+              testID="leave-status-retry-banner"
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading leave status"
+            >
+              <Text style={styles.errorBannerText}>{loadError} Tap to retry.</Text>
+            </TouchableOpacity>
+          ) : null}
+
+          {/* Leave Type Segmented Switcher */}
+          <LeaveTypeSegmentedBar
+            tabs={leaveTypeTabs}
+            selectedLeaveType={selectedLeaveType}
+            isDark={isDark}
+            onSelectLeaveType={handleSelectLeaveType}
+          />
+
+          {isLoading ? (
+            <LeaveStatusShimmer isDark={isDark} />
+          ) : (
+            <>
+              {/* Top Summary & Actions Card */}
+              <GlassCard
+                intensity={20}
+                tint={isDark ? 'dark' : 'light'}
+                style={getTopSummaryCardStyle(isDark)}
+              >
+            <View style={styles.summaryMetricsRow}>
+              <View style={styles.summaryMetricItem}>
+                <AnimatedCounterDigits
+                  value={leaveSummary.totalLeaves}
+                  textStyle={getSummaryMetricValueStyle(isDark)}
+                  testID="summary-total-leaves"
+                />
+                <Text style={getSummaryMetricLabelStyle(isDark)}>Total leaves</Text>
+              </View>
+
+              <View style={getSummaryMetricDividerStyle(isDark)} />
+
+              <View style={styles.summaryMetricItem}>
+                <AnimatedCounterDigits
+                  value={leaveSummary.balanceLeaves}
+                  textStyle={getSummaryMetricValueStyle(isDark)}
+                  testID="summary-balance-leaves"
+                />
+                <Text style={getSummaryMetricLabelStyle(isDark)}>Balance leaves</Text>
+              </View>
+
+              <View style={getSummaryMetricDividerStyle(isDark)} />
+
+              <View style={styles.summaryMetricItem}>
+                <AnimatedCounterDigits
+                  value={leaveSummary.leavesTaken}
+                  textStyle={getSummaryMetricValueStyle(isDark)}
+                  testID="summary-leaves-taken"
+                />
+                <Text style={getSummaryMetricLabelStyle(isDark)}>Leaves taken</Text>
+              </View>
+            </View>
+
+            <View style={styles.topCardActionsRow}>
+              <TouchableOpacity
+                style={getCarryForwardBtnStyle(isDark)}
+                onPress={handleOpenCarryForwards}
+                activeOpacity={0.75}
+                testID="carry-forwards-btn"
+                accessibilityRole="button"
+                accessibilityLabel="Carry forwards"
+              >
+                <Text style={getCarryForwardBtnTextStyle(isDark)} numberOfLines={1}>
+                  Carry forwards
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={getViewHistoryBtnStyle(isDark)}
+                onPress={handleViewLeaveHistory}
+                activeOpacity={0.8}
+                testID="view-leave-history-btn"
+                accessibilityRole="button"
+                accessibilityLabel="view leave history"
+              >
+                <Text style={styles.viewHistoryBtnText} numberOfLines={1}>
+                  view leave history
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </GlassCard>
+
           {/* Month & Year Navigation Row */}
           <View style={styles.monthHeaderRow}>
-            <Text
-              style={getMonthTitleStyle(isDark)}
-              testID="current-month-label"
-            >
-              {MONTH_NAMES[currentMonth]} {currentYear}
-            </Text>
+            <View style={styles.monthTitleRow}>
+              <Text style={getMonthTitleStyle(isDark)} testID="current-month-label">
+                {MONTH_NAMES[currentMonth]} {currentYear}
+              </Text>
+              {isLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={isDark ? '#60A5FA' : '#1D4ED8'}
+                  testID="leave-status-loading"
+                />
+              ) : null}
+            </View>
 
             <View style={styles.monthNavButtons}>
               <TouchableOpacity
@@ -103,13 +213,10 @@ export function LeaveStatusScreen(): React.JSX.Element {
                 style={getNavChevronBtnStyle(isDark)}
                 activeOpacity={0.7}
                 testID="prev-month-btn"
+                accessibilityRole="button"
                 accessibilityLabel="Previous month"
               >
-                <Feather
-                  name="chevron-left"
-                  size={18}
-                  color={isDark ? '#F8FAFC' : '#0F172A'}
-                />
+                <Feather name="chevron-left" size={18} color={isDark ? '#F8FAFC' : '#0F172A'} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -117,13 +224,10 @@ export function LeaveStatusScreen(): React.JSX.Element {
                 style={getNavChevronBtnStyle(isDark)}
                 activeOpacity={0.7}
                 testID="next-month-btn"
+                accessibilityRole="button"
                 accessibilityLabel="Next month"
               >
-                <Feather
-                  name="chevron-right"
-                  size={18}
-                  color={isDark ? '#F8FAFC' : '#0F172A'}
-                />
+                <Feather name="chevron-right" size={18} color={isDark ? '#F8FAFC' : '#0F172A'} />
               </TouchableOpacity>
             </View>
           </View>
@@ -135,14 +239,15 @@ export function LeaveStatusScreen(): React.JSX.Element {
               onPress={handleToggleFilter}
               activeOpacity={0.7}
               testID="filter-by-status-btn"
+              accessibilityRole="button"
             >
-              <Feather name="filter" size={13} color="#2563EB" />
-              <Text style={styles.filterPillText}>
+              <Feather name="filter" size={13} color={isDark ? '#60A5FA' : '#2563EB'} />
+              <Text style={getFilterPillTextStyle(isDark)}>
                 {selectedFilter === 'all'
                   ? 'Filter by status'
                   : `Status: ${selectedFilter.charAt(0).toUpperCase() + selectedFilter.slice(1)}`}
               </Text>
-              <Feather name="chevron-down" size={13} color="#2563EB" />
+              <Feather name="chevron-down" size={13} color={isDark ? '#60A5FA' : '#2563EB'} />
             </TouchableOpacity>
 
             <View style={getFilterDividerStyle(isDark)} />
@@ -152,164 +257,78 @@ export function LeaveStatusScreen(): React.JSX.Element {
               onPress={handleSelectDatePress}
               activeOpacity={0.7}
               testID="select-date-btn"
+              accessibilityRole="button"
             >
-              <Feather name="calendar" size={13} color="#2563EB" />
-              <Text style={styles.filterPillText}>
-                {selectedDate ? '23 Nov 2026' : 'Select date'}
+              <Feather name="calendar" size={13} color={isDark ? '#60A5FA' : '#2563EB'} />
+              <Text style={getFilterPillTextStyle(isDark)}>
+                {formattedSelectedDate ?? 'Select date'}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Calendar Card */}
-          <GlassCard
-            intensity={20}
-            tint={isDark ? 'dark' : 'light'}
-            style={getCardStyle(isDark)}
-          >
-            {/* Weekday Names Header */}
-            <View style={styles.weekdaysRow}>
-              {WEEKDAY_NAMES.map((w) => (
-                <View key={w} style={styles.weekdaySlot}>
-                  <Text style={[styles.weekdayText, getWeekdayTextStyle(isDark)]}>{w}</Text>
+          <LeaveCalendarCard
+            currentYear={currentYear}
+            currentMonth={currentMonth}
+            calendarDays={calendarDays}
+            selectedFilter={selectedFilter}
+            selectedDate={selectedDate}
+            approvedDates={approvedDates}
+            pendingDates={pendingDates}
+            rejectedDates={rejectedDates}
+            isDark={isDark}
+            onDayPress={handleDayPress}
+          />
+
+          {/* Status Legend + Attendance Navigation Pill Row */}
+          <View style={styles.legendAndAttendanceRow}>
+            <View style={styles.legendGroup}>
+              <View style={styles.legendItem}>
+                <View style={getApprovedLegendBoxStyle(isDark)}>
+                  <Feather name="check" size={12} color="#10B981" />
                 </View>
-              ))}
-            </View>
-
-            {/* Days Grid */}
-            <View style={styles.daysGrid}>
-              {calendarDays.map((day) => {
-                if (!day.isCurrentMonth) {
-                  return <View key={day.dateKey} style={styles.daySlot} />;
-                }
-
-                const isApproved =
-                  (selectedFilter === 'all' || selectedFilter === 'approved') &&
-                  approvedDates.has(day.dateKey);
-
-                const isPending =
-                  (selectedFilter === 'all' || selectedFilter === 'pending') &&
-                  pendingDates.has(day.dateKey);
-
-                const isSelected = selectedDate === day.dateKey;
-
-                return (
-                  <TouchableOpacity
-                    key={day.dateKey}
-                    onPress={() => handleDayPress(day.dateKey)}
-                    activeOpacity={0.7}
-                    style={styles.daySlot}
-                    testID={`status-day-${day.dateKey}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Day ${day.dayNumber}`}
-                  >
-                    {isSelected ? (
-                      <View style={styles.selectedCircle}>
-                        <Text style={styles.selectedDayNumberText}>{day.dayNumber}</Text>
-                        <Feather
-                          name="check"
-                          size={12}
-                          color="#FFFFFF"
-                          style={styles.selectedCheckIcon}
-                        />
-                      </View>
-                    ) : (
-                      <View style={styles.unselectedDayContainer}>
-                        <Text style={[styles.dayNumberText, getDayNumberTextColorStyle(isDark)]}>
-                          {day.dayNumber}
-                        </Text>
-                        {isApproved ? (
-                          <Feather
-                            name="check"
-                            size={11}
-                            color="#10B981"
-                            style={styles.dayMarkerIcon}
-                          />
-                        ) : isPending ? (
-                          <View style={styles.pendingDot} />
-                        ) : (
-                          <View style={styles.emptyDotPlaceholder} />
-                        )}
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Status Legend Row inside Card */}
-            <View style={[styles.legendRow, getLegendRowStyle(isDark)]}>
-              <View style={styles.legendItem}>
-                <Feather name="check" size={14} color="#10B981" />
-                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Approved</Text>
+                <Text style={getLegendTextStyle(isDark)}>Approved</Text>
               </View>
 
+              <View style={getLegendDividerStyle(isDark)} />
+
               <View style={styles.legendItem}>
-                <View style={styles.pendingLegendDot} />
-                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Pending</Text>
+                <Feather name="clock" size={15} color={isDark ? '#FBBF24' : '#EAB308'} />
+                <Text style={getLegendTextStyle(isDark)}>Pending</Text>
               </View>
             </View>
-          </GlassCard>
+
+            <TouchableOpacity
+              style={getAttendancePillStyle(isDark)}
+              onPress={handleAttendancePress}
+              activeOpacity={0.75}
+              testID="attendance-nav-btn"
+              accessibilityRole="button"
+              accessibilityLabel="Attendance"
+            >
+              <Text style={getAttendancePillTextStyle(isDark)}>Attendance</Text>
+              <Feather name="chevron-right" size={15} color={isDark ? '#60A5FA' : '#1D5BD8'} />
+            </TouchableOpacity>
+          </View>
 
           {/* Approval Status Card */}
-          <GlassCard
-            intensity={20}
-            tint={isDark ? 'dark' : 'light'}
-            style={getCardStyle(isDark)}
-          >
-            <Text style={getStatusCardTitleStyle(isDark)}>
-              Approval status
-            </Text>
-            <Text style={styles.statusCardSubtitle}>
-              Approved / rejected leaves status
-            </Text>
-
-            {/* Blue accent horizontal separator line */}
-            <View style={styles.blueAccentBar} />
-
-            {/* Timeline Records */}
-            <View style={styles.timelineList}>
-              {displayedRecords.map((record, index) => (
-                <View key={record.id}>
-                  {index > 0 && <View style={getRecordDividerStyle(isDark)} />}
-
-                  {/* Step 1: Requested */}
-                  <View style={styles.timelineStepRow}>
-                    <View style={getTimelineIconBadgeStyle(false)}>
-                      <Feather name="file-text" size={15} color="#2563EB" />
-                    </View>
-                    <Text style={getTimelineStepLabelStyle(isDark)}>
-                      Requested
-                    </Text>
-                    <Text style={styles.timelineDateText}>
-                      {record.requestDate}
-                    </Text>
-                  </View>
-
-                  {/* Vertical Connector Line */}
-                  <View style={styles.verticalConnectorLine} />
-
-                  {/* Step 2: Approved / Rejected */}
-                  <View style={styles.timelineStepRow}>
-                    <View style={getTimelineIconBadgeStyle(record.status === 'rejected')}>
-                      <Feather
-                        name={record.status === 'approved' ? 'check' : 'x'}
-                        size={15}
-                        color={record.status === 'approved' ? '#2563EB' : '#EF4444'}
-                      />
-                    </View>
-                    <Text style={getTimelineStepLabelStyle(isDark, record.status)}>
-                      {record.status === 'approved' ? 'Approved' : 'Rejected'}
-                    </Text>
-                    <Text style={styles.timelineDateText}>
-                      {record.actionDate}
-                    </Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </GlassCard>
+          <LeaveApprovalCard
+            records={displayedRecords}
+            selectedLeaveType={selectedLeaveType}
+            isDark={isDark}
+            onEditRecord={handleEditLeaveRequest}
+          />
+            </>
+          )}
         </KeyboardAvoidingScrollView>
       </SafeAreaView>
-    </ImageBackground>
+
+      <CarryForwardsSheet
+        isOpen={isCarryForwardsOpen}
+        info={carryForwardInfo}
+        isDark={isDark}
+        onClose={handleCloseCarryForwards}
+      />
+    </View>
   );
 }

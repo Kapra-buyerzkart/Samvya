@@ -1,11 +1,16 @@
-import { GlassCard } from '@/shared/components';
+import { AppCalendar } from '@/shared/components';
 import { Feather } from '@expo/vector-icons';
-import { ImageBackground } from 'expo-image';
 import React from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  getBackgroundImageProps,
   getBackgroundImageStyle,
   getCardStyle,
   getLegendRowStyle,
@@ -15,11 +20,13 @@ import {
   getPunchIconBoxStyle,
   getPunchPeriodStyle,
   getSafeAreaStyle,
+  getSummaryCardStyle,
+  getSummaryDividerStyle,
   getTextColor,
   getTextColorStyle,
-  getWeekdayTextStyle,
   styles,
 } from './AttendanceStatusScreen.styles';
+import { AttendanceStatusShimmer } from './components/AttendanceStatusShimmer';
 import { useAttendanceStatusScreen } from './useAttendanceStatusScreen';
 
 export function AttendanceStatusScreen(): React.JSX.Element {
@@ -28,30 +35,39 @@ export function AttendanceStatusScreen(): React.JSX.Element {
     currentYear,
     currentMonth,
     selectedDay,
+    isLoading,
+    loadError,
+    monthlySummary,
+    dayStatusByDay,
     setSelectedDay,
     handlePrevMonth,
     handleNextMonth,
+    handleRetryLoad,
     handleBack,
     calendarDays,
     selectedPunchInfo,
     formattedSelectedDate,
     monthNames,
-    weekdayNames,
   } = useAttendanceStatusScreen();
 
+  console.log(monthlySummary, 'monthlySummary=====monthlySummary');
+
   return (
-    <ImageBackground
-      source={require('../../../../../assets/images/background.png')}
-      style={[styles.backgroundImage, getBackgroundImageStyle(isDark)]}
-      imageStyle={getBackgroundImageProps(isDark)}
-      contentFit="cover"
-    >
+    <View style={[styles.backgroundImage, getBackgroundImageStyle(isDark)]}>
       <SafeAreaView style={[styles.safeArea, getSafeAreaStyle(isDark)]} edges={['top', 'bottom']}>
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           bounces={true}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoading}
+              onRefresh={handleRetryLoad}
+              tintColor={isDark ? '#60A5FA' : '#1D4ED8'}
+              colors={['#1D4ED8']}
+            />
+          }
         >
           <View style={styles.headerRow}>
             <TouchableOpacity
@@ -68,12 +84,21 @@ export function AttendanceStatusScreen(): React.JSX.Element {
           </View>
 
           <View style={styles.monthHeaderRow}>
-            <Text
-              style={[styles.monthTitle, getTextColorStyle(isDark)]}
-              testID="current-month-label"
-            >
-              {monthNames[currentMonth]} {currentYear}
-            </Text>
+            <View style={styles.monthTitleRow}>
+              <Text
+                style={[styles.monthTitle, getTextColorStyle(isDark)]}
+                testID="current-month-label"
+              >
+                {monthNames[currentMonth]} {currentYear}
+              </Text>
+              {isLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={isDark ? '#60A5FA' : '#1D4ED8'}
+                  testID="attendance-loading-indicator"
+                />
+              ) : null}
+            </View>
 
             <View style={styles.monthNavButtons}>
               <TouchableOpacity
@@ -100,159 +125,198 @@ export function AttendanceStatusScreen(): React.JSX.Element {
             </View>
           </View>
 
-          <GlassCard
-            intensity={20}
-            tint={isDark ? 'dark' : 'light'}
-            style={[styles.card, getCardStyle(isDark)]}
-          >
-            <View style={styles.weekdaysRow}>
-              {weekdayNames.map((w) => (
-                <View key={w} style={styles.weekdaySlot}>
-                  <Text style={[styles.weekdayText, getWeekdayTextStyle(isDark)]}>{w}</Text>
+          {loadError ? (
+            <TouchableOpacity
+              style={styles.errorBanner}
+              onPress={handleRetryLoad}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading attendance records"
+              testID="attendance-retry-banner"
+            >
+              <Text style={styles.errorBannerText}>{loadError} Tap to retry.</Text>
+            </TouchableOpacity>
+          ) : null}
+
+          {isLoading ? (
+            <AttendanceStatusShimmer isDark={isDark} />
+          ) : (
+            <>
+              <View
+                style={[styles.summaryCard, getSummaryCardStyle(isDark)]}
+                testID="attendance-summary-card"
+              >
+                <View style={styles.summaryRow}>
+                  <View style={styles.summaryMetric}>
+                    <Text
+                      style={[styles.summaryValue, getTextColorStyle(isDark)]}
+                      testID="monthly-total-hours"
+                    >
+                      {monthlySummary?.totalHoursFormatted ?? '—'}
+                    </Text>
+                    <Text style={[styles.summaryLabel, getPunchCardSubtitleStyle(isDark)]}>
+                      Total hours
+                    </Text>
+                  </View>
+
+                  <View style={[styles.summaryDivider, getSummaryDividerStyle(isDark)]} />
+
+                  <View style={styles.summaryMetric}>
+                    <Text
+                      style={[styles.summaryValue, getTextColorStyle(isDark)]}
+                      testID="monthly-days-recorded"
+                    >
+                      {monthlySummary ? String(monthlySummary.daysRecorded) : '—'}
+                    </Text>
+                    <Text style={[styles.summaryLabel, getPunchCardSubtitleStyle(isDark)]}>
+                      Days recorded
+                    </Text>
+                  </View>
+
+                  <View style={[styles.summaryDivider, getSummaryDividerStyle(isDark)]} />
+
+                  <View style={styles.summaryMetric}>
+                    <Text
+                      style={[styles.summaryValue, getTextColorStyle(isDark)]}
+                      testID="monthly-working-days"
+                    >
+                      {monthlySummary ? String(monthlySummary.workingDays) : '—'}
+                    </Text>
+                    <Text style={[styles.summaryLabel, getPunchCardSubtitleStyle(isDark)]}>
+                      Working days
+                    </Text>
+                  </View>
                 </View>
-              ))}
-            </View>
+              </View>
 
-            <View style={styles.daysGrid}>
-              {calendarDays.map((day) => {
-                if (!day.isCurrentMonth) {
-                  return <View key={day.dateKey} style={styles.daySlot} />;
+              <AppCalendar
+                testID="attendance-calendar-card"
+                days={calendarDays}
+                getDayTestID={(day) => `attendance-day-${day.dayNumber}`}
+                getDayState={(day) => {
+                  const dayStatus = dayStatusByDay[day.dayNumber];
+                  return {
+                    isSelected: selectedDay === day.dayNumber,
+                    marker:
+                      dayStatus === 'approved'
+                        ? 'approved'
+                        : dayStatus === 'pending'
+                          ? 'pending'
+                          : null,
+                  };
+                }}
+                onDayPress={(day) => setSelectedDay(day.dayNumber)}
+                footerContent={
+                  <View style={[styles.legendRow, getLegendRowStyle(isDark)]}>
+                    <View style={styles.legendItem}>
+                      <Feather name="check" size={14} color="#10B981" />
+                      <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Approved</Text>
+                    </View>
+
+                    <View style={styles.legendItem}>
+                      <View style={styles.pendingLegendDot} />
+                      <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>
+                        Pending review
+                      </Text>
+                    </View>
+                  </View>
                 }
+              />
 
-                const isSelected = selectedDay === day.dayNumber;
-                const hasPending =
-                  currentMonth === 10 && currentYear === 2026 && day.dayNumber === 13;
-                const hasApproved =
-                  currentMonth === 10 &&
-                  currentYear === 2026 &&
-                  (day.dayNumber === 16 ||
-                    day.dayNumber === 17 ||
-                    day.dayNumber === 18 ||
-                    day.dayNumber === 19);
-
-                return (
-                  <TouchableOpacity
-                    key={day.dateKey}
-                    onPress={() => setSelectedDay(day.dayNumber)}
-                    activeOpacity={0.7}
-                    style={styles.daySlot}
-                    testID={`attendance-day-${day.dayNumber}`}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Day ${day.dayNumber}`}
-                  >
-                    {isSelected ? (
-                      <View style={styles.selectedCircle}>
-                        <Text style={styles.selectedDayNumberText}>{day.dayNumber}</Text>
-                        <Feather
-                          name="check"
-                          size={12}
-                          color="#FFFFFF"
-                          style={styles.selectedCheckIcon}
-                        />
-                      </View>
-                    ) : (
-                      <View style={styles.unselectedDayContainer}>
-                        <Text style={[styles.dayNumberText, getTextColorStyle(isDark)]}>
-                          {day.dayNumber}
+              <View style={[styles.card, getCardStyle(isDark)]} testID="attendance-punch-card">
+                <View style={styles.punchCardHeader}>
+                  <View style={styles.dateCol}>
+                    <Text
+                      style={[styles.punchCardDate, getTextColorStyle(isDark)]}
+                      testID="selected-day-title"
+                    >
+                      {formattedSelectedDate}
+                    </Text>
+                    <Text style={[styles.punchCardSubtitle, getPunchCardSubtitleStyle(isDark)]}>
+                      {selectedPunchInfo.subtitle}
+                    </Text>
+                    {selectedPunchInfo.workedHoursLabel ? (
+                      <View
+                        style={[styles.workedHoursPill, getPunchIconBoxStyle(isDark)]}
+                        testID="selected-day-worked-hours"
+                      >
+                        <Text
+                          style={[
+                            styles.workedHoursText,
+                            { color: isDark ? '#93C5FD' : '#1D4ED8' },
+                          ]}
+                        >
+                          {selectedPunchInfo.workedHoursLabel} worked
                         </Text>
-                        {hasApproved ? (
-                          <Feather
-                            name="check"
-                            size={11}
-                            color="#10B981"
-                            style={styles.dayMarkerIcon}
-                          />
-                        ) : hasPending ? (
-                          <View style={styles.pendingDot} />
-                        ) : (
-                          <View style={styles.emptyDotPlaceholder} />
-                        )}
                       </View>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.statusBadge}>
+                    {selectedPunchInfo.status === 'approved' ? (
+                      <>
+                        <Feather name="check" size={14} color="#059669" />
+                        <Text style={styles.approvedStatusText}>Approved</Text>
+                      </>
+                    ) : selectedPunchInfo.status === 'pending' ? (
+                      <>
+                        <View style={styles.pendingBadgeDot} />
+                        <Text style={styles.pendingStatusText}>Pending review</Text>
+                      </>
+                    ) : selectedPunchInfo.status === 'rejected' ? (
+                      <>
+                        <Feather name="x-circle" size={14} color="#DC2626" />
+                        <Text style={styles.rejectedStatusText}>Rejected</Text>
+                      </>
+                    ) : (
+                      <Text style={[styles.emptyStatusText, getPunchCardSubtitleStyle(isDark)]}>
+                        No log
+                      </Text>
                     )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                  </View>
+                </View>
 
-            <View style={[styles.legendRow, getLegendRowStyle(isDark)]}>
-              <View style={styles.legendItem}>
-                <Feather name="check" size={14} color="#10B981" />
-                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Approved</Text>
-              </View>
+                <View style={styles.punchItemRow}>
+                  <View style={[styles.punchIconBox, getPunchIconBoxStyle(isDark)]}>
+                    <Feather name="sunrise" size={22} color={getTextColor(isDark)} />
+                  </View>
+                  <View style={styles.punchInfoCol}>
+                    <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>Punch-in</Text>
+                    <Text style={[styles.punchPeriod, getPunchPeriodStyle(isDark)]}>
+                      {selectedPunchInfo.punchInPeriod}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[styles.punchTime, getTextColorStyle(isDark)]}
+                    testID="punch-in-time"
+                  >
+                    {selectedPunchInfo.punchInTime}
+                  </Text>
+                </View>
 
-              <View style={styles.legendItem}>
-                <View style={styles.pendingLegendDot} />
-                <Text style={[styles.legendText, getLegendTextStyle(isDark)]}>Pending review</Text>
+                <View style={styles.punchItemRow}>
+                  <View style={[styles.punchIconBox, getPunchIconBoxStyle(isDark)]}>
+                    <Feather name="moon" size={22} color={getTextColor(isDark)} />
+                  </View>
+                  <View style={styles.punchInfoCol}>
+                    <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>Punch-out</Text>
+                    <Text style={[styles.punchPeriod, getPunchPeriodStyle(isDark)]}>
+                      {selectedPunchInfo.punchOutPeriod}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[styles.punchTime, getTextColorStyle(isDark)]}
+                    testID="punch-out-time"
+                  >
+                    {selectedPunchInfo.punchOutTime}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </GlassCard>
-
-          <GlassCard
-            intensity={20}
-            tint={isDark ? 'dark' : 'light'}
-            style={[styles.card, getCardStyle(isDark)]}
-          >
-            <View style={styles.punchCardHeader}>
-              <View style={styles.dateCol}>
-                <Text
-                  style={[styles.punchCardDate, getTextColorStyle(isDark)]}
-                  testID="selected-day-title"
-                >
-                  {formattedSelectedDate}
-                </Text>
-                <Text style={[styles.punchCardSubtitle, getPunchCardSubtitleStyle(isDark)]}>
-                  {selectedPunchInfo.subtitle}
-                </Text>
-              </View>
-
-              <View style={styles.statusBadge}>
-                {selectedPunchInfo.status === 'approved' ? (
-                  <>
-                    <Feather name="check" size={14} color="#059669" />
-                    <Text style={styles.approvedStatusText}>Approved</Text>
-                  </>
-                ) : (
-                  <>
-                    <View style={styles.pendingBadgeDot} />
-                    <Text style={styles.pendingStatusText}>Pending review</Text>
-                  </>
-                )}
-              </View>
-            </View>
-
-            <View style={styles.punchItemRow}>
-              <View style={[styles.punchIconBox, getPunchIconBoxStyle(isDark)]}>
-                <Feather name="sunrise" size={22} color={getTextColor(isDark)} />
-              </View>
-              <View style={styles.punchInfoCol}>
-                <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>Punch-in</Text>
-                <Text style={[styles.punchPeriod, getPunchPeriodStyle(isDark)]}>
-                  {selectedPunchInfo.punchInPeriod}
-                </Text>
-              </View>
-              <Text style={[styles.punchTime, getTextColorStyle(isDark)]} testID="punch-in-time">
-                {selectedPunchInfo.punchInTime}
-              </Text>
-            </View>
-
-            <View style={styles.punchItemRow}>
-              <View style={[styles.punchIconBox, getPunchIconBoxStyle(isDark)]}>
-                <Feather name="moon" size={22} color={getTextColor(isDark)} />
-              </View>
-              <View style={styles.punchInfoCol}>
-                <Text style={[styles.punchTitle, getTextColorStyle(isDark)]}>Punch-out</Text>
-                <Text style={[styles.punchPeriod, getPunchPeriodStyle(isDark)]}>
-                  {selectedPunchInfo.punchOutPeriod}
-                </Text>
-              </View>
-              <Text style={[styles.punchTime, getTextColorStyle(isDark)]} testID="punch-out-time">
-                {selectedPunchInfo.punchOutTime}
-              </Text>
-            </View>
-          </GlassCard>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 

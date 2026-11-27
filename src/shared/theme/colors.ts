@@ -14,6 +14,7 @@ export const palette = {
   slate800: '#1E293B',
   slate900: '#0F172A',
   slate950: '#020617',
+  slate970: '#727DB3',
   emerald500: '#10B981',
   emerald600: '#059669',
   amber500: '#F59E0B',

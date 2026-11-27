@@ -1,3 +1,4 @@
+export * from './api/employmentApi';
 export * from './domain/types';
 export * from './data/employmentDataService';
 export { EmploymentDetailsScreen, useEmploymentDetailsScreen } from './screens/EmploymentDetailsScreen';
