@@ -47,6 +47,7 @@ export function HomeScreen(): React.JSX.Element {
     isRefreshing,
     greetingLabel,
     displayName,
+    employmentNumber,
     formattedDateLabel,
     showHoursModal,
     showLocationModal,
@@ -139,43 +140,19 @@ export function HomeScreen(): React.JSX.Element {
             </Text>
           </View>
 
-          {/* Top Dropdowns: Hours & Location */}
+          {/* Current Employment Card */}
           <View style={styles.dropdownsRow}>
-            <TactilePressable
-              style={getDropdownCardStyle(isDark)}
-              onPress={() => setShowHoursModal(true)}
-              activeScale={0.97}
-              accessibilityRole="button"
-              accessibilityLabel="Select Work Hours"
-            >
+            <View style={getDropdownCardStyle(isDark)} testID="home-current-employment-card">
               <View style={styles.dropdownIconContainer}>
-                <Feather name="clock" size={18} color={isDark ? '#60A5FA' : '#475569'} />
+                <Feather name="briefcase" size={18} color={isDark ? '#60A5FA' : '#475569'} />
               </View>
               <View style={styles.dropdownTextCol}>
-                <Text style={getDropdownLabelStyle(isDark)}>Hours</Text>
-                <Text style={getDropdownValueStyle(isDark)}>{timer.hoursType}</Text>
-              </View>
-              <Feather name="chevron-down" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
-            </TactilePressable>
-
-            <TactilePressable
-              style={getDropdownCardStyle(isDark)}
-              onPress={() => setShowLocationModal(true)}
-              activeScale={0.97}
-              accessibilityRole="button"
-              accessibilityLabel="Select Work Location"
-            >
-              <View style={styles.dropdownIconContainer}>
-                <Feather name="home" size={18} color={isDark ? '#60A5FA' : '#475569'} />
-              </View>
-              <View style={styles.dropdownTextCol}>
-                <Text style={getDropdownLabelStyle(isDark)}>Location</Text>
-                <Text style={getDropdownValueStyle(isDark)} numberOfLines={1}>
-                  {timer.workLocation}
+                <Text style={getDropdownLabelStyle(isDark)}>Current Employment</Text>
+                <Text style={getDropdownValueStyle(isDark)} numberOfLines={1} testID="home-employment-number">
+                  {employmentNumber}
                 </Text>
               </View>
-              <Feather name="chevron-down" size={16} color={isDark ? '#94A3B8' : '#64748B'} />
-            </TactilePressable>
+            </View>
           </View>
 
           {/* Shift Banner */}

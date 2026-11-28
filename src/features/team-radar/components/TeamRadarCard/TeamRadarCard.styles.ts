@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import { FontFamily } from '@/shared/theme';
 
 export const styles = StyleSheet.create({
@@ -7,18 +7,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     marginVertical: 10,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.06,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 2,
-      },
-      default: {},
-    }),
   },
   headerRow: {
     flexDirection: 'row',

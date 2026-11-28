@@ -136,18 +136,11 @@ describe('HomeScreen', () => {
     expect(Alert.alert).toHaveBeenCalled();
   });
 
-  it('handles dropdown modal opening and closing', async () => {
-    const { getByLabelText, getByText, queryByText } = await render(<HomeScreen />);
+  it('renders current employment heading and employment number at top', async () => {
+    const { getByText, getByTestId } = await render(<HomeScreen />);
 
-    await fireEvent.press(getByLabelText('Select Work Hours'));
-    await waitFor(() => {
-      expect(getByText('Select Work Hours')).toBeTruthy();
-    });
-
-    await fireEvent.press(getByLabelText('Close'));
-    await waitFor(() => {
-      expect(queryByText('Select Work Hours')).toBeNull();
-    });
+    expect(getByText('Current Employment')).toBeTruthy();
+    expect(getByTestId('home-employment-number').props.children).toBe('SAM-101');
   });
 
   it('navigates from quick actions, employment card, leave rings, and leave history', async () => {

@@ -30,14 +30,14 @@ describe('AddressBottomSheet', () => {
     expect(getByPlaceholderText('House / flat number, building, street')).toBeTruthy();
     expect(getByText('Address line 2 (optional)')).toBeTruthy();
     expect(getByPlaceholderText('Area, landmark')).toBeTruthy();
-    expect(getByText('City*')).toBeTruthy();
+    expect(getByText('City / Sub-region*')).toBeTruthy();
     expect(getByPlaceholderText('Enter city')).toBeTruthy();
-    expect(getByText('State*')).toBeTruthy();
-    expect(getByText('Select state')).toBeTruthy();
-    expect(getByTestId('state-selector')).toBeTruthy();
     expect(getByText('Country*')).toBeTruthy();
     expect(getByText('Select country')).toBeTruthy();
     expect(getByTestId('country-selector')).toBeTruthy();
+    expect(getByText('State*')).toBeTruthy();
+    expect(getByText('Select country first')).toBeTruthy();
+    expect(getByTestId('state-selector')).toBeTruthy();
     expect(getByText('Postal code*')).toBeTruthy();
     expect(getByPlaceholderText('Enter postal code')).toBeTruthy();
     expect(getByText('Required fields are marked with *.')).toBeTruthy();
@@ -75,13 +75,14 @@ describe('AddressBottomSheet', () => {
       getByPlaceholderText('Area, landmark'),
       'Koramangala 4th Block',
     );
-    await fireEvent.changeText(getByPlaceholderText('Enter city'), 'Bengaluru');
+    await fireEvent.press(getByTestId('country-selector'));
+    await fireEvent.press(getByTestId('country-item-India'));
 
     await fireEvent.press(getByTestId('state-selector'));
     await fireEvent.press(getByTestId('state-item-Karnataka'));
 
-    await fireEvent.press(getByTestId('country-selector'));
-    await fireEvent.press(getByTestId('country-item-India'));
+    await fireEvent.press(getByTestId('subregion-selector'));
+    await fireEvent.press(getByTestId('subregion-item-Bengaluru'));
 
     await fireEvent.changeText(getByPlaceholderText('Enter postal code'), '560034');
     await fireEvent.press(getByText('Save address'));

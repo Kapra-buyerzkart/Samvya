@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  type KeyboardAvoidingViewProps,
-  Platform,
-  Text,
-} from 'react-native';
+import { Keyboard, Text } from 'react-native';
 import { render, fireEvent } from '@testing-library/react-native';
 import { AppKeyboardAvoidingView } from '../AppKeyboardAvoidingView';
 
@@ -23,46 +17,20 @@ describe('AppKeyboardAvoidingView', () => {
     expect(getByText('Avoid Keyboard Content')).toBeTruthy();
   });
 
-  it('adapts platform-default behavior', async () => {
-    const originalOS = Platform.OS;
-
-    // Test iOS
-    Platform.OS = 'ios';
-    let iosProps: KeyboardAvoidingViewProps | null = null;
-    const iosSpy = jest
-      .spyOn(KeyboardAvoidingView.prototype, 'render')
-      .mockImplementation(function (this: KeyboardAvoidingView) {
-        iosProps = this.props;
-        return null;
-      });
-    await render(
-      <AppKeyboardAvoidingView testID="ios-avoiding-view">
-        <Text>iOS</Text>
+  it('defaults behavior to padding and allows overrides', async () => {
+    const { getByTestId, rerender } = await render(
+      <AppKeyboardAvoidingView testID="avoiding-view">
+        <Text>Content</Text>
       </AppKeyboardAvoidingView>,
     );
-    const capturedIos = iosProps as KeyboardAvoidingViewProps | null;
-    expect(capturedIos?.behavior).toBe('padding');
-    iosSpy.mockRestore();
+    expect(getByTestId('avoiding-view').props.behavior).toBe('padding');
 
-    // Test Android
-    Platform.OS = 'android';
-    let androidProps: KeyboardAvoidingViewProps | null = null;
-    const androidSpy = jest
-      .spyOn(KeyboardAvoidingView.prototype, 'render')
-      .mockImplementation(function (this: KeyboardAvoidingView) {
-        androidProps = this.props;
-        return null;
-      });
-    await render(
-      <AppKeyboardAvoidingView testID="android-avoiding-view">
-        <Text>Android</Text>
+    await rerender(
+      <AppKeyboardAvoidingView testID="avoiding-view" behavior="height">
+        <Text>Content</Text>
       </AppKeyboardAvoidingView>,
     );
-    const capturedAndroid = androidProps as KeyboardAvoidingViewProps | null;
-    expect(capturedAndroid?.behavior).toBeUndefined();
-    androidSpy.mockRestore();
-
-    Platform.OS = originalOS;
+    expect(getByTestId('avoiding-view').props.behavior).toBe('height');
   });
 
   it('triggers Keyboard.dismiss on press when dismissKeyboardOnTap is true', async () => {

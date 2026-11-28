@@ -1,34 +1,34 @@
 import React, { forwardRef } from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
-  KeyboardAvoidingViewProps,
-  Platform,
-  ScrollView,
-  ScrollViewProps,
   StyleProp,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
   ViewStyle,
 } from 'react-native';
+import {
+  KeyboardAwareScrollView,
+  type KeyboardAwareScrollViewProps,
+  type KeyboardAwareScrollViewRef,
+  type KeyboardAvoidingViewProps,
+} from 'react-native-keyboard-controller';
 
-export interface KeyboardAvoidingScrollViewProps extends ScrollViewProps {
+export interface KeyboardAvoidingScrollViewProps extends KeyboardAwareScrollViewProps {
   /**
-   * Style applied to the outer KeyboardAvoidingView container.
+   * Style applied to the outer container.
    * Defaults to `{ flex: 1 }`.
    */
   containerStyle?: StyleProp<ViewStyle>;
 
   /**
-   * Keyboard avoiding behavior.
-   * Defaults to `'padding'` on iOS and `undefined` on Android.
+   * Kept for backwards compatibility with callers; `KeyboardAwareScrollView`
+   * handles keyboard avoidance automatically on both iOS and Android.
    */
   behavior?: KeyboardAvoidingViewProps['behavior'];
 
   /**
-   * Distance between the top of the user screen and the React Native view.
-   * Defaults to 0.
+   * Kept for backwards compatibility; maps to `bottomOffset` if `bottomOffset` is not provided.
    */
   keyboardVerticalOffset?: number;
 
@@ -39,35 +39,28 @@ export interface KeyboardAvoidingScrollViewProps extends ScrollViewProps {
   dismissKeyboardOnTap?: boolean;
 
   /**
-   * Additional props to forward to the outer KeyboardAvoidingView.
-   */
-  keyboardAvoidingViewProps?: Omit<
-    KeyboardAvoidingViewProps,
-    'behavior' | 'keyboardVerticalOffset' | 'style' | 'children'
-  >;
-
-  /**
-   * Optional pinned header rendered above the ScrollView inside the avoiding view.
+   * Optional pinned header rendered above the ScrollView.
    */
   headerComponent?: React.ReactNode;
 
   /**
-   * Optional pinned footer rendered below the ScrollView inside the avoiding view.
+   * Optional pinned footer rendered below the ScrollView.
    */
   footerComponent?: React.ReactNode;
 }
 
 export const KeyboardAvoidingScrollView = forwardRef<
-  React.ElementRef<typeof ScrollView>,
+  KeyboardAwareScrollViewRef,
   KeyboardAvoidingScrollViewProps
 >(function KeyboardAvoidingScrollView(
   {
     children,
     containerStyle,
-    behavior,
-    keyboardVerticalOffset = 0,
+    behavior: _behavior,
+    keyboardVerticalOffset,
+    bottomOffset,
+    extraKeyboardSpace = 0,
     dismissKeyboardOnTap = true,
-    keyboardAvoidingViewProps,
     headerComponent,
     footerComponent,
     keyboardShouldPersistTaps = 'handled',
@@ -81,7 +74,7 @@ export const KeyboardAvoidingScrollView = forwardRef<
   },
   ref,
 ) {
-  const defaultBehavior = Platform.OS === 'ios' ? 'padding' : undefined;
+  const resolvedBottomOffset = bottomOffset ?? keyboardVerticalOffset ?? 24;
 
   const innerContent = dismissKeyboardOnTap ? (
     <TouchableWithoutFeedback
@@ -100,9 +93,11 @@ export const KeyboardAvoidingScrollView = forwardRef<
   );
 
   const scrollContent = (
-    <ScrollView
+    <KeyboardAwareScrollView
       ref={ref}
       testID={testID}
+      bottomOffset={resolvedBottomOffset}
+      extraKeyboardSpace={extraKeyboardSpace}
       keyboardShouldPersistTaps={keyboardShouldPersistTaps}
       keyboardDismissMode={keyboardDismissMode}
       nestedScrollEnabled={nestedScrollEnabled}
@@ -112,21 +107,18 @@ export const KeyboardAvoidingScrollView = forwardRef<
       {...scrollViewProps}
     >
       {innerContent}
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 
   return (
-    <KeyboardAvoidingView
+    <View
       testID={testID ? `${testID}-avoiding-view` : undefined}
-      behavior={behavior !== undefined ? behavior : defaultBehavior}
-      keyboardVerticalOffset={keyboardVerticalOffset}
       style={[styles.container, containerStyle]}
-      {...keyboardAvoidingViewProps}
     >
       {headerComponent}
       <View style={styles.scrollWrapper}>{scrollContent}</View>
       {footerComponent}
-    </KeyboardAvoidingView>
+    </View>
   );
 });
 

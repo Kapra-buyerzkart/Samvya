@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
 import { type EntityId, useAuthStore } from '@/features/auth';
 import { isApiError } from '@/shared/api';
 import { useAppTheme } from '@/shared/theme';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
 import {
   type EligibleLeaveType,
   extractLeaveOverlapConfirmation,
@@ -97,6 +97,14 @@ export function formatPickerDateLabel(dateKey: string): string {
   return `${weekday}, ${day} ${month} ${year}`;
 }
 
+export interface EditDayBreakdown {
+  dateKey: string;
+  dayNumber: number;
+  monthShort: string;
+  weekdayName: string;
+  duration: 'Full day' | 'Half day';
+}
+
 export interface EditCalendarDay {
   dayNumber: number;
   dateKey: string;
@@ -129,6 +137,7 @@ export interface UseEditLeaveRequestScreenResult {
   formattedStartDate: string;
   formattedEndDate: string;
   duration: EditDurationOption;
+  dayBreakdowns: EditDayBreakdown[];
   reason: string;
   secondaryReason: string;
   secondaryReasonError: string | null;
@@ -152,6 +161,7 @@ export interface UseEditLeaveRequestScreenResult {
   handlePickCalendarDate: (dateKey: string) => void;
   handleSelectLeaveType: (type: string) => void;
   handleSelectDuration: (dur: EditDurationOption) => void;
+  handleToggleDayDuration: (dateKey: string) => void;
   handleCancelLeave: () => void;
   handleSaveChanges: () => void;
   handleBack: () => void;
@@ -193,9 +203,7 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
   const isApproved = status === 'approved';
 
   const [submittedDate, setSubmittedDate] = useState<string>(params.submittedDate ?? '—');
-  const [originalRangeLabel, setOriginalRangeLabel] = useState<string>(
-    params.originalRange ?? '—',
-  );
+  const [originalRangeLabel, setOriginalRangeLabel] = useState<string>(params.originalRange ?? '—');
   const [approverName, setApproverName] = useState<string>(params.approverName ?? '');
   const approverInitials = useMemo(
     () => params.approverInitials ?? (approverName ? computeInitials(approverName) : ''),
@@ -218,6 +226,7 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
   const [duration, setDuration] = useState<EditDurationOption>(
     params.duration === 'Half day' ? 'Half day' : 'Full days',
   );
+  const [dayDurations, setDayDurations] = useState<Record<string, 'Full day' | 'Half day'>>({});
   const [reason, setReason] = useState<string>(params.reason ?? '');
   const [secondaryReason, setSecondaryReason] = useState<string>('');
   const [secondaryReasonError, setSecondaryReasonError] = useState<string | null>(null);
@@ -563,8 +572,54 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
     [isRejected, handleBack, submitConfirmedEdit],
   );
 
+  const dayBreakdowns = useMemo<EditDayBreakdown[]>(() => {
+    const [sy, sm, sd] = startDate.split('-').map((n) => parseInt(n, 10));
+    const [ey, em, ed] = endDate.split('-').map((n) => parseInt(n, 10));
+    if (!sy || !sm || !sd || !ey || !em || !ed) return [];
+
+    const cursor = new Date(sy, sm - 1, sd);
+    const end = new Date(ey, em - 1, ed);
+    const list: EditDayBreakdown[] = [];
+    const defaultDayDur: 'Full day' | 'Half day' =
+      duration === 'Half day' ? 'Half day' : 'Full day';
+    let guard = 0;
+
+    while (cursor <= end && guard < 31) {
+      const y = cursor.getFullYear();
+      const m = cursor.getMonth();
+      const d = cursor.getDate();
+      const dateKey = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      list.push({
+        dateKey,
+        dayNumber: d,
+        monthShort: MONTH_SHORT[m] ?? 'Nov',
+        weekdayName: WEEKDAY_SHORT[cursor.getDay()] ?? 'Mon',
+        duration: dayDurations[dateKey] ?? defaultDayDur,
+      });
+      cursor.setDate(cursor.getDate() + 1);
+      guard += 1;
+    }
+    return list;
+  }, [startDate, endDate, duration, dayDurations]);
+
+  const handleToggleDayDuration = useCallback(
+    (dateKey: string) => {
+      const defaultDayDur: 'Full day' | 'Half day' =
+        duration === 'Half day' ? 'Half day' : 'Full day';
+      setDayDurations((prev) => {
+        const current = prev[dateKey] ?? defaultDayDur;
+        return {
+          ...prev,
+          [dateKey]: current === 'Full day' ? 'Half day' : 'Full day',
+        };
+      });
+    },
+    [duration],
+  );
+
   const handleSaveChanges = useCallback(() => {
-    if (isRejected && secondaryReason.trim().length < 3) {
+    const hasValidReason = secondaryReason.trim().length >= 3 || reason.trim().length >= 3;
+    if (isRejected && !hasValidReason) {
       setSecondaryReasonError('Please enter a valid reason to reapply.');
       return;
     }
@@ -572,21 +627,35 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
     setSecondaryReasonError(null);
 
     const effectiveReason = isRejected
-      ? secondaryReason.trim()
+      ? secondaryReason.trim() || reason.trim()
       : secondaryReason.trim()
         ? `${reason.trim()} (${secondaryReason.trim()})`
         : reason.trim();
 
-    if (hasSession && employmentId !== null && employmentId !== '' && selectedLeaveTypeId !== null) {
-      const isHalf = duration === 'Half day';
-      const totalDaysApplied = isHalf ? 0.5 : calculateInclusiveDays(startDate, endDate);
+    if (
+      hasSession &&
+      employmentId !== null &&
+      employmentId !== '' &&
+      selectedLeaveTypeId !== null
+    ) {
+      const firstDay = dayBreakdowns[0];
+      const lastDay = dayBreakdowns[dayBreakdowns.length - 1];
+      const isHalfDayStart = firstDay ? firstDay.duration === 'Half day' : duration === 'Half day';
+      const isHalfDayEnd =
+        dayBreakdowns.length > 1 && lastDay ? lastDay.duration === 'Half day' : false;
+      const totalDaysApplied =
+        dayBreakdowns.length > 0
+          ? dayBreakdowns.reduce((sum, item) => sum + (item.duration === 'Half day' ? 0.5 : 1), 0)
+          : duration === 'Half day'
+            ? 0.5
+            : calculateInclusiveDays(startDate, endDate);
       const payload: SubmitLeaveRequestPayload = {
         employmentId,
         leaveTypeId: selectedLeaveTypeId,
         startDate,
         endDate,
-        isHalfDayStart: isHalf,
-        isHalfDayEnd: false,
+        isHalfDayStart,
+        isHalfDayEnd,
         totalDaysApplied,
         reason: effectiveReason || 'Leave request update',
         requestId: generateRequestId(),
@@ -619,6 +688,7 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
     employmentId,
     selectedLeaveTypeId,
     duration,
+    dayBreakdowns,
     startDate,
     endDate,
     requestId,
@@ -669,6 +739,7 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
     formattedStartDate,
     formattedEndDate,
     duration,
+    dayBreakdowns,
     reason,
     secondaryReason,
     secondaryReasonError,
@@ -692,6 +763,7 @@ export function useEditLeaveRequestScreen(): UseEditLeaveRequestScreenResult {
     handlePickCalendarDate,
     handleSelectLeaveType,
     handleSelectDuration,
+    handleToggleDayDuration,
     handleCancelLeave,
     handleSaveChanges,
     handleBack,

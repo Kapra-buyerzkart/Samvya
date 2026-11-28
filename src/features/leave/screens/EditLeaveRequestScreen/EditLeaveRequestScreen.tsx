@@ -47,6 +47,7 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
     formattedStartDate,
     formattedEndDate,
     duration,
+    dayBreakdowns,
     reason,
     secondaryReason,
     secondaryReasonError,
@@ -68,6 +69,7 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
     handlePickCalendarDate,
     handleSelectLeaveType,
     handleSelectDuration,
+    handleToggleDayDuration,
     handleCancelLeave,
     handleSaveChanges,
     handleBack,
@@ -111,71 +113,88 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Feather name="chevron-left" size={24} color={isDark ? '#F8FAFC' : '#0F1E36'} />
-              <Text style={getHeaderTitleStyle(isDark)}>Edit leave request</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Status Pill + Submitted Date */}
-          <View style={styles.statusRow}>
-            <View
-              style={getStatusBadgeStyle(isDark, isRejected)}
-              testID="edit-leave-status-badge"
-            >
               <View
                 style={[
-                  styles.statusDot,
+                  styles.backIconBox,
                   {
-                    backgroundColor: isRejected
-                      ? '#EF4444'
-                      : isPending
-                        ? '#EAB308'
-                        : '#22C55E',
+                    backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+                    borderColor: isDark ? '#334155' : '#E2E8F0',
                   },
                 ]}
-              />
-              <Text style={getStatusBadgeTextStyle(isDark, isRejected)}>
-                {isRejected
-                  ? 'Rejected Request'
-                  : isPending
-                    ? 'Pending Request'
-                    : 'Approved Request'}
+              >
+                <Feather name="chevron-left" size={20} color={isDark ? '#F8FAFC' : '#0F1E36'} />
+              </View>
+              <Text style={getHeaderTitleStyle(isDark)}>Edit leave request</Text>
+            </TouchableOpacity>
+
+            {isApproved || isPending ? (
+              <TouchableOpacity
+                style={getCancelLeaveBtnStyle(isDark)}
+                onPress={handleCancelLeave}
+                disabled={isCancelling}
+                activeOpacity={0.75}
+                testID="cancel-leave-btn"
+                accessibilityRole="button"
+                accessibilityLabel={isPending ? 'Withdraw request' : 'Cancel leave'}
+              >
+                <Feather name="x" size={13} color={isDark ? '#FCA5A5' : '#DC2626'} />
+                <Text style={getCancelLeaveBtnTextStyle(isDark)}>
+                  {isPending ? 'Withdraw request' : 'Cancel leave'}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {/* Overview Card: Status + Submitted Date + Original Request */}
+          <View style={getOriginalCardStyle(isDark)} testID="original-request-card">
+            <View style={styles.statusRow}>
+              <View
+                style={getStatusBadgeStyle(isDark, isRejected)}
+                testID="edit-leave-status-badge"
+              >
+                <View
+                  style={[
+                    styles.statusDot,
+                    {
+                      backgroundColor: isRejected
+                        ? '#EF4444'
+                        : isPending
+                          ? '#EAB308'
+                          : '#22C55E',
+                    },
+                  ]}
+                />
+                <Text style={getStatusBadgeTextStyle(isDark, isRejected)}>
+                  {isRejected
+                    ? 'Rejected Request'
+                    : isPending
+                      ? 'Pending Request'
+                      : 'Approved Request'}
+                </Text>
+              </View>
+
+              <Text style={getMutedTextStyle(isDark)} testID="edit-submitted-date">
+                Submitted {submittedDate}
               </Text>
             </View>
 
             <View style={getStatusRowDividerStyle(isDark)} />
 
-            <Text style={getMutedTextStyle(isDark)} testID="edit-submitted-date">
-              Submitted {submittedDate}
-            </Text>
-          </View>
-
-          {/* Approved / Pending Side: Cancel or Withdraw Action */}
-          {isApproved || isPending ? (
-            <TouchableOpacity
-              style={getCancelLeaveBtnStyle(isDark)}
-              onPress={handleCancelLeave}
-              disabled={isCancelling}
-              activeOpacity={0.75}
-              testID="cancel-leave-btn"
-              accessibilityRole="button"
-              accessibilityLabel={isPending ? 'Withdraw request' : 'Cancel leave'}
-            >
-              <Text style={getCancelLeaveBtnTextStyle(isDark)}>
-                {isPending ? 'Withdraw request' : 'Cancel leave'}
-              </Text>
-              <Feather name="x" size={14} color={isDark ? '#FCA5A5' : '#DC2626'} />
-            </TouchableOpacity>
-          ) : null}
-
-          {/* Original Request Card */}
-          <View style={getOriginalCardStyle(isDark)} testID="original-request-card">
-            <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : '#2563EB'} />
-            <View style={styles.originalCardTextCol}>
-              <Text style={[styles.originalCardTitle, primaryText]}>Original request</Text>
-              <Text style={[styles.originalCardSubtitle, secondaryText]}>
-                {originalRangeLabel}
-              </Text>
+            <View style={styles.originalCard}>
+              <View
+                style={[
+                  styles.originalIconBox,
+                  { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.16)' : '#EFF6FF' },
+                ]}
+              >
+                <Feather name="calendar" size={18} color={isDark ? '#60A5FA' : '#2563EB'} />
+              </View>
+              <View style={styles.originalCardTextCol}>
+                <Text style={[styles.originalCardTitle, primaryText]}>Original request</Text>
+                <Text style={[styles.originalCardSubtitle, secondaryText]}>
+                  {originalRangeLabel}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -190,7 +209,7 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
                   <View
                     style={[
                       styles.rejectedReasonAccentBar,
-                      { backgroundColor: isDark ? '#60A5FA' : '#2563EB' },
+                      { backgroundColor: isDark ? '#F87171' : '#DC2626' },
                     ]}
                   />
                   <Text style={getRejectedReasonTextStyle(isDark)} testID="rejected-reason-text">
@@ -201,8 +220,17 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
             </>
           ) : null}
 
-          {/* Updated Request Form */}
-          <Text style={[styles.sectionHeading, primaryText]}>Updated request</Text>
+          {/* Updated Request Form Card */}
+          <View
+            style={[
+              styles.formCard,
+              {
+                backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                borderColor: isDark ? '#1E293B' : '#E2E8F0',
+              },
+            ]}
+          >
+            <Text style={[styles.sectionHeading, primaryText]}>Updated request</Text>
 
           {/* Leave Type */}
           <View style={styles.fieldBlock}>
@@ -273,6 +301,59 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
             </TouchableOpacity>
           </View>
 
+          {dayBreakdowns.length > 0 ? (
+            <View style={styles.fieldBlock}>
+              <Text style={[styles.fieldLabel, secondaryText]}>Per-day duration (tap to toggle)</Text>
+              <View style={[cardSurface, { borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 8, gap: 8 }]}>
+                {dayBreakdowns.map((item) => (
+                  <View
+                    key={item.dateKey}
+                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 4 }}
+                  >
+                    <Text style={[{ fontSize: 13.5, fontWeight: '500' }, primaryText]}>
+                      {item.weekdayName}, {item.dayNumber} {item.monthShort}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => handleToggleDayDuration(item.dateKey)}
+                      testID={`edit-day-duration-${item.dateKey}`}
+                      activeOpacity={0.75}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 5,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: item.duration === 'Half day' ? '#2563EB' : isDark ? '#334155' : '#CBD5E1',
+                        backgroundColor:
+                          item.duration === 'Half day'
+                            ? isDark
+                              ? 'rgba(37, 99, 235, 0.2)'
+                              : '#EFF6FF'
+                            : 'transparent',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 12.5,
+                          fontWeight: '600',
+                          color:
+                            item.duration === 'Half day'
+                              ? isDark
+                                ? '#60A5FA'
+                                : '#1D4ED8'
+                              : isDark
+                                ? '#CBD5E1'
+                                : '#475569',
+                        }}
+                      >
+                        {item.duration}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
           {/* Reason */}
           <View style={styles.fieldBlock}>
             <Text style={[styles.fieldLabel, secondaryText]}>Reason</Text>
@@ -316,6 +397,7 @@ export function EditLeaveRequestScreen(): React.JSX.Element {
                 {secondaryReasonError}
               </Text>
             ) : null}
+          </View>
           </View>
 
           {/* Approved Side: Approver card below form */}

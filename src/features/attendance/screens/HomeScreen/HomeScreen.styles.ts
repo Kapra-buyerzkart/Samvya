@@ -58,11 +58,6 @@ export const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     paddingVertical: 9,
     paddingHorizontal: 12,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
   },
   dropdownIconContainer: {
     marginRight: 8,
@@ -283,11 +278,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 16,
     gap: 12,
-    shadowColor: '#0F1E36',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   leaveStatusIconBox: {
     width: 38,

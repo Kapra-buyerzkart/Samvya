@@ -36,6 +36,7 @@ export interface UseHomeScreenResult {
   isPunchSubmitting: boolean;
   greetingLabel: string;
   displayName: string;
+  employmentNumber: string;
   formattedDateLabel: string;
   showHoursModal: boolean;
   isRefreshing: boolean;
@@ -102,6 +103,10 @@ export function useHomeScreen(): UseHomeScreenResult {
   const formattedDateLabel = useMemo(() => formatHomeHeaderDate(nowDate), [nowDate]);
   const displayName = (authUser?.name || authSession?.name || 'Peter S').trim() || 'Peter S';
   const employmentId = authSession?.employmentId ?? null;
+  const employmentNumber =
+    authUser?.employeeCode?.trim() ||
+    (authSession?.employmentPublicId ? String(authSession.employmentPublicId) : '') ||
+    (employmentId !== null && employmentId !== '' ? `#${employmentId}` : '—');
 
   const [weeklyRefreshCount, setWeeklyRefreshCount] = useState(0);
   const [leaveRefreshCount, setLeaveRefreshCount] = useState(0);
@@ -397,6 +402,7 @@ export function useHomeScreen(): UseHomeScreenResult {
     isRefreshing,
     greetingLabel,
     displayName,
+    employmentNumber,
     formattedDateLabel,
     showHoursModal,
     showLocationModal,

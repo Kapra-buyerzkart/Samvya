@@ -15,7 +15,32 @@ export function LeaveRecordCard({
   isDark,
   onPress,
 }: LeaveRecordCardProps): React.JSX.Element {
-  const isDateLong = item.dateDisplay.length > 2;
+  const isRange = item.dateDisplay.length > 2;
+  const badgeDay = isRange ? item.dateDisplay.slice(0, 2) : item.dateDisplay;
+
+  const statusTone =
+    item.status === 'Rejected'
+      ? {
+          color: isDark ? '#F87171' : '#DC2626',
+          bg: isDark ? 'rgba(239, 68, 68, 0.16)' : '#FEF2F2',
+          border: isDark ? 'rgba(248, 113, 113, 0.3)' : '#FECACA',
+        }
+      : item.status === 'Pending'
+        ? {
+            color: isDark ? '#FBBF24' : '#D97706',
+            bg: isDark ? 'rgba(245, 158, 11, 0.16)' : '#FFFBEB',
+            border: isDark ? 'rgba(251, 191, 36, 0.3)' : '#FDE68A',
+          }
+        : {
+            color: isDark ? '#34D399' : '#059669',
+            bg: isDark ? 'rgba(16, 185, 129, 0.16)' : '#ECFDF5',
+            border: isDark ? 'rgba(52, 211, 153, 0.3)' : '#A7F3D0',
+          };
+
+  const titleText = item.leaveType?.trim() || item.reasonTitle;
+  const dateRangeLabel = isRange
+    ? `${item.dateDisplay.replace('-', ' – ')} · ${item.durationLabel}`
+    : `${item.dateDisplay} ${item.monthDisplay} · ${item.durationLabel}`;
 
   return (
     <TouchableOpacity
@@ -26,47 +51,53 @@ export function LeaveRecordCard({
       accessibilityRole="button"
       accessibilityLabel={`Leave record for ${item.dateDisplay} ${item.monthDisplay}`}
     >
-      {/* Top row: Date Box and Duration + Status */}
+      {/* Top row: Date Badge + Leave Type / Duration + Status Pill */}
       <View style={styles.recordTopRow}>
         <View style={getDateBoxStyle(isDark)}>
-          <Text style={getDateNumberTextStyle(isDark, isDateLong)}>
-            {item.dateDisplay}
+          <Text style={getDateNumberTextStyle(isDark)} numberOfLines={1}>
+            {badgeDay}
           </Text>
-          <Text style={getDateMonthTextStyle(isDark)}>
+          <Text style={getDateMonthTextStyle(isDark)} numberOfLines={1}>
             {item.monthDisplay}
           </Text>
         </View>
 
         <View style={styles.durationCol}>
-          <Text style={getDurationTextStyle(isDark)}>
-            {item.durationLabel}
+          <Text style={getTitleTextStyle(isDark)} numberOfLines={1}>
+            {titleText}
           </Text>
-          <View style={styles.statusRow}>
-            <View style={styles.approvedDot} />
-            <Text style={styles.approvedText}>{item.status}</Text>
+          <Text style={getDateRangeSubtitleStyle(isDark)} numberOfLines={1}>
+            {dateRangeLabel}
+          </Text>
+        </View>
+
+        <View style={styles.rightCluster}>
+          <View
+            style={[
+              styles.statusPill,
+              {
+                backgroundColor: statusTone.bg,
+                borderColor: statusTone.border,
+              },
+            ]}
+          >
+            <View style={[styles.statusDot, { backgroundColor: statusTone.color }]} />
+            <Text style={[styles.statusText, { color: statusTone.color }]}>{item.status}</Text>
           </View>
+          <Feather
+            name="chevron-right"
+            size={16}
+            color={isDark ? '#64748B' : '#94A3B8'}
+          />
         </View>
       </View>
 
-      {/* Middle row: Reason requested + chevron */}
-      <View style={styles.reasonHeaderRow}>
-        <Text style={getReasonHeaderTitleStyle(isDark)}>
-          {item.reasonTitle}
+      {/* Bottom row: Reason description */}
+      {item.reasonDescription ? (
+        <Text style={getReasonDescriptionStyle(isDark)} numberOfLines={2}>
+          {item.reasonDescription}
         </Text>
-        <Feather
-          name="chevron-right"
-          size={18}
-          color={isDark ? '#60A5FA' : '#2563EB'}
-        />
-      </View>
-
-      {/* Bottom row: Description snippet */}
-      <Text
-        style={getReasonDescriptionStyle(isDark)}
-        numberOfLines={2}
-      >
-        {item.reasonDescription}
-      </Text>
+      ) : null}
     </TouchableOpacity>
   );
 }
@@ -82,12 +113,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 10,
   },
   dateBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: 46,
+    height: 46,
+    borderRadius: 10,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -95,7 +125,7 @@ const styles = StyleSheet.create({
   dateNumberText: {
     fontFamily: FontFamily.headingBold,
     fontSize: 16,
-    lineHeight: 18,
+    lineHeight: 19,
   },
   dateMonthText: {
     fontFamily: FontFamily.semiBold,
@@ -104,54 +134,62 @@ const styles = StyleSheet.create({
   },
   durationCol: {
     flex: 1,
+    minWidth: 0,
   },
-  durationText: {
-    fontFamily: FontFamily.headingBold,
-    fontSize: 16,
+  cardTitle: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 14.5,
     marginBottom: 2,
   },
-  statusRow: {
+  dateRangeSubtitle: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12,
+  },
+  rightCluster: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
   },
-  approvedDot: {
+  statusDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#059669',
   },
-  approvedText: {
-    fontFamily: FontFamily.medium,
-    fontSize: 12.5,
-    color: '#059669',
-  },
-  reasonHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  reasonHeaderTitle: {
+  statusText: {
     fontFamily: FontFamily.semiBold,
-    fontSize: 14.5,
+    fontSize: 11.5,
   },
   reasonDescription: {
     fontFamily: FontFamily.regular,
-    fontSize: 12,
+    fontSize: 12.5,
     lineHeight: 17,
+    marginTop: 10,
+    paddingLeft: 58,
   },
 });
 
-export const getRecordCardStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+export const getRecordCardStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.recordCard,
   {
     backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
-    borderColor: isDark ? '#334155' : '#BFDBFE',
+    borderColor: isDark ? '#334155' : '#E2E8F0',
   },
 ];
 
-export const getDateBoxStyle = (isDark: boolean): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
+export const getDateBoxStyle = (
+  isDark: boolean,
+): (ViewStyle | { backgroundColor: string; borderColor: string })[] => [
   styles.dateBox,
   {
     backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : '#EFF6FF',
@@ -159,33 +197,29 @@ export const getDateBoxStyle = (isDark: boolean): (ViewStyle | { backgroundColor
   },
 ];
 
-export const getDateNumberTextStyle = (isDark: boolean, isLong: boolean): TextStyle[] => {
-  const result: TextStyle[] = [
-    styles.dateNumberText,
-    { color: isDark ? '#60A5FA' : '#1D4ED8' },
-  ];
-  if (isLong) {
-    result.push({ fontSize: 13 });
-  }
-  return result;
-};
-
-export const getDateMonthTextStyle = (isDark: boolean): TextStyle[] => [
-  styles.dateMonthText,
+export const getDateNumberTextStyle = (
+  isDark: boolean,
+): (TextStyle | { color: string })[] => [
+  styles.dateNumberText,
   { color: isDark ? '#60A5FA' : '#1D4ED8' },
 ];
 
-export const getDurationTextStyle = (isDark: boolean): TextStyle[] => [
-  styles.durationText,
-  { color: isDark ? '#F8FAFC' : '#0F294A' },
+export const getDateMonthTextStyle = (isDark: boolean): (TextStyle | { color: string })[] => [
+  styles.dateMonthText,
+  { color: isDark ? '#93C5FD' : '#2563EB' },
 ];
 
-export const getReasonHeaderTitleStyle = (isDark: boolean): TextStyle[] => [
-  styles.reasonHeaderTitle,
-  { color: isDark ? '#F8FAFC' : '#0F294A' },
+export const getTitleTextStyle = (isDark: boolean): (TextStyle | { color: string })[] => [
+  styles.cardTitle,
+  { color: isDark ? '#F8FAFC' : '#0F172A' },
 ];
 
-export const getReasonDescriptionStyle = (isDark: boolean): TextStyle[] => [
-  styles.reasonDescription,
+export const getDateRangeSubtitleStyle = (isDark: boolean): (TextStyle | { color: string })[] => [
+  styles.dateRangeSubtitle,
   { color: isDark ? '#94A3B8' : '#64748B' },
+];
+
+export const getReasonDescriptionStyle = (isDark: boolean): (TextStyle | { color: string })[] => [
+  styles.reasonDescription,
+  { color: isDark ? '#94A3B8' : '#475569' },
 ];

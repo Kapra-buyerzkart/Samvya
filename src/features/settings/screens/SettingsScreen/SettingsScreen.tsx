@@ -40,7 +40,10 @@ export function SettingsScreen(): React.JSX.Element {
 
   return (
     <SafeAreaView style={[styles.safeArea, getSafeAreaStyle(theme.colors.background)]}>
-      <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.navBar}>
           <TouchableOpacity
             onPress={handleBack}
@@ -69,7 +72,9 @@ export function SettingsScreen(): React.JSX.Element {
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, getTextColorStyle(theme.colors.text)]}>{displayName}</Text>
+            <Text style={[styles.profileName, getTextColorStyle(theme.colors.text)]}>
+              {displayName}
+            </Text>
             <Text style={[styles.profileEmail, getTextColorStyle(theme.colors.textSecondary)]}>
               {displayEmail}
             </Text>
@@ -104,7 +109,9 @@ export function SettingsScreen(): React.JSX.Element {
                 />
               </View>
               <View style={styles.menuTextCol}>
-                <Text style={[styles.menuTitle, getTextColorStyle(theme.colors.text)]}>Dark Mode</Text>
+                <Text style={[styles.menuTitle, getTextColorStyle(theme.colors.text)]}>
+                  Dark Mode
+                </Text>
                 <Text style={[styles.menuSubtitle, getTextColorStyle(theme.colors.textSecondary)]}>
                   {theme.isDark ? 'Dark theme active' : 'Light theme active'}
                 </Text>
@@ -288,7 +295,9 @@ export function SettingsScreen(): React.JSX.Element {
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionHeader, getTextColorStyle(theme.colors.textMuted)]}>App System</Text>
+          <Text style={[styles.sectionHeader, getTextColorStyle(theme.colors.textMuted)]}>
+            App System
+          </Text>
           <View
             style={[
               styles.menuCard,
@@ -317,10 +326,7 @@ export function SettingsScreen(): React.JSX.Element {
         </View>
 
         <TactilePressable
-          style={[
-            styles.signOutButton,
-            getSignOutButtonStyle(theme.isDark),
-          ]}
+          style={[styles.signOutButton, getSignOutButtonStyle(theme.isDark)]}
           onPress={handleSignOut}
           disabled={isSigningOut}
           activeScale={0.96}

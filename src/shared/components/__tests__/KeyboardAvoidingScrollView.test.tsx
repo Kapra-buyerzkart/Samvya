@@ -1,13 +1,6 @@
 import React, { createRef } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  type KeyboardAvoidingViewProps,
-  Platform,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
+import { Keyboard, Text, View } from 'react-native';
+import { type KeyboardAwareScrollViewRef } from 'react-native-keyboard-controller';
 import { render, fireEvent } from '@testing-library/react-native';
 import { KeyboardAvoidingScrollView } from '../KeyboardAvoidingScrollView';
 
@@ -27,10 +20,11 @@ describe('KeyboardAvoidingScrollView', () => {
     const scrollView = getByTestId('test-scroll');
     expect(scrollView.props.keyboardShouldPersistTaps).toBe('handled');
     expect(scrollView.props.showsVerticalScrollIndicator).toBe(false);
+    expect(scrollView.props.bottomOffset).toBe(24);
   });
 
-  it('forwards ref to the underlying ScrollView', async () => {
-    const ref = createRef<React.ElementRef<typeof ScrollView>>();
+  it('forwards ref to the underlying KeyboardAwareScrollView', async () => {
+    const ref = createRef<KeyboardAwareScrollViewRef>();
     await render(
       <KeyboardAvoidingScrollView ref={ref}>
         <Text>Scroll item</Text>
@@ -76,70 +70,19 @@ describe('KeyboardAvoidingScrollView', () => {
     expect(getByText('Sticky Footer')).toBeTruthy();
   });
 
-  it('adapts behavior based on platform', async () => {
-    const originalOS = Platform.OS;
-
-    // Test iOS behavior
-    Platform.OS = 'ios';
-    let iosProps: KeyboardAvoidingViewProps | null = null;
-    const iosSpy = jest
-      .spyOn(KeyboardAvoidingView.prototype, 'render')
-      .mockImplementation(function (this: KeyboardAvoidingView) {
-        iosProps = this.props;
-        return null;
-      });
-    await render(
-      <KeyboardAvoidingScrollView testID="ios-scroll">
-        <Text>iOS</Text>
-      </KeyboardAvoidingScrollView>,
-    );
-    const capturedIos = iosProps as KeyboardAvoidingViewProps | null;
-    expect(capturedIos?.behavior).toBe('padding');
-    iosSpy.mockRestore();
-
-    // Test Android behavior
-    Platform.OS = 'android';
-    let androidProps: KeyboardAvoidingViewProps | null = null;
-    const androidSpy = jest
-      .spyOn(KeyboardAvoidingView.prototype, 'render')
-      .mockImplementation(function (this: KeyboardAvoidingView) {
-        androidProps = this.props;
-        return null;
-      });
-    await render(
-      <KeyboardAvoidingScrollView testID="android-scroll">
-        <Text>Android</Text>
-      </KeyboardAvoidingScrollView>,
-    );
-    const capturedAndroid = androidProps as KeyboardAvoidingViewProps | null;
-    expect(capturedAndroid?.behavior).toBeUndefined();
-    androidSpy.mockRestore();
-
-    Platform.OS = originalOS;
-  });
-
-  it('honors custom behavior override and keyboardVerticalOffset', async () => {
-    let capturedProps: KeyboardAvoidingViewProps | null = null;
-    const renderSpy = jest
-      .spyOn(KeyboardAvoidingView.prototype, 'render')
-      .mockImplementation(function (this: KeyboardAvoidingView) {
-        capturedProps = this.props;
-        return null;
-      });
-
-    await render(
-      <KeyboardAvoidingScrollView
-        testID="custom-scroll"
-        behavior="height"
-        keyboardVerticalOffset={64}
-      >
+  it('honors custom bottomOffset and keyboardVerticalOffset fallback', async () => {
+    const { getByTestId, rerender } = await render(
+      <KeyboardAvoidingScrollView testID="custom-scroll" bottomOffset={40}>
         <Text>Custom</Text>
       </KeyboardAvoidingScrollView>,
     );
+    expect(getByTestId('custom-scroll').props.bottomOffset).toBe(40);
 
-    const captured = capturedProps as KeyboardAvoidingViewProps | null;
-    expect(captured?.behavior).toBe('height');
-    expect(captured?.keyboardVerticalOffset).toBe(64);
-    renderSpy.mockRestore();
+    await rerender(
+      <KeyboardAvoidingScrollView testID="custom-scroll" keyboardVerticalOffset={64}>
+        <Text>Custom</Text>
+      </KeyboardAvoidingScrollView>,
+    );
+    expect(getByTestId('custom-scroll').props.bottomOffset).toBe(64);
   });
 });

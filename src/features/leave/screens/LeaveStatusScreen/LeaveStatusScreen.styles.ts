@@ -266,7 +266,7 @@ export const styles = StyleSheet.create({
   selectedDayCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     backgroundColor: '#1D4ED8',
     alignItems: 'center',
     justifyContent: 'center',
@@ -556,11 +556,6 @@ export const getTopSummaryCardStyle = (
   {
     backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     borderColor: isDark ? '#1E293B' : '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
 ];
 
@@ -630,11 +625,6 @@ export const getCalendarCardStyle = (
   {
     backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     borderColor: isDark ? '#1E293B' : '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
 ];
 
@@ -710,11 +700,6 @@ export const getApprovalCardStyle = (
   {
     backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     borderColor: isDark ? '#1E293B' : '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.04,
-    shadowRadius: 8,
-    elevation: 2,
   },
 ];
 

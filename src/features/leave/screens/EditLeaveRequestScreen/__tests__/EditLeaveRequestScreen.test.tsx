@@ -84,6 +84,7 @@ describe('EditLeaveRequestScreen', () => {
       const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
       const { getByTestId, getByText } = await render(<EditLeaveRequestScreen />);
 
+      await fireEvent.changeText(getByTestId('edit-reason-input'), '');
       await fireEvent.changeText(getByTestId('edit-secondary-reason-input'), '');
       await fireEvent.press(getByTestId('edit-save-changes-btn'));
 
@@ -142,7 +143,7 @@ describe('EditLeaveRequestScreen', () => {
     });
 
     it('allows changing leave type and duration via bottom sheets', async () => {
-      const { getByTestId, getByText } = await render(<EditLeaveRequestScreen />);
+      const { getByTestId, getAllByText, getByText } = await render(<EditLeaveRequestScreen />);
 
       await fireEvent.press(getByTestId('edit-leave-type-btn'));
       await waitFor(() => {
@@ -159,7 +160,7 @@ describe('EditLeaveRequestScreen', () => {
       });
       await fireEvent.press(getByTestId('edit-duration-option-Half day'));
       await waitFor(() => {
-        expect(getByText('Half day')).toBeTruthy();
+        expect(getAllByText('Half day').length).toBeGreaterThan(0);
       });
     });
   });

@@ -138,7 +138,7 @@ describe('LeaveHistoryScreen', () => {
     });
     expect(await findByText('1 of 2')).toBeTruthy();
     expect(await findByText('20')).toBeTruthy();
-    expect(await findByText('11-12')).toBeTruthy();
+    expect(await findByText(/11 – 12/)).toBeTruthy();
 
     fireEvent.press(getByTestId('next-page-btn'));
     expect(await findByText('2 of 2')).toBeTruthy();
@@ -193,7 +193,7 @@ describe('LeaveHistoryScreen', () => {
     fireEvent.press(card);
 
     expect(await findByTestId('leave-detail-bottom-sheet')).toBeTruthy();
-    expect(await findByText('Sick leave')).toBeTruthy();
+    expect((await findAllByText('Sick leave')).length).toBeGreaterThanOrEqual(2);
     expect((await findAllByText('Medical checkup')).length).toBeGreaterThanOrEqual(2);
 
     fireEvent.press(getByTestId('leave-detail-close-btn'));

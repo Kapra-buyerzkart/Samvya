@@ -13,7 +13,7 @@ export interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      themePreference: 'system',
+      themePreference: 'light',
       setThemePreference: (preference: ThemePreference) => {
         set({ themePreference: preference });
       },

@@ -90,9 +90,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
   },
   weekdaysRow: {
     flexDirection: 'row',
@@ -143,7 +140,7 @@ export const styles = StyleSheet.create({
   selectedCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     backgroundColor: '#1D4ED8',
     alignItems: 'center',
     justifyContent: 'center',
@@ -290,6 +287,94 @@ export const styles = StyleSheet.create({
     width: 1,
     height: 32,
   },
+  headerActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  editPunchBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  editPunchBtnText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 12,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  modalCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 20,
+    gap: 12,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  modalTitle: {
+    fontFamily: FontFamily.headingBold,
+    fontSize: 17,
+  },
+  modalSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: 12.5,
+  },
+  modalFieldLabel: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 12.5,
+    marginBottom: 4,
+  },
+  modalInput: {
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontFamily: FontFamily.medium,
+    fontSize: 14,
+  },
+  modalReasonInput: {
+    minHeight: 72,
+    textAlignVertical: 'top',
+  },
+  modalErrorText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 12.5,
+    color: '#DC2626',
+  },
+  modalActionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 4,
+  },
+  modalCancelBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  modalSubmitBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#1D4ED8',
+  },
+  modalSubmitText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: 13.5,
+    color: '#FFFFFF',
+  },
   rejectedStatusText: {
     fontFamily: FontFamily.semiBold,
     fontSize: 14,
@@ -365,15 +450,11 @@ export function getCardStyle(isDark: boolean): ViewStyle {
     return {
       backgroundColor: '#0F172A',
       borderColor: '#1E293B',
-      shadowColor: '#000000',
-      shadowOpacity: 0.25,
     };
   }
   return {
     backgroundColor: '#FFFFFF',
     borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.05,
   };
 }
 

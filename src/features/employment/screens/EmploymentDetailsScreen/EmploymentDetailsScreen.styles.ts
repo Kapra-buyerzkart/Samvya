@@ -35,9 +35,6 @@ export const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     padding: 20,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 14,
-    elevation: 3,
   },
   cardHeaderRow: {
     flexDirection: 'row',
@@ -242,15 +239,11 @@ export const getCardStyle = (
 ): (ViewStyle | {
   backgroundColor: string;
   borderColor: string;
-  shadowColor: string;
-  shadowOpacity: number;
   marginTop?: number;
 })[] => {
   const result: (ViewStyle | {
     backgroundColor: string;
     borderColor: string;
-    shadowColor: string;
-    shadowOpacity: number;
     marginTop?: number;
   })[] = [
     styles.card,
@@ -258,14 +251,10 @@ export const getCardStyle = (
       ? {
           backgroundColor: '#0F172A',
           borderColor: '#1E293B',
-          shadowColor: '#000000',
-          shadowOpacity: 0.25,
         }
       : {
           backgroundColor: '#FFFFFF',
           borderColor: '#E2E8F0',
-          shadowColor: '#0F1E36',
-          shadowOpacity: 0.06,
         },
   ];
   if (hasMarginTop) {

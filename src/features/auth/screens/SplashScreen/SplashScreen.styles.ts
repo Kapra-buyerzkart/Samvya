@@ -1,5 +1,5 @@
 import { FontFamily } from '@/shared/theme';
-import { Animated, type ImageStyle, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
+import { Animated, StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 export const styles = StyleSheet.create({
   pressableRoot: {
@@ -9,17 +9,15 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  backgroundImage: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
   safeArea: {
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 40,
     paddingHorizontal: 24,
+  },
+  topSpacer: {
+    height: 16,
   },
   centerContent: {
     flex: 1,
@@ -27,111 +25,75 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoWrapper: {
-    width: 120,
-    height: 120,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: 96,
+    height: 96,
+    borderRadius: 26,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 8,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.9)',
-    marginBottom: 24,
+    borderWidth: 1,
+    marginBottom: 22,
   },
   logoImage: {
-    width: 82,
-    height: 78,
+    width: 58,
+    height: 56,
   },
   brandTextGroup: {
     alignItems: 'center',
+    gap: 6,
   },
   brandTitle: {
     fontFamily: FontFamily.headingBold,
-    fontSize: 38,
-    color: '#0F1E36',
-    letterSpacing: -0.8,
-    marginBottom: 6,
+    fontSize: 32,
+    letterSpacing: -1,
   },
   brandSubtitle: {
     fontFamily: FontFamily.medium,
-    fontSize: 14,
-    color: '#475569',
-    letterSpacing: 0.2,
+    fontSize: 13.5,
+    letterSpacing: 0.3,
     textAlign: 'center',
   },
   footer: {
     alignItems: 'center',
-    gap: 8,
+    paddingBottom: 8,
   },
-  badgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+  loaderTrack: {
+    width: 48,
+    height: 3,
     borderRadius: 999,
+    overflow: 'hidden',
   },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#2563EB',
-  },
-  footerBadgeText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: 12,
-    color: '#1D4ED8',
-    letterSpacing: 0.3,
-  },
-  copyrightText: {
-    fontFamily: FontFamily.regular,
-    fontSize: 12,
-    color: '#64748B',
+  loaderFill: {
+    height: '100%',
+    borderRadius: 999,
   },
 });
 
-export function getRootAnimatedStyle(screenFadeOut: Animated.Value, isDark: boolean): Animated.WithAnimatedValue<ViewStyle> {
+export function getRootAnimatedStyle(
+  screenFadeOut: Animated.Value,
+  isDark: boolean,
+): Animated.WithAnimatedValue<ViewStyle> {
   return {
     opacity: screenFadeOut,
     backgroundColor: isDark ? '#020617' : '#FFFFFF',
   };
 }
 
-export function getBackgroundImageStyle(isDark: boolean): ViewStyle {
-  return {
-    backgroundColor: isDark ? '#020617' : '#FFFFFF',
-  };
-}
-
-export function getBackgroundImageImageStyle(isDark: boolean): ImageStyle {
-  return {
-    opacity: isDark ? 0.05 : 1,
-  };
-}
-
 export function getLogoWrapperAnimatedStyle(
   logoOpacity: Animated.Value,
   logoScale: Animated.Value,
-  isDark: boolean
+  isDark: boolean,
 ): Animated.WithAnimatedValue<ViewStyle> {
   return {
     opacity: logoOpacity,
     transform: [{ scale: logoScale }],
-    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-    borderColor: isDark ? 'rgba(51, 65, 85, 0.6)' : 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: isDark ? '#0F172A' : '#F8FAFC',
+    borderColor: isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(15, 23, 42, 0.08)',
   };
 }
 
 export function getBrandTextAnimatedStyle(
   textOpacity: Animated.Value,
-  textTranslateY: Animated.Value
+  textTranslateY: Animated.Value,
 ): Animated.WithAnimatedValue<ViewStyle> {
   return {
     opacity: textOpacity,
@@ -141,37 +103,39 @@ export function getBrandTextAnimatedStyle(
 
 export function getBrandTitleStyle(isDark: boolean): TextStyle {
   return {
-    color: isDark ? '#F8FAFC' : '#0F1E36',
+    color: isDark ? '#F8FAFC' : '#0F172A',
   };
 }
 
 export function getBrandSubtitleStyle(isDark: boolean): TextStyle {
   return {
-    color: isDark ? '#94A3B8' : '#475569',
+    color: isDark ? '#64748B' : '#64748B',
   };
 }
 
-export function getFooterAnimatedStyle(footerOpacity: Animated.Value): Animated.WithAnimatedValue<ViewStyle> {
+export function getFooterAnimatedStyle(
+  footerOpacity: Animated.Value,
+): Animated.WithAnimatedValue<ViewStyle> {
   return {
     opacity: footerOpacity,
   };
 }
 
-export function getBadgePillStyle(isDark: boolean): ViewStyle {
+export function getLoaderTrackStyle(isDark: boolean): ViewStyle {
   return {
-    backgroundColor: isDark ? '#1E293B' : 'rgba(255, 255, 255, 0.85)',
-    borderColor: isDark ? '#334155' : '#BFDBFE',
+    backgroundColor: isDark ? 'rgba(148, 163, 184, 0.16)' : 'rgba(15, 23, 42, 0.08)',
   };
 }
 
-export function getFooterBadgeTextStyle(isDark: boolean): TextStyle {
+export function getLoaderFillAnimatedStyle(
+  loaderProgress: Animated.Value,
+  isDark: boolean,
+): Animated.WithAnimatedValue<ViewStyle> {
   return {
-    color: isDark ? '#60A5FA' : '#1D4ED8',
-  };
-}
-
-export function getCopyrightTextStyle(isDark: boolean): TextStyle {
-  return {
-    color: isDark ? '#64748B' : '#64748B',
+    backgroundColor: isDark ? '#60A5FA' : '#2563EB',
+    width: loaderProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0%', '100%'],
+    }),
   };
 }

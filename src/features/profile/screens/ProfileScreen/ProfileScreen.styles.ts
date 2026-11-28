@@ -60,11 +60,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     marginBottom: 14,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
   },
   avatarWrapper: {
     position: 'relative',
@@ -121,11 +116,6 @@ export const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     padding: 18,
     marginBottom: 14,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',

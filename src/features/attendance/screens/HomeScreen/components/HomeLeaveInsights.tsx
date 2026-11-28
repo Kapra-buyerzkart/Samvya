@@ -283,11 +283,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
     marginBottom: 20,
-    shadowColor: '#0F1E36',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   employmentIconBox: {
     width: 40,
@@ -356,11 +351,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     padding: 12,
-    shadowColor: '#0F1E36',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   bentoHeader: {
     flexDirection: 'row',

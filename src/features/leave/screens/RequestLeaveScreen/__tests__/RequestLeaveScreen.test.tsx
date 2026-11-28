@@ -38,13 +38,13 @@ describe('RequestLeaveScreen', () => {
   it('renders all redesigned sections according to reference design', async () => {
     const { getByText, getByTestId } = await render(<RequestLeaveScreen />);
 
-    // Header with available days badge
+    // Header with Leave Status button
     expect(getByText('Request leave')).toBeTruthy();
-    expect(getByTestId('available-days-badge')).toHaveTextContent('14 days available');
+    expect(getByTestId('leave-status-nav-btn')).toBeTruthy();
 
     // Summary Metrics
-    expect(getByText('Allocated')).toBeTruthy();
-    expect(getByTestId('summary-allocated-value')).toHaveTextContent('18 days');
+    expect(getByText('Available')).toBeTruthy();
+    expect(getByTestId('summary-available-value')).toHaveTextContent('14 days');
     expect(getByText('Taken')).toBeTruthy();
     expect(getByTestId('summary-taken-value')).toHaveTextContent('4 days');
     expect(getByText('Pending')).toBeTruthy();
@@ -228,17 +228,15 @@ describe('RequestLeaveScreen', () => {
     await waitFor(() => {
       expect(getByTestId('selected-leave-type-name')).toHaveTextContent('Casual Leave');
     });
-    expect(getByTestId('summary-allocated-value')).toHaveTextContent('12 days');
+    expect(getByTestId('summary-available-value')).toHaveTextContent('8 days');
     expect(getByTestId('summary-taken-value')).toHaveTextContent('3 days');
     expect(getByTestId('summary-pending-value')).toHaveTextContent('1 day');
-    expect(getByTestId('available-days-badge')).toHaveTextContent('8 days available');
 
     await fireEvent.press(getByTestId('leave-type-dropdown'));
     await fireEvent.press(getByTestId('leave-type-pill-2'));
     await waitFor(() => {
       expect(getByTestId('selected-leave-type-name')).toHaveTextContent('Sick Leave');
-      expect(getByTestId('summary-allocated-value')).toHaveTextContent('6 days');
-      expect(getByTestId('available-days-badge')).toHaveTextContent('5 days available');
+      expect(getByTestId('summary-available-value')).toHaveTextContent('5 days');
     });
 
     await fireEvent.press(getByTestId('day-slot-2026-11-16'));

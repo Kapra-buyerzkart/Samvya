@@ -54,6 +54,7 @@ function AddressFormInner(props: Omit<AddressBottomSheetProps, 'isOpen'>): React
     activeDropdown,
     dropdownSearch,
     filteredStates,
+    filteredSubregions,
     filteredCountries,
     setLine2,
     setDropdownSearch,
@@ -62,6 +63,7 @@ function AddressFormInner(props: Omit<AddressBottomSheetProps, 'isOpen'>): React
     handlePostalCodeChange,
     handleToggleDropdown,
     handleSelectState,
+    handleSelectCity,
     handleSelectCountry,
     handleSave,
   } = useAddressBottomSheet(props);
@@ -127,67 +129,6 @@ function AddressFormInner(props: Omit<AddressBottomSheetProps, 'isOpen'>): React
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={getLabelStyle(isDark)}>City*</Text>
-          <TextInput
-            style={getInputStyle(isDark, errors.city)}
-            value={city}
-            onChangeText={handleCityChange}
-            placeholder="Enter city"
-            placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-          />
-        </View>
-
-        <View style={styles.fieldGroup}>
-          <Text style={getLabelStyle(isDark)}>State*</Text>
-          <TouchableOpacity
-            testID="state-selector"
-            style={getSelectorBoxStyle(isDark, errors.state, activeDropdown === 'state')}
-            onPress={() => handleToggleDropdown('state')}
-            activeOpacity={0.7}
-          >
-            <Text style={getSelectorTextStyle(isDark, Boolean(state))} numberOfLines={1}>
-              {state || 'Select state'}
-            </Text>
-            <Feather
-              name={activeDropdown === 'state' ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color={isDark ? '#60A5FA' : '#2563EB'}
-            />
-          </TouchableOpacity>
-
-          {activeDropdown === 'state' && (
-            <View style={getDropdownContainerStyle(isDark)}>
-              <TextInput
-                style={getDropdownSearchInputStyle(isDark)}
-                value={dropdownSearch}
-                onChangeText={setDropdownSearch}
-                placeholder="Search state..."
-                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
-              />
-              <ScrollView
-                style={styles.dropdownList}
-                nestedScrollEnabled
-                keyboardShouldPersistTaps="handled"
-              >
-                {filteredStates.map((s) => (
-                  <TouchableOpacity
-                    key={s}
-                    testID={`state-item-${s}`}
-                    style={getDropdownItemStyle(isDark, state === s)}
-                    onPress={() => handleSelectState(s)}
-                  >
-                    <Text style={getDropdownItemTextStyle(isDark, state === s)}>{s}</Text>
-                    {state === s && (
-                      <Feather name="check" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.fieldGroup}>
           <Text style={getLabelStyle(isDark)}>Country*</Text>
           <TouchableOpacity
             testID="country-selector"
@@ -235,6 +176,117 @@ function AddressFormInner(props: Omit<AddressBottomSheetProps, 'isOpen'>): React
               </ScrollView>
             </View>
           )}
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={getLabelStyle(isDark)}>State*</Text>
+          <TouchableOpacity
+            testID="state-selector"
+            style={getSelectorBoxStyle(isDark, errors.state, activeDropdown === 'state')}
+            onPress={() => handleToggleDropdown('state')}
+            activeOpacity={0.7}
+          >
+            <Text style={getSelectorTextStyle(isDark, Boolean(state))} numberOfLines={1}>
+              {state || (country ? 'Select state' : 'Select country first')}
+            </Text>
+            <Feather
+              name={activeDropdown === 'state' ? 'chevron-up' : 'chevron-down'}
+              size={18}
+              color={isDark ? '#60A5FA' : '#2563EB'}
+            />
+          </TouchableOpacity>
+
+          {activeDropdown === 'state' && (
+            <View style={getDropdownContainerStyle(isDark)}>
+              <TextInput
+                style={getDropdownSearchInputStyle(isDark)}
+                value={dropdownSearch}
+                onChangeText={setDropdownSearch}
+                placeholder="Search state..."
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              />
+              <ScrollView
+                style={styles.dropdownList}
+                nestedScrollEnabled
+                keyboardShouldPersistTaps="handled"
+              >
+                {filteredStates.map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    testID={`state-item-${s}`}
+                    style={getDropdownItemStyle(isDark, state === s)}
+                    onPress={() => handleSelectState(s)}
+                  >
+                    <Text style={getDropdownItemTextStyle(isDark, state === s)}>{s}</Text>
+                    {state === s && (
+                      <Feather name="check" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.fieldGroup}>
+          <Text style={getLabelStyle(isDark)}>City / Sub-region*</Text>
+          {state ? (
+            <>
+              <TouchableOpacity
+                testID="subregion-selector"
+                style={getSelectorBoxStyle(isDark, errors.city, activeDropdown === 'city')}
+                onPress={() => handleToggleDropdown('city')}
+                activeOpacity={0.7}
+              >
+                <Text style={getSelectorTextStyle(isDark, Boolean(city))} numberOfLines={1}>
+                  {city || 'Select city / sub-region'}
+                </Text>
+                <Feather
+                  name={activeDropdown === 'city' ? 'chevron-up' : 'chevron-down'}
+                  size={18}
+                  color={isDark ? '#60A5FA' : '#2563EB'}
+                />
+              </TouchableOpacity>
+
+              {activeDropdown === 'city' && (
+                <View style={getDropdownContainerStyle(isDark)}>
+                  <TextInput
+                    style={getDropdownSearchInputStyle(isDark)}
+                    value={dropdownSearch}
+                    onChangeText={setDropdownSearch}
+                    placeholder="Search city / sub-region..."
+                    placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  />
+                  <ScrollView
+                    style={styles.dropdownList}
+                    nestedScrollEnabled
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {filteredSubregions.map((sub) => (
+                      <TouchableOpacity
+                        key={sub}
+                        testID={`subregion-item-${sub}`}
+                        style={getDropdownItemStyle(isDark, city === sub)}
+                        onPress={() => handleSelectCity(sub)}
+                      >
+                        <Text style={getDropdownItemTextStyle(isDark, city === sub)}>{sub}</Text>
+                        {city === sub && (
+                          <Feather name="check" size={16} color={isDark ? '#60A5FA' : '#2563EB'} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </>
+          ) : null}
+          <TextInput
+            style={getInputStyle(isDark, errors.city)}
+            value={city}
+            onChangeText={handleCityChange}
+            placeholder="Enter city"
+            placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+          />
         </View>
 
         <View style={styles.fieldGroup}>

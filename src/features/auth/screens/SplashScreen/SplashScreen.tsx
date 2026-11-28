@@ -1,17 +1,13 @@
-import { ImageBackground } from 'expo-image';
 import React from 'react';
 import { Animated, Image, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  getBadgePillStyle,
-  getBackgroundImageImageStyle,
-  getBackgroundImageStyle,
   getBrandSubtitleStyle,
   getBrandTextAnimatedStyle,
   getBrandTitleStyle,
-  getCopyrightTextStyle,
   getFooterAnimatedStyle,
-  getFooterBadgeTextStyle,
+  getLoaderFillAnimatedStyle,
+  getLoaderTrackStyle,
   getLogoWrapperAnimatedStyle,
   getRootAnimatedStyle,
   styles,
@@ -26,6 +22,7 @@ export function SplashScreen(): React.JSX.Element {
     textOpacity,
     textTranslateY,
     footerOpacity,
+    loaderProgress,
     screenFadeOut,
     handleSkipPress,
   } = useSplashScreen();
@@ -38,83 +35,46 @@ export function SplashScreen(): React.JSX.Element {
           getRootAnimatedStyle(screenFadeOut, isDark),
         ]}
       >
-        <ImageBackground
-          source={require('../../../../../assets/images/background.png')}
-          style={[
-            styles.backgroundImage,
-            getBackgroundImageStyle(isDark),
-          ]}
-          imageStyle={getBackgroundImageImageStyle(isDark)}
-          resizeMode="cover"
-        >
-          <SafeAreaView style={styles.safeArea}>
-            <View style={styles.centerContent}>
-              <Animated.View
-                style={[
-                  styles.logoWrapper,
-                  getLogoWrapperAnimatedStyle(logoOpacity, logoScale, isDark),
-                ]}
-              >
-                <Image
-                  source={require('../../../../../assets/images/samavya-logo.png')}
-                  style={styles.logoImage}
-                  resizeMode="contain"
-                />
-              </Animated.View>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.topSpacer} />
 
-              <Animated.View
-                style={[
-                  styles.brandTextGroup,
-                  getBrandTextAnimatedStyle(textOpacity, textTranslateY),
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.brandTitle,
-                    getBrandTitleStyle(isDark),
-                  ]}
-                >
-                  Samavya
-                </Text>
-                <Text
-                  style={[
-                    styles.brandSubtitle,
-                    getBrandSubtitleStyle(isDark),
-                  ]}
-                >
-                  Human Resource Management System
-                </Text>
-              </Animated.View>
-            </View>
+          <View style={styles.centerContent}>
+            <Animated.View
+              style={[
+                styles.logoWrapper,
+                getLogoWrapperAnimatedStyle(logoOpacity, logoScale, isDark),
+              ]}
+            >
+              <Image
+                source={require('../../../../../assets/images/samavya-logo.png')}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </Animated.View>
 
-            <Animated.View style={[styles.footer, getFooterAnimatedStyle(footerOpacity)]}>
-              <View
-                style={[
-                  styles.badgePill,
-                  getBadgePillStyle(isDark),
-                ]}
-              >
-                <View style={styles.statusDot} />
-                <Text
-                  style={[
-                    styles.footerBadgeText,
-                    getFooterBadgeTextStyle(isDark),
-                  ]}
-                >
-                  Enterprise Edition
-                </Text>
-              </View>
-              <Text
-                style={[
-                  styles.copyrightText,
-                  getCopyrightTextStyle(isDark),
-                ]}
-              >
-                Secure Biometric &amp; Attendance System
+            <Animated.View
+              style={[
+                styles.brandTextGroup,
+                getBrandTextAnimatedStyle(textOpacity, textTranslateY),
+              ]}
+            >
+              <Text style={[styles.brandTitle, getBrandTitleStyle(isDark)]}>
+                Samavya
+              </Text>
+              <Text style={[styles.brandSubtitle, getBrandSubtitleStyle(isDark)]}>
+                Workforce &amp; Attendance
               </Text>
             </Animated.View>
-          </SafeAreaView>
-        </ImageBackground>
+          </View>
+
+          <Animated.View style={[styles.footer, getFooterAnimatedStyle(footerOpacity)]}>
+            <View style={[styles.loaderTrack, getLoaderTrackStyle(isDark)]}>
+              <Animated.View
+                style={[styles.loaderFill, getLoaderFillAnimatedStyle(loaderProgress, isDark)]}
+              />
+            </View>
+          </Animated.View>
+        </SafeAreaView>
       </Animated.View>
     </Pressable>
   );

@@ -59,8 +59,8 @@ export interface LeaveBalanceSummary {
 }
 
 export const LEAVE_TYPE_TABS: LeaveTypeTab[] = [
-  { key: 'sick', label: 'Sick leaves' },
   { key: 'casual', label: 'Casual leaves' },
+  { key: 'sick', label: 'Sick leaves' },
   { key: 'earned', label: 'Earned leave' },
 ];
 
@@ -591,9 +591,19 @@ export function useLeaveStatusScreen(): UseLeaveStatusScreenResult {
   }, [currentYear, currentMonth]);
 
   const displayedRecords = useMemo(() => {
-    if (selectedFilter === 'all') return allRecords;
-    return allRecords.filter((r) => r.status === selectedFilter);
-  }, [allRecords, selectedFilter]);
+    const monthPrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+    return allRecords.filter((r) => {
+      if (selectedFilter !== 'all' && r.status !== selectedFilter) {
+        return false;
+      }
+      if (selectedDate) {
+        const keys = enumerateDateKeys(r.startDate, r.endDate);
+        return keys.includes(selectedDate);
+      }
+      const keys = enumerateDateKeys(r.startDate, r.endDate);
+      return keys.some((k) => k.startsWith(monthPrefix));
+    });
+  }, [allRecords, selectedFilter, selectedDate, currentYear, currentMonth]);
 
   const formattedSelectedDate = useMemo(
     () => formatDateKeyDisplay(selectedDate),

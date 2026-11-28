@@ -117,14 +117,9 @@ export const styles = StyleSheet.create({
   summaryCard: {
     width: '100%',
     borderRadius: 20,
-    borderWidth: 1.5,
+    borderWidth: 1,
     paddingVertical: 16,
     paddingHorizontal: 18,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
   },
   timeLoggedLabel: {
     fontSize: 12,

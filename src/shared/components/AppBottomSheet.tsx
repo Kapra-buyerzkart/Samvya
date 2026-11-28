@@ -1,53 +1,45 @@
 import React from 'react';
 import {
   ColorValue,
+  Modal,
+  Pressable,
   StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from 'react-native';
-import {
-  ModalBottomSheet,
-  type ModalBottomSheetProps,
-  BottomSheet,
-  BottomSheetProvider,
-  type BottomSheetProps,
-  type ModalDetent,
-  type Detent,
-  type SurfaceStyle,
-} from '@swmansion/react-native-bottom-sheet';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { Feather } from '@expo/vector-icons';
 import { FontFamily, useAppTheme } from '@/shared/theme';
 
 export interface AppBottomSheetProps {
-  /** Whether the bottom sheet is open. */
+  /** Whether the modal is open. */
   isOpen: boolean;
-  /** Callback fired when sheet dismissal is requested (via drag, scrim tap, back button, or close button). */
+  /** Callback fired when modal dismissal is requested (via scrim tap, back button, or close button). */
   onClose: () => void;
-  /** Sheet header title (optional). */
+  /** Modal header title (optional). */
   title?: string;
   /** Children content. */
   children: React.ReactNode;
-  /** Snap points for the sheet. Defaults to `[0, 'content']`. */
-  detents?: ModalDetent[];
-  /** Open detent index to snap to when `isOpen` is true. Defaults to 1 (content). */
+  /** Kept for backwards compatibility. */
+  detents?: unknown[];
+  /** Kept for backwards compatibility. */
   openIndex?: number;
-  /** Whether to show the top drag handle indicator. Defaults to true. */
+  /** Kept for backwards compatibility. */
   showHandle?: boolean;
   /** Whether to show the header close (X) button when a title is provided. Defaults to true. */
   showCloseButton?: boolean;
-  /** Scrim background color behind the sheet. Defaults to semi-transparent dark slate. */
+  /** Scrim background color behind the modal. */
   scrimColor?: ColorValue;
-  /** Shape and shadow of the sheet surface. */
-  surfaceStyle?: StyleProp<SurfaceStyle>;
-  /** Optional background fill node for the surface. */
+  /** Kept for backwards compatibility. */
+  surfaceStyle?: StyleProp<ViewStyle>;
+  /** Kept for backwards compatibility. */
   surface?: React.ReactNode;
   /** Content container style. */
   contentContainerStyle?: StyleProp<ViewStyle>;
-  /** Whether to use full window overlay. */
+  /** Kept for backwards compatibility. */
   windowOverlay?: boolean;
   /** Accessibility label for scrim. */
   scrimAccessibilityLabel?: string;
@@ -56,167 +48,110 @@ export interface AppBottomSheetProps {
 }
 
 /**
- * Reusable AppBottomSheet built on top of `@swmansion/react-native-bottom-sheet`.
- * Provides native Fabric gestures, content-based sizing, theme integration,
- * an accessible drag handle, and safe area insets.
+ * Standard UI Modal wrapper built on React Native's `<Modal>`.
+ * Provides centered dialog presentation, scrim tap-to-close, keyboard avoidance,
+ * and consistent light/dark fine-line borders.
  */
 export function AppBottomSheet({
   isOpen,
   onClose,
   title,
   children,
-  detents = [0, 'content'],
-  openIndex = 1,
-  showHandle = true,
   showCloseButton = true,
-  scrimColor = 'rgba(15, 23, 42, 0.45)',
-  surfaceStyle,
-  surface,
+  scrimColor = 'rgba(15, 23, 42, 0.5)',
   contentContainerStyle,
-  windowOverlay = false,
-  scrimAccessibilityLabel = 'Close bottom sheet',
+  scrimAccessibilityLabel = 'Close modal',
   testID,
 }: AppBottomSheetProps): React.JSX.Element | null {
-  const insets = useSafeAreaInsets();
   const theme = useAppTheme();
 
   if (!isOpen) {
     return null;
   }
 
-  const activeIndex = openIndex;
-
-  const defaultSurfaceStyle: SurfaceStyle = {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderCurve: 'continuous',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 10,
-  };
-
   return (
-    <ModalBottomSheet
-      index={activeIndex}
-      detents={detents}
-      scrimColor={scrimColor}
-      scrimAccessibilityLabel={scrimAccessibilityLabel}
-      windowOverlay={windowOverlay}
-      lazy
-      surfaceStyle={[defaultSurfaceStyle, surfaceStyle]}
-      surface={
-        surface ?? (
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: theme.isDark ? '#1E293B' : '#FFFFFF' },
-            ]}
-          />
-        )
-      }
-      onCloseRequest={onClose}
-      onIndexChange={(idx) => {
-        if (idx === 0) {
-          onClose();
-        }
-      }}
+    <Modal
+      visible={isOpen}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
     >
-      <View
-        testID={testID}
-        style={[
-          styles.container,
-          {
-            paddingBottom: Math.max(insets.bottom, 16),
-          },
-        ]}
-      >
-        {/* Drag Handle Indicator */}
-        {showHandle && (
-          <View style={styles.handleWrapper} pointerEvents="none">
-            <View
-              style={[
-                styles.handleBar,
-                { backgroundColor: theme.isDark ? '#475569' : '#CBD5E1' },
-              ]}
-            />
-          </View>
-        )}
-
-        {/* Optional Header */}
-        {title ? (
-          <View style={styles.headerRow}>
-            <Text
-              style={[
-                styles.headerTitle,
-                { color: theme.isDark ? '#F8FAFC' : '#0F172A' },
-              ]}
-              numberOfLines={1}
-            >
-              {title}
-            </Text>
-            {showCloseButton && (
-              <TouchableOpacity
-                onPress={onClose}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                style={styles.closeButton}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
+      <KeyboardAvoidingView behavior="padding" style={styles.overlay}>
+        <Pressable
+          style={[StyleSheet.absoluteFill, { backgroundColor: scrimColor }]}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={scrimAccessibilityLabel}
+        />
+        <View
+          testID={testID}
+          style={[
+            styles.dialog,
+            {
+              backgroundColor: theme.isDark ? '#0F172A' : '#FFFFFF',
+              borderColor: theme.isDark ? '#1E293B' : '#E2E8F0',
+            },
+          ]}
+        >
+          {title ? (
+            <View style={styles.headerRow}>
+              <Text
+                style={[
+                  styles.headerTitle,
+                  { color: theme.isDark ? '#F8FAFC' : '#0F172A' },
+                ]}
+                numberOfLines={1}
               >
-                <Feather
-                  name="x"
-                  size={20}
-                  color={theme.isDark ? '#94A3B8' : '#64748B'}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : null}
+                {title}
+              </Text>
+              {showCloseButton && (
+                <TouchableOpacity
+                  onPress={onClose}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={styles.closeButton}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close"
+                >
+                  <Feather
+                    name="x"
+                    size={20}
+                    color={theme.isDark ? '#94A3B8' : '#64748B'}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : null}
 
-        {/* Sheet Content */}
-        <View style={[styles.content, contentContainerStyle]}>{children}</View>
-      </View>
-    </ModalBottomSheet>
+          <View style={[styles.content, contentContainerStyle]}>{children}</View>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
   );
 }
 
-// Re-export underlying swmansion primitives and types for advanced custom use cases
-export {
-  ModalBottomSheet,
-  BottomSheet,
-  BottomSheetProvider,
-};
-
-export type {
-  ModalBottomSheetProps,
-  BottomSheetProps,
-  ModalDetent,
-  Detent,
-  SurfaceStyle,
-};
-
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  handleWrapper: {
-    alignItems: 'center',
+  overlay: {
+    flex: 1,
     justifyContent: 'center',
-    paddingTop: 10,
-    paddingBottom: 6,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 24,
   },
-  handleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+  dialog: {
+    width: '100%',
+    maxWidth: 480,
+    maxHeight: '85%',
+    borderRadius: 18,
+    borderWidth: 1,
+    paddingBottom: 16,
+    overflow: 'hidden',
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 18,
     paddingBottom: 12,
   },
   headerTitle: {

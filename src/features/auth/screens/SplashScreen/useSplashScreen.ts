@@ -14,6 +14,7 @@ export function useSplashScreen() {
   const [textOpacity] = useState(() => new Animated.Value(0));
   const [textTranslateY] = useState(() => new Animated.Value(14));
   const [footerOpacity] = useState(() => new Animated.Value(0));
+  const [loaderProgress] = useState(() => new Animated.Value(0));
   const [screenFadeOut] = useState(() => new Animated.Value(1));
 
   const hasNavigatedRef = useRef(false);
@@ -49,27 +50,32 @@ export function useSplashScreen() {
       Animated.parallel([
         Animated.timing(textOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 380,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(textTranslateY, {
           toValue: 0,
-          duration: 400,
+          duration: 380,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(footerOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 380,
           easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
       ]),
-      Animated.delay(850),
+      Animated.timing(loaderProgress, {
+        toValue: 1,
+        duration: 650,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: false,
+      }),
       Animated.timing(screenFadeOut, {
         toValue: 0,
-        duration: 300,
+        duration: 260,
         easing: Easing.in(Easing.quad),
         useNativeDriver: true,
       }),
@@ -89,6 +95,7 @@ export function useSplashScreen() {
     textOpacity,
     textTranslateY,
     footerOpacity,
+    loaderProgress,
     screenFadeOut,
   ]);
 
@@ -108,6 +115,7 @@ export function useSplashScreen() {
     textOpacity,
     textTranslateY,
     footerOpacity,
+    loaderProgress,
     screenFadeOut,
     handleSkipPress,
   };

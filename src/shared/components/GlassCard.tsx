@@ -75,19 +75,15 @@ const styles = StyleSheet.create({
   androidGlassCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderRadius: 28,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.95)',
     overflow: 'hidden',
   },
   iosContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0)',
     borderRadius: 28,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.95)',
-    shadowColor: '#1E3A8A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
     overflow: 'hidden',
   },
 });

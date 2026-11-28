@@ -383,7 +383,8 @@ function parseTimestampMs(
     }
   }
 
-  const parsed = Date.parse(trimmed);
+  const isoWithoutZone = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/.test(trimmed);
+  const parsed = Date.parse(isoWithoutZone ? `${trimmed}Z` : trimmed);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -574,13 +575,15 @@ function formatTotalMonthlyHours(totalMinutes: number): string {
   return mins > 0 ? `${hrs}hrs ${mins}m` : `${hrs}hrs`;
 }
 
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
 function formatTimeDisplay12h(ms: number | null): { time: string; period: string } {
   if (ms === null) {
     return { time: '—', period: 'Not recorded' };
   }
-  const dateObj = new Date(ms);
-  const rawHours = dateObj.getHours();
-  const mins = String(dateObj.getMinutes()).padStart(2, '0');
+  const istDate = new Date(ms + IST_OFFSET_MS);
+  const rawHours = istDate.getUTCHours();
+  const mins = String(istDate.getUTCMinutes()).padStart(2, '0');
   const ampm = rawHours >= 12 ? 'PM' : 'AM';
   const hours12 = String(rawHours % 12 || 12).padStart(2, '0');
   const period = rawHours < 12 ? 'Morning' : rawHours < 17 ? 'Afternoon' : 'Evening';
@@ -1169,6 +1172,35 @@ export const attendanceApi = {
         fromDate: query.fromDate,
         toDate: query.toDate,
       });
+    } catch (error) {
+      logAttendanceError(endpoint, error);
+      throw error;
+    }
+  },
+
+  async requestAttendanceCorrection(payload: {
+    employmentId: EntityId;
+    businessDate: string;
+    punchInUtc: string | null;
+    punchOutUtc: string | null;
+    reason: string;
+  }): Promise<unknown> {
+    const path = '/api/v1/workforce-access/corrections';
+    const endpoint = `POST ${path}`;
+
+    if (__DEV__) {
+      console.log(`[attendanceApi] ${endpoint} request:`, payload);
+    }
+
+    try {
+      const raw = await apiRequest<unknown>(path, {
+        method: 'POST',
+        body: payload,
+      });
+      if (__DEV__) {
+        console.log(`[attendanceApi] ${endpoint} response:`, raw);
+      }
+      return raw;
     } catch (error) {
       logAttendanceError(endpoint, error);
       throw error;

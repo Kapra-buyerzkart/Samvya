@@ -64,9 +64,6 @@ export const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 12,
     marginBottom: 12,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
   },
   summaryCol: {
     flex: 1,
@@ -96,9 +93,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
     marginBottom: 14,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
   },
   leaveTypeLeft: {
     flexDirection: 'row',
@@ -134,11 +128,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 16,
-    elevation: 3,
   },
   monthHeaderRow: {
     flexDirection: 'row',
@@ -199,14 +188,14 @@ export const styles = StyleSheet.create({
   unselectedDayContainer: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   todayOutlineContainer: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
@@ -218,7 +207,7 @@ export const styles = StyleSheet.create({
   selectedDayBox: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     backgroundColor: palette.blue700,
     alignItems: 'center',
     justifyContent: 'center',
@@ -538,14 +527,10 @@ export const getSurfaceCardStyle = (isDark: boolean): ViewStyle =>
     ? {
         backgroundColor: palette.slate900,
         borderColor: palette.slate800,
-        shadowColor: palette.black,
-        shadowOpacity: 0.25,
       }
     : {
         backgroundColor: palette.white,
         borderColor: palette.slate200,
-        shadowColor: '#0F1E36',
-        shadowOpacity: 0.05,
       };
 
 export const getLeaveTypeIconBoxStyle = (isDark: boolean): ViewStyle[] => [

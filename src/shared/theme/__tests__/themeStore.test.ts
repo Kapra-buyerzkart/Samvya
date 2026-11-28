@@ -2,11 +2,11 @@ import { useThemeStore } from '../themeStore';
 
 describe('themeStore', () => {
   beforeEach(() => {
-    useThemeStore.setState({ themePreference: 'system' });
+    useThemeStore.setState({ themePreference: 'light' });
   });
 
-  it('initializes with default system preference', () => {
-    expect(useThemeStore.getState().themePreference).toBe('system');
+  it('initializes with default light preference', () => {
+    expect(useThemeStore.getState().themePreference).toBe('light');
   });
 
   it('updates theme preference to dark and light', () => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   Easing,
@@ -31,13 +31,16 @@ import { type LeaveRecord, type LeaveTypeKey } from '../useLeaveStatusScreen';
 export interface LeaveApprovalCardProps {
   records: LeaveRecord[];
   selectedLeaveType: LeaveTypeKey;
+  selectedDateLabel?: string | null;
   isDark: boolean;
   onEditRecord?: (record: LeaveRecord) => void;
 }
 
+const PAGE_SIZE = 10;
+
 const TAB_INDEX_MAP: Record<LeaveTypeKey, number> = {
-  sick: 0,
-  casual: 1,
+  casual: 0,
+  sick: 1,
   earned: 2,
 };
 
@@ -49,10 +52,12 @@ const TIMELINE_TIMING_CONFIG = {
 export const LeaveApprovalCard = React.memo(function LeaveApprovalCard({
   records,
   selectedLeaveType,
+  selectedDateLabel,
   isDark,
   onEditRecord,
 }: LeaveApprovalCardProps): React.JSX.Element {
   const reducedMotion = useReducedMotion();
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const tabIndex = TAB_INDEX_MAP[selectedLeaveType];
   const prevTabIndexRef = useRef(tabIndex);
   const prevRecordsRef = useRef(records);
@@ -96,7 +101,9 @@ export const LeaveApprovalCard = React.memo(function LeaveApprovalCard({
     >
       <Text style={getStatusCardTitleStyle(isDark)}>Approval status</Text>
       <Text style={getStatusCardSubtitleStyle(isDark)}>
-        Approved, pending & rejected leaves status
+        {selectedDateLabel
+          ? `Showing leaves on ${selectedDateLabel}`
+          : 'Approved, pending & rejected leaves status'}
       </Text>
 
       <View style={getBlueAccentBarStyle(isDark)} />
@@ -107,7 +114,7 @@ export const LeaveApprovalCard = React.memo(function LeaveApprovalCard({
             No leave approval records for this filter.
           </Text>
         ) : (
-          records.map((record, index) => (
+          records.slice(0, visibleCount).map((record, index) => (
             <View key={record.id}>
               {index > 0 && <View style={getRecordDividerStyle(isDark)} />}
 
@@ -182,6 +189,25 @@ export const LeaveApprovalCard = React.memo(function LeaveApprovalCard({
             </View>
           ))
         )}
+        {records.length > visibleCount ? (
+          <TouchableOpacity
+            onPress={() => setVisibleCount((c) => c + PAGE_SIZE)}
+            activeOpacity={0.75}
+            testID="approval-load-more-btn"
+            style={{
+              marginTop: 12,
+              paddingVertical: 10,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: isDark ? '#334155' : '#CBD5E1',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={getTimelineEditTextStyle(isDark)}>
+              Load more ({records.length - visibleCount} remaining)
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </Animated.View>
     </GlassCard>
   );

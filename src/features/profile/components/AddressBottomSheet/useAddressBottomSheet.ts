@@ -38,24 +38,61 @@ export const COMMON_COUNTRIES = [
   'Other',
 ];
 
-export const COMMON_STATES = [
-  'Karnataka',
-  'Maharashtra',
-  'Delhi',
-  'Tamil Nadu',
-  'Telangana',
-  'Uttar Pradesh',
-  'Gujarat',
-  'Kerala',
-  'Haryana',
-  'West Bengal',
-  'Rajasthan',
-  'Punjab',
-  'Andhra Pradesh',
-  'Madhya Pradesh',
-  'Bihar',
-  'Other',
-];
+export const STATES_BY_COUNTRY: Record<string, string[]> = {
+  India: [
+    'Karnataka',
+    'Maharashtra',
+    'Delhi',
+    'Tamil Nadu',
+    'Telangana',
+    'Uttar Pradesh',
+    'Gujarat',
+    'Kerala',
+    'Haryana',
+    'West Bengal',
+    'Rajasthan',
+    'Punjab',
+    'Andhra Pradesh',
+    'Madhya Pradesh',
+    'Bihar',
+    'Other',
+  ],
+  'United States': ['California', 'New York', 'Texas', 'Washington', 'Florida', 'Illinois', 'Other'],
+  'United Kingdom': ['England', 'Scotland', 'Wales', 'Northern Ireland', 'Other'],
+  'United Arab Emirates': ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Other'],
+  Canada: ['Ontario', 'British Columbia', 'Quebec', 'Alberta', 'Other'],
+  Australia: ['New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'Other'],
+  Singapore: ['Central Region', 'East Region', 'North Region', 'North-East Region', 'West Region'],
+  Germany: ['Bavaria', 'Berlin', 'Hamburg', 'Hesse', 'North Rhine-Westphalia', 'Other'],
+  'Saudi Arabia': ['Riyadh', 'Makkah', 'Eastern Province', 'Madinah', 'Other'],
+  Other: ['Other'],
+};
+
+export const COMMON_STATES = STATES_BY_COUNTRY.India;
+
+export const SUBREGIONS_BY_STATE: Record<string, string[]> = {
+  Karnataka: ['Bengaluru', 'Mysuru', 'Mangaluru', 'Hubballi', 'Belagavi', 'Other'],
+  Maharashtra: ['Mumbai', 'Pune', 'Nagpur', 'Nashik', 'Thane', 'Other'],
+  Delhi: ['New Delhi', 'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Other'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Other'],
+  Telangana: ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Other'],
+  'Uttar Pradesh': ['Noida', 'Lucknow', 'Kanpur', 'Varanasi', 'Agra', 'Other'],
+  Gujarat: ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Other'],
+  Kerala: ['Kochi', 'Thiruvananthapuram', 'Kozhikode', 'Thrissur', 'Other'],
+  Haryana: ['Gurugram', 'Faridabad', 'Panipat', 'Ambala', 'Other'],
+  'West Bengal': ['Kolkata', 'Howrah', 'Siliguri', 'Durgapur', 'Other'],
+  Rajasthan: ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Other'],
+  Punjab: ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Other'],
+  'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Other'],
+  'Madhya Pradesh': ['Indore', 'Bhopal', 'Gwalior', 'Jabalpur', 'Other'],
+  Bihar: ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Other'],
+  California: ['San Francisco', 'Los Angeles', 'San Diego', 'San Jose', 'Other'],
+  'New York': ['New York City', 'Buffalo', 'Rochester', 'Albany', 'Other'],
+  Texas: ['Austin', 'Dallas', 'Houston', 'San Antonio', 'Other'],
+  England: ['London', 'Manchester', 'Birmingham', 'Leeds', 'Other'],
+  Dubai: ['Downtown Dubai', 'Dubai Marina', 'Deira', 'Business Bay', 'Other'],
+  Ontario: ['Toronto', 'Ottawa', 'Mississauga', 'Waterloo', 'Other'],
+};
 
 export function useAddressBottomSheet({
   onClose,
@@ -80,7 +117,7 @@ export function useAddressBottomSheet({
   const [country, setCountry] = useState(initialCountry ?? user?.country ?? '');
   const [postalCode, setPostalCode] = useState(initialPostalCode ?? user?.postalCode ?? '');
   const [errors, setErrors] = useState<Record<string, boolean>>({});
-  const [activeDropdown, setActiveDropdown] = useState<'state' | 'country' | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<'state' | 'country' | 'city' | null>(null);
   const [dropdownSearch, setDropdownSearch] = useState('');
 
   const clearError = (key: string) => {
@@ -104,18 +141,39 @@ export function useAddressBottomSheet({
     clearError('postalCode');
   };
 
-  const handleToggleDropdown = (field: 'state' | 'country') => {
+  const handleToggleDropdown = (field: 'state' | 'country' | 'city') => {
+    if (field === 'state' && !country) {
+      Alert.alert('Select Country', 'Please select a country first.');
+      return;
+    }
+    if (field === 'city' && !state) {
+      Alert.alert('Select State', 'Please select a state first.');
+      return;
+    }
     setDropdownSearch('');
     setActiveDropdown(activeDropdown === field ? null : field);
   };
 
   const handleSelectState = (selectedState: string) => {
+    if (selectedState !== state) {
+      setCity('');
+    }
     setState(selectedState);
     clearError('state');
     setActiveDropdown(null);
   };
 
+  const handleSelectCity = (selectedCity: string) => {
+    setCity(selectedCity === 'Other' ? '' : selectedCity);
+    clearError('city');
+    setActiveDropdown(null);
+  };
+
   const handleSelectCountry = (selectedCountry: string) => {
+    if (selectedCountry !== country) {
+      setState('');
+      setCity('');
+    }
     setCountry(selectedCountry);
     clearError('country');
     setActiveDropdown(null);
@@ -161,13 +219,21 @@ export function useAddressBottomSheet({
     onClose();
   };
 
-  const filteredStates = useMemo(
-    () =>
-      COMMON_STATES.filter((item) =>
-        item.toLowerCase().includes(dropdownSearch.trim().toLowerCase()),
-      ),
-    [dropdownSearch],
-  );
+  const filteredStates = useMemo(() => {
+    if (!country) return [];
+    const countryStates = STATES_BY_COUNTRY[country] ?? ['Other'];
+    return countryStates.filter((item) =>
+      item.toLowerCase().includes(dropdownSearch.trim().toLowerCase()),
+    );
+  }, [country, dropdownSearch]);
+
+  const filteredSubregions = useMemo(() => {
+    if (!state) return [];
+    const list = SUBREGIONS_BY_STATE[state] ?? ['Other'];
+    return list.filter((item) =>
+      item.toLowerCase().includes(dropdownSearch.trim().toLowerCase()),
+    );
+  }, [state, dropdownSearch]);
 
   const filteredCountries = useMemo(
     () =>
@@ -190,6 +256,7 @@ export function useAddressBottomSheet({
     activeDropdown,
     dropdownSearch,
     filteredStates,
+    filteredSubregions,
     filteredCountries,
     setLine2,
     setDropdownSearch,
@@ -198,6 +265,7 @@ export function useAddressBottomSheet({
     handlePostalCodeChange,
     handleToggleDropdown,
     handleSelectState,
+    handleSelectCity,
     handleSelectCountry,
     handleSave,
   };

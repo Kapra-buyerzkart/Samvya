@@ -180,15 +180,18 @@ describe('LeaveStatusScreen', () => {
       expect(getByTestId('summary-leaves-taken')).toHaveTextContent('01');
       expect(getByText('19 Nov 2026')).toBeTruthy();
       expect(getByText('23 Nov 2026')).toBeTruthy();
-      expect(getByText('10 Oct 2026')).toBeTruthy();
-      expect(getByText('12 Oct 2026')).toBeTruthy();
     });
 
     expect(getAllByText('Approved').length).toBeGreaterThanOrEqual(2);
-    expect(getByText('Rejected')).toBeTruthy();
-    expect(getAllByText('Edit').length).toBe(2);
     expect(getByTestId('edit-leave-request-101')).toBeTruthy();
-    expect(getByTestId('edit-leave-request-102')).toBeTruthy();
+
+    await fireEvent.press(getByTestId('prev-month-btn'));
+    await waitFor(() => {
+      expect(getByText('10 Oct 2026')).toBeTruthy();
+      expect(getByText('12 Oct 2026')).toBeTruthy();
+      expect(getByText('Rejected')).toBeTruthy();
+      expect(getByTestId('edit-leave-request-102')).toBeTruthy();
+    });
   });
 
   it('switches leave type tabs and updates displayed live approval records', async () => {
@@ -427,19 +430,19 @@ describe('LeaveStatusScreen', () => {
     expect(getCircleStyle('status-day-2026-11-04')).toMatchObject({
       width: 44,
       height: 44,
-      borderRadius: 22,
+      borderRadius: 10,
       borderColor: '#10B981',
     });
     expect(getCircleStyle('status-day-2026-11-05')).toMatchObject({
       width: 44,
       height: 44,
-      borderRadius: 22,
+      borderRadius: 10,
       borderColor: '#EAB308',
     });
     expect(getCircleStyle('status-day-2026-11-06')).toMatchObject({
       width: 44,
       height: 44,
-      borderRadius: 22,
+      borderRadius: 10,
       borderColor: '#EF4444',
     });
   });

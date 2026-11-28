@@ -1,14 +1,59 @@
 import { useAuthStore } from '@/features/auth';
-import { type DayWorkHours, type MonthlyWorkHoursSummary } from '@/features/employment/domain/types';
+import {
+  type DayWorkHours,
+  type MonthlyWorkHoursSummary,
+} from '@/features/employment/domain/types';
 import { isApiError } from '@/shared/api';
 import { useAppTheme } from '@/shared/theme';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
 import {
   attendanceApi,
   getMonthDateRange,
   type AttendanceRangeRecord,
 } from '../../api/attendanceApi';
+
+function parseIstTimeInputToUtcIso(dateKey: string, rawTime: string): string | null {
+  const trimmed = rawTime.trim();
+  if (!trimmed || trimmed === '—') return null;
+
+  const match12 = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(trimmed);
+  const match24 = /^(\d{1,2}):(\d{2})$/.exec(trimmed);
+
+  let hours: number;
+  let minutes: number;
+
+  if (match12) {
+    const h = Number(match12[1]);
+    const m = Number(match12[2]);
+    const meridiem = (match12[3] ?? 'AM').toUpperCase();
+    if (h < 1 || h > 12 || m < 0 || m > 59) return null;
+    hours = meridiem === 'PM' ? (h === 12 ? 12 : h + 12) : h === 12 ? 0 : h;
+    minutes = m;
+  } else if (match24) {
+    const h = Number(match24[1]);
+    const m = Number(match24[2]);
+    if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+    hours = h;
+    minutes = m;
+  } else {
+    return null;
+  }
+
+  const [yStr, mStr, dStr] = dateKey.split('-');
+  const year = Number(yStr);
+  const month = Number(mStr);
+  const day = Number(dStr);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return null;
+  }
+
+  // Convert IST (UTC+05:30) wall time on `dateKey` to UTC epoch milliseconds
+  const istAsUtcMs = Date.UTC(year, month - 1, day, hours, minutes, 0, 0);
+  const utcMs = istAsUtcMs - 5.5 * 60 * 60 * 1000;
+  return new Date(utcMs).toISOString();
+}
 
 export interface CalendarDay {
   dayNumber: number;
@@ -61,20 +106,26 @@ export function useAttendanceStatusScreen() {
   const [currentMonth, setCurrentMonth] = useState(() => initialDate.getMonth());
   const [selectedDay, setSelectedDay] = useState(() => initialDate.getDate());
   const [reloadCount, setReloadCount] = useState(0);
-  const [fetchState, setFetchState] = useState<{
-    key: string;
-    recordsByDay: Record<number, AttendanceRangeRecord>;
-    monthlySummary: MonthlyWorkHoursSummary | null;
-    error: string | null;
-  } | null>(null);
+  const [fetchCache, setFetchCache] = useState<
+    Record<
+      string,
+      {
+        requestKey: string;
+        recordsByDay: Record<number, AttendanceRangeRecord>;
+        monthlySummary: MonthlyWorkHoursSummary | null;
+        error: string | null;
+      }
+    >
+  >({});
 
-  const requestKey =
+  const monthKey =
     employmentId !== null && employmentId !== ''
-      ? `${employmentId}:${currentYear}:${currentMonth}:${reloadCount}`
+      ? `${employmentId}:${currentYear}:${currentMonth}`
       : null;
+  const requestKey = monthKey !== null ? `${monthKey}:${reloadCount}` : null;
 
   useEffect(() => {
-    if (!requestKey || employmentId === null || employmentId === '') {
+    if (!requestKey || !monthKey || employmentId === null || employmentId === '') {
       return;
     }
 
@@ -109,8 +160,7 @@ export function useAttendanceStatusScreen() {
         }
       }
 
-      const monthlySummary =
-        monthResult.status === 'fulfilled' ? monthResult.value : null;
+      const monthlySummary = monthResult.status === 'fulfilled' ? monthResult.value : null;
 
       let error: string | null = null;
       if (rangeResult.status === 'rejected') {
@@ -123,22 +173,27 @@ export function useAttendanceStatusScreen() {
           : 'Unable to load monthly attendance summary right now.';
       }
 
-      setFetchState({
-        key: requestKey,
-        recordsByDay,
-        monthlySummary,
-        error,
-      });
+      setFetchCache((prev) => ({
+        ...prev,
+        [monthKey]: {
+          requestKey,
+          recordsByDay,
+          monthlySummary,
+          error,
+        },
+      }));
     });
 
     return () => {
       isCancelled = true;
     };
-  }, [requestKey, employmentId, currentYear, currentMonth]);
+  }, [requestKey, monthKey, employmentId, currentYear, currentMonth]);
 
-  const activeFetchState =
-    requestKey !== null && fetchState?.key === requestKey ? fetchState : null;
-  const isLoading = requestKey !== null && activeFetchState === null;
+  const activeFetchState = monthKey !== null ? (fetchCache[monthKey] ?? null) : null;
+  const isLoading =
+    requestKey !== null &&
+    (activeFetchState === null || activeFetchState.requestKey !== requestKey);
+  const isInitialLoading = isLoading && Object.keys(fetchCache).length === 0;
   const loadError = activeFetchState?.error ?? null;
   const apiRecordsByDay = useMemo(() => activeFetchState?.recordsByDay ?? {}, [activeFetchState]);
   const monthlySummary = activeFetchState?.monthlySummary ?? null;
@@ -156,33 +211,35 @@ export function useAttendanceStatusScreen() {
     setReloadCount((c) => c + 1);
   }, []);
 
-  const handlePrevMonth = (): void => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear((y) => y - 1);
-    } else {
-      setCurrentMonth((m) => m - 1);
-    }
+  const handlePrevMonth = useCallback((): void => {
+    setCurrentMonth((m) => {
+      if (m === 0) {
+        setCurrentYear((y) => y - 1);
+        return 11;
+      }
+      return m - 1;
+    });
     setSelectedDay(1);
-  };
+  }, []);
 
-  const handleNextMonth = (): void => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear((y) => y + 1);
-    } else {
-      setCurrentMonth((m) => m + 1);
-    }
+  const handleNextMonth = useCallback((): void => {
+    setCurrentMonth((m) => {
+      if (m === 11) {
+        setCurrentYear((y) => y + 1);
+        return 0;
+      }
+      return m + 1;
+    });
     setSelectedDay(1);
-  };
+  }, []);
 
-  const handleBack = (): void => {
+  const handleBack = useCallback((): void => {
     if (router.canGoBack()) {
       router.back();
     } else {
       router.replace('/(app)');
     }
-  };
+  }, []);
 
   const calendarDays = useMemo<CalendarDay[]>(() => {
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
@@ -211,12 +268,12 @@ export function useAttendanceStatusScreen() {
     return days;
   }, [currentYear, currentMonth]);
 
-  const dayStatusByDay = useMemo<Record<number, 'approved' | 'pending' | 'rejected'>>(() => {
+  const dayStatusByDay = useMemo<Record<number, 'approved' | 'pending'>>(() => {
     if (employmentId === null || employmentId === '') {
       return {};
     }
 
-    const result: Record<number, 'approved' | 'pending' | 'rejected'> = {};
+    const result: Record<number, 'approved' | 'pending'> = {};
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
@@ -227,10 +284,9 @@ export function useAttendanceStatusScreen() {
           (record.punchInTimeUtc !== null ||
             record.punchOutTimeUtc !== null ||
             record.workedMinutes > 0 ||
-            record.status === 'pending' ||
-            record.status === 'rejected');
-        if (hasActivity) {
-          result[dayNum] = record.status;
+            record.status === 'pending');
+        if (hasActivity && record.status !== 'rejected') {
+          result[dayNum] = record.status === 'pending' ? 'pending' : 'approved';
           continue;
         }
       }
@@ -274,7 +330,10 @@ export function useAttendanceStatusScreen() {
           apiRecord.workedMinutes > 0 ||
           apiRecord.status === 'pending');
 
-      if (!hasActivity && !(monthlyDay && (monthlyDay.hours > 0 || monthlyDay.status !== 'no_entry'))) {
+      if (
+        !hasActivity &&
+        !(monthlyDay && (monthlyDay.hours > 0 || monthlyDay.status !== 'no_entry'))
+      ) {
         const isWeekend = apiRecord.isWeekend ?? monthlyDay?.isWeekend ?? defaultWeekend;
         const isHoliday = apiRecord.isHoliday ?? monthlyDay?.isHoliday ?? false;
         return {
@@ -311,7 +370,10 @@ export function useAttendanceStatusScreen() {
       };
     }
 
-    if (monthlyDay && (monthlyDay.hours > 0 || monthlyDay.status === 'recorded' || monthlyDay.status === 'lesser')) {
+    if (
+      monthlyDay &&
+      (monthlyDay.hours > 0 || monthlyDay.status === 'recorded' || monthlyDay.status === 'lesser')
+    ) {
       return {
         status: 'approved',
         punchInTime: '—',
@@ -348,12 +410,108 @@ export function useAttendanceStatusScreen() {
     return `${weekday}, ${selectedDay} ${monthShort} ${currentYear}`;
   }, [currentYear, currentMonth, selectedDay]);
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editPunchInInput, setEditPunchInInput] = useState('');
+  const [editPunchOutInput, setEditPunchOutInput] = useState('');
+  const [editReasonInput, setEditReasonInput] = useState('');
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  const selectedBusinessDate = useMemo(
+    () =>
+      `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`,
+    [currentYear, currentMonth, selectedDay],
+  );
+
+  const handleOpenEditModal = useCallback((): void => {
+    setEditPunchInInput(selectedPunchInfo.punchInTime === '—' ? '' : selectedPunchInfo.punchInTime);
+    setEditPunchOutInput(
+      selectedPunchInfo.punchOutTime === '—' ? '' : selectedPunchInfo.punchOutTime,
+    );
+    setEditReasonInput('');
+    setEditError(null);
+    setIsEditModalOpen(true);
+  }, [selectedPunchInfo.punchInTime, selectedPunchInfo.punchOutTime]);
+
+  const handleCloseEditModal = useCallback((): void => {
+    if (isSubmittingEdit) return;
+    setIsEditModalOpen(false);
+    setEditError(null);
+  }, [isSubmittingEdit]);
+
+  const handleSubmitEdit = useCallback(async (): Promise<void> => {
+    if (employmentId === null || employmentId === '') {
+      setEditError('No active employment selected.');
+      return;
+    }
+
+    const hasIn = editPunchInInput.trim().length > 0;
+    const hasOut = editPunchOutInput.trim().length > 0;
+    if (!hasIn && !hasOut) {
+      setEditError('Enter at least a Punch-in or Punch-out time (e.g. 09:30 AM).');
+      return;
+    }
+
+    const punchInUtc = hasIn
+      ? parseIstTimeInputToUtcIso(selectedBusinessDate, editPunchInInput)
+      : null;
+    if (hasIn && !punchInUtc) {
+      setEditError('Invalid Punch-in time. Use HH:MM AM/PM (e.g. 09:30 AM) or 24h HH:MM.');
+      return;
+    }
+
+    const punchOutUtc = hasOut
+      ? parseIstTimeInputToUtcIso(selectedBusinessDate, editPunchOutInput)
+      : null;
+    if (hasOut && !punchOutUtc) {
+      setEditError('Invalid Punch-out time. Use HH:MM AM/PM (e.g. 06:15 PM) or 24h HH:MM.');
+      return;
+    }
+
+    if (editReasonInput.trim().length < 3) {
+      setEditError('Please enter a brief reason for the correction.');
+      return;
+    }
+
+    setIsSubmittingEdit(true);
+    setEditError(null);
+    try {
+      await attendanceApi.requestAttendanceCorrection({
+        employmentId,
+        businessDate: selectedBusinessDate,
+        punchInUtc,
+        punchOutUtc,
+        reason: editReasonInput.trim(),
+      });
+      setIsEditModalOpen(false);
+      handleRetryLoad();
+      Alert.alert(
+        'Correction Submitted',
+        'Your attendance correction request has been sent for review.',
+      );
+    } catch (error) {
+      setEditError(
+        isApiError(error) ? error.message : 'Unable to submit attendance correction right now.',
+      );
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  }, [
+    employmentId,
+    editPunchInInput,
+    editPunchOutInput,
+    editReasonInput,
+    selectedBusinessDate,
+    handleRetryLoad,
+  ]);
+
   return {
     isDark,
     currentYear,
     currentMonth,
     selectedDay,
     isLoading,
+    isInitialLoading,
     loadError,
     monthlySummary,
     dayStatusByDay,
@@ -367,5 +525,17 @@ export function useAttendanceStatusScreen() {
     formattedSelectedDate,
     monthNames: MONTH_NAMES,
     weekdayNames: WEEKDAY_NAMES,
+    isEditModalOpen,
+    editPunchInInput,
+    setEditPunchInInput,
+    editPunchOutInput,
+    setEditPunchOutInput,
+    editReasonInput,
+    setEditReasonInput,
+    editError,
+    isSubmittingEdit,
+    handleOpenEditModal,
+    handleCloseEditModal,
+    handleSubmitEdit,
   };
 }

@@ -18,79 +18,93 @@ export const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    justifyContent: 'space-between',
+    marginBottom: 16,
     paddingVertical: 4,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+  },
+  backIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 19,
-    fontFamily: FontFamily.headingSemiBold,
-    fontWeight: '600',
-    marginLeft: 6,
-    letterSpacing: -0.2,
+    fontFamily: FontFamily.headingBold,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  overviewCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 14,
   },
   statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    justifyContent: 'space-between',
+    gap: 8,
   },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
-    borderStyle: 'dashed',
   },
   statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   statusBadgeText: {
-    fontSize: 13,
-    fontFamily: FontFamily.medium,
-    fontWeight: '500',
+    fontSize: 12.5,
+    fontFamily: FontFamily.semiBold,
+    fontWeight: '600',
   },
   statusRowDivider: {
-    width: 1,
-    height: 16,
-    marginHorizontal: 12,
+    height: 1,
+    marginVertical: 12,
   },
   submittedDateText: {
-    fontSize: 13,
-    fontFamily: FontFamily.regular,
+    fontSize: 12,
+    fontFamily: FontFamily.medium,
   },
   cancelLeaveBtn: {
-    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 10,
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 9,
     borderWidth: 1,
-    marginBottom: 14,
   },
   cancelLeaveBtnText: {
-    fontSize: 13.5,
-    fontFamily: FontFamily.medium,
-    fontWeight: '500',
+    fontSize: 12.5,
+    fontFamily: FontFamily.semiBold,
+    fontWeight: '600',
   },
   originalCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 12,
+    gap: 12,
+  },
+  originalIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   originalCardTextCol: {
     flex: 1,
@@ -169,19 +183,24 @@ export const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
   },
   sectionHeading: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: FontFamily.headingBold,
     fontWeight: '700',
     letterSpacing: -0.2,
-    marginTop: 4,
     marginBottom: 14,
+  },
+  formCard: {
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
   },
   fieldBlock: {
     marginBottom: 14,
   },
   fieldLabel: {
-    fontSize: 13,
-    fontFamily: FontFamily.regular,
+    fontSize: 12.5,
+    fontFamily: FontFamily.semiBold,
     marginBottom: 6,
   },
   selectBox: {
@@ -246,16 +265,11 @@ export const styles = StyleSheet.create({
     marginBottom: 18,
   },
   saveButton: {
-    height: 50,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 6,
-    shadowColor: '#1D4ED8',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
   },
   saveButtonText: {
     fontSize: 15.5,
@@ -332,7 +346,7 @@ export const styles = StyleSheet.create({
   calendarDayPill: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -419,25 +433,15 @@ export const getCancelLeaveBtnTextStyle = (isDark: boolean): TextStyle[] => [
 ];
 
 export const getCardSurfaceStyle = (isDark: boolean): ViewStyle => ({
-  backgroundColor: isDark ? 'rgba(15, 23, 42, 0.88)' : '#FFFFFF',
-  borderColor: isDark ? '#334155' : '#D8E1F0',
-  shadowColor: '#0F172A',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: isDark ? 0.2 : 0.05,
-  shadowRadius: 8,
-  elevation: 2,
+  backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+  borderColor: isDark ? '#334155' : '#E2E8F0',
 });
 
 export const getOriginalCardStyle = (isDark: boolean): ViewStyle[] => [
-  styles.originalCard,
+  styles.overviewCard,
   {
-    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.88)' : 'rgba(255, 255, 255, 0.92)',
-    borderColor: isDark ? '#334155' : '#D5E2FA',
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.04,
-    shadowRadius: 6,
-    elevation: 1,
+    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+    borderColor: isDark ? '#1E293B' : '#E2E8F0',
   },
 ];
 
@@ -462,14 +466,14 @@ export const getApproverInitialsStyle = (isDark: boolean): TextStyle[] => [
 export const getRejectedReasonCardStyle = (isDark: boolean): ViewStyle[] => [
   styles.rejectedReasonCard,
   {
-    backgroundColor: isDark ? 'rgba(30, 58, 138, 0.22)' : '#EEF3FD',
-    borderColor: isDark ? '#1E40AF' : '#CBD8F6',
+    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : '#FEF2F2',
+    borderColor: isDark ? 'rgba(248, 113, 113, 0.28)' : '#FECACA',
   },
 ];
 
 export const getRejectedReasonTitleStyle = (isDark: boolean): TextStyle[] => [
   styles.rejectedReasonTitle,
-  { color: isDark ? '#93C5FD' : '#2E50AB' },
+  { color: isDark ? '#FCA5A5' : '#DC2626' },
 ];
 
 export const getRejectedReasonTextStyle = (isDark: boolean): TextStyle[] => [

@@ -60,7 +60,11 @@ export function LoginScreen(): React.JSX.Element {
       imageStyle={getImageProps(isDark)}
     >
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingScrollView contentContainerStyle={styles.scrollContent}>
+        <KeyboardAvoidingScrollView
+          contentContainerStyle={styles.scrollContent}
+          mode="layout"
+          bottomOffset={24}
+        >
           <View style={styles.header}>
             <Text style={[styles.brandTitle, getBrandTitleStyle(isDark)]}>Samavya</Text>
             <Text style={[styles.brandSubtitle, getBrandSubtitleStyle(isDark)]}>

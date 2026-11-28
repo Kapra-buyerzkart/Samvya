@@ -5,7 +5,7 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { G, Path, Svg, Text as SvgText, TSpan } from 'react-native-svg';
+import { Circle, G, Path, Svg, Text as SvgText, TSpan } from 'react-native-svg';
 import { type DurationKey, type LeavePieDataItem } from '../../data/leaveHistoryData';
 import { getChartAuraBgStyle, styles } from './PieChart.styles';
 import {
@@ -135,6 +135,9 @@ export function AnimatedLeavePieChart({
     opacity: auraOpacity.value,
   }));
 
+  const totalValue = data.reduce((sum, item) => sum + (item.value ?? 0), 0);
+  const totalDaysLabel = `${Number(totalValue.toFixed(1))} ${totalValue === 1 ? 'day' : 'days'}`;
+
   return (
     <View style={styles.chartContainer} testID="gifted-pie-chart-container">
       <Animated.View
@@ -156,6 +159,32 @@ export function AnimatedLeavePieChart({
             radius={radius}
           />
         ))}
+        <Circle
+          cx={0}
+          cy={0}
+          r={52}
+          fill={isDark ? '#0F172A' : '#FFFFFF'}
+        />
+        <SvgText
+          x={0}
+          y={-4}
+          fill={isDark ? '#F8FAFC' : '#0F172A'}
+          fontSize="16"
+          fontWeight="700"
+          textAnchor="middle"
+        >
+          {totalDaysLabel}
+        </SvgText>
+        <SvgText
+          x={0}
+          y={14}
+          fill={isDark ? '#94A3B8' : '#64748B'}
+          fontSize="11"
+          fontWeight="500"
+          textAnchor="middle"
+        >
+          Approved
+        </SvgText>
       </Svg>
     </View>
   );

@@ -183,10 +183,10 @@ export function LeaveStatusScreen(): React.JSX.Element {
                 activeOpacity={0.8}
                 testID="view-leave-history-btn"
                 accessibilityRole="button"
-                accessibilityLabel="view leave history"
+                accessibilityLabel="View Leave History"
               >
                 <Text style={styles.viewHistoryBtnText} numberOfLines={1}>
-                  view leave history
+                  View Leave History
                 </Text>
               </TouchableOpacity>
             </View>
@@ -315,6 +315,7 @@ export function LeaveStatusScreen(): React.JSX.Element {
           <LeaveApprovalCard
             records={displayedRecords}
             selectedLeaveType={selectedLeaveType}
+            selectedDateLabel={formattedSelectedDate}
             isDark={isDark}
             onEditRecord={handleEditLeaveRequest}
           />

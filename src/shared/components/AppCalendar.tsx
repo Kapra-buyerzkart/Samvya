@@ -73,7 +73,7 @@ const CIRCLE_MARKER_STYLES: Record<
   },
 };
 
-export function AppCalendar({
+export const AppCalendar = React.memo(function AppCalendar({
   days,
   getDayState,
   onDayPress,
@@ -218,7 +218,7 @@ export function AppCalendar({
       {footerContent}
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
@@ -226,21 +226,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 3,
   },
   cardLight: {
     backgroundColor: '#FFFFFF',
     borderColor: '#E2E8F0',
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.05,
   },
   cardDark: {
     backgroundColor: '#0F172A',
     borderColor: '#1E293B',
-    shadowColor: '#000000',
-    shadowOpacity: 0.25,
   },
   weekdaysRow: {
     flexDirection: 'row',
@@ -269,7 +262,7 @@ const styles = StyleSheet.create({
   unselectedDayContainer: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -300,7 +293,7 @@ const styles = StyleSheet.create({
   selectedCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 10,
     backgroundColor: '#1D4ED8',
     alignItems: 'center',
     justifyContent: 'center',

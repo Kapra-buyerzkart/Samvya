@@ -1,5 +1,6 @@
 import { TactilePressable } from '@/shared/animations';
 import { AppBottomSheet, AppCalendar, KeyboardAvoidingScrollView } from '@/shared/components';
+import { router } from 'expo-router';
 import { RequestLeaveShimmer } from '../../components/LeaveShimmers';
 import { palette } from '@/shared/theme';
 import { Feather } from '@expo/vector-icons';
@@ -136,11 +137,16 @@ export function RequestLeaveScreen(): React.JSX.Element {
             ) : null}
           </View>
 
-          <View style={getAvailableBadgeStyle(isDark)}>
-            <Text style={getAvailableBadgeTextStyle(isDark)} testID="available-days-badge">
-              {summary ? `${formatDaysLabel(summary.available)} available` : '—'}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={getAvailableBadgeStyle(isDark)}
+            onPress={() => router.push('/(app)/leave/status')}
+            activeOpacity={0.75}
+            testID="leave-status-nav-btn"
+            accessibilityRole="button"
+            accessibilityLabel="Leave Status"
+          >
+            <Text style={getAvailableBadgeTextStyle(isDark)}>Leave Status</Text>
+          </TouchableOpacity>
         </View>
 
         {loadError ? (
@@ -160,67 +166,67 @@ export function RequestLeaveScreen(): React.JSX.Element {
           <RequestLeaveShimmer isDark={isDark} />
         ) : (
           <>
-            {/* 2. Leave Summary Metrics Card (Allocated / Taken / Pending) */}
+            {/* 2. Leave Type Dropdown Card */}
+            <TactilePressable
+              style={[styles.leaveTypeCard, surfaceCardStyle]}
+              onPress={() => {
+                if (leaveTypes.length > 0) {
+                  setIsLeaveTypeSheetOpen(true);
+                }
+              }}
+              activeScale={0.98}
+              accessibilityRole="button"
+              accessibilityLabel="Select leave type"
+              testID="leave-type-dropdown"
+            >
+              <View style={styles.leaveTypeLeft}>
+                <View style={getLeaveTypeIconBoxStyle(isDark)}>
+                  <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : palette.blue600} />
+                </View>
+                <View style={styles.leaveTypeTextCol}>
+                  <Text style={getLeaveTypeTitleStyle(isDark)} testID="selected-leave-type-name">
+                    {leaveTypeDisplayName}
+                  </Text>
+                  <Text style={getLeaveTypeSubtitleStyle(isDark)}>
+                    {summary ? `${formatDaysLabel(summary.available)} available` : '—'}
+                  </Text>
+                </View>
+              </View>
+
+              <Feather
+                name="chevron-down"
+                size={18}
+                color={isDark ? palette.slate400 : palette.slate500}
+              />
+            </TactilePressable>
+
+            {/* 3. Leave Summary Metrics Card (Available / Taken / Pending) */}
             <View style={[styles.summaryRow, surfaceCardStyle]}>
-          <View style={styles.summaryCol}>
-            <Text style={getSummaryLabelStyle(isDark)}>Allocated</Text>
-            <Text style={getSummaryValueStyle(isDark)} testID="summary-allocated-value">
-              {summary ? formatDaysLabel(summary.allocated) : '—'}
-            </Text>
-          </View>
+              <View style={styles.summaryCol}>
+                <Text style={getSummaryLabelStyle(isDark)}>Available</Text>
+                <Text style={getSummaryValueStyle(isDark)} testID="summary-available-value">
+                  {summary ? formatDaysLabel(summary.available) : '—'}
+                </Text>
+              </View>
 
-          <View style={getSummaryDividerStyle(isDark)} />
+              <View style={getSummaryDividerStyle(isDark)} />
 
-          <View style={styles.summaryCol}>
-            <Text style={getSummaryLabelStyle(isDark)}>Taken</Text>
-            <Text style={getSummaryValueStyle(isDark)} testID="summary-taken-value">
-              {summary ? formatDaysLabel(summary.taken) : '—'}
-            </Text>
-          </View>
+              <View style={styles.summaryCol}>
+                <Text style={getSummaryLabelStyle(isDark)}>Taken</Text>
+                <Text style={getSummaryValueStyle(isDark)} testID="summary-taken-value">
+                  {summary ? formatDaysLabel(summary.taken) : '—'}
+                </Text>
+              </View>
 
-          <View style={getSummaryDividerStyle(isDark)} />
+              <View style={getSummaryDividerStyle(isDark)} />
 
-          <View style={styles.summaryCol}>
-            <Text style={getSummaryLabelStyle(isDark)}>Pending</Text>
-            <Text style={getSummaryValueStyle(isDark)} testID="summary-pending-value">
-              {summary ? formatDaysLabel(summary.pending) : '—'}
-            </Text>
-          </View>
-        </View>
-
-        {/* 3. Leave Type Dropdown Card */}
-        <TactilePressable
-          style={[styles.leaveTypeCard, surfaceCardStyle]}
-          onPress={() => {
-            if (leaveTypes.length > 0) {
-              setIsLeaveTypeSheetOpen(true);
-            }
-          }}
-          activeScale={0.98}
-          accessibilityRole="button"
-          accessibilityLabel="Select leave type"
-          testID="leave-type-dropdown"
-        >
-          <View style={styles.leaveTypeLeft}>
-            <View style={getLeaveTypeIconBoxStyle(isDark)}>
-              <Feather name="calendar" size={20} color={isDark ? '#60A5FA' : palette.blue600} />
+              <View style={styles.summaryCol}>
+                <Text style={getSummaryLabelStyle(isDark)}>Pending</Text>
+                <Text style={getSummaryValueStyle(isDark)} testID="summary-pending-value">
+                  {summary ? formatDaysLabel(summary.pending) : '—'}
+                </Text>
+              </View>
             </View>
-            <View style={styles.leaveTypeTextCol}>
-              <Text style={getLeaveTypeTitleStyle(isDark)} testID="selected-leave-type-name">
-                {leaveTypeDisplayName}
-              </Text>
-              <Text style={getLeaveTypeSubtitleStyle(isDark)}>
-                {summary ? `${formatDaysLabel(summary.available)} available` : '—'}
-              </Text>
-            </View>
-          </View>
-
-          <Feather
-            name="chevron-down"
-            size={18}
-            color={isDark ? palette.slate400 : palette.slate500}
-          />
-        </TactilePressable>
           </>
         )}
 

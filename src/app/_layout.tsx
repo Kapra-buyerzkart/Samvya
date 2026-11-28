@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { BottomSheetProvider } from '@swmansion/react-native-bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -59,15 +60,17 @@ export default function RootLayout(): React.JSX.Element | null {
   return (
     <AppErrorBoundary>
       <SafeAreaProvider>
-        <BottomSheetProvider>
-          <QueryClientProvider client={queryClient}>
-            <StatusBar style={theme.isDark ? 'light' : 'dark'} />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(app)" options={{ headerShown: false }} />
-            </Stack>
-          </QueryClientProvider>
-        </BottomSheetProvider>
+        <KeyboardProvider>
+          <BottomSheetProvider>
+            <QueryClientProvider client={queryClient}>
+              <StatusBar style={theme.isDark ? 'light' : 'dark'} />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="(app)" options={{ headerShown: false }} />
+              </Stack>
+            </QueryClientProvider>
+          </BottomSheetProvider>
+        </KeyboardProvider>
       </SafeAreaProvider>
     </AppErrorBoundary>
   );

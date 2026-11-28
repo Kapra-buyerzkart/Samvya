@@ -1,13 +1,14 @@
 import React from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
-  KeyboardAvoidingViewProps,
-  Platform,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  type KeyboardAvoidingViewProps,
+} from 'react-native-keyboard-controller';
 
 export interface AppKeyboardAvoidingViewProps extends KeyboardAvoidingViewProps {
   /**
@@ -18,19 +19,17 @@ export interface AppKeyboardAvoidingViewProps extends KeyboardAvoidingViewProps 
 }
 
 export function AppKeyboardAvoidingView({
-  behavior,
+  behavior = 'padding',
   style,
   dismissKeyboardOnTap = false,
   children,
   testID,
   ...props
 }: AppKeyboardAvoidingViewProps): React.JSX.Element {
-  const defaultBehavior = Platform.OS === 'ios' ? 'padding' : undefined;
-
   const content = (
     <KeyboardAvoidingView
       testID={testID}
-      behavior={behavior !== undefined ? behavior : defaultBehavior}
+      behavior={behavior}
       style={[styles.container, style]}
       {...props}
     >

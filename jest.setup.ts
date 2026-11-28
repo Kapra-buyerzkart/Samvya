@@ -1,6 +1,11 @@
 // Mock react-native-worklets
 jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
 
+// Mock react-native-keyboard-controller
+jest.mock('react-native-keyboard-controller', () =>
+  require('react-native-keyboard-controller/jest'),
+);
+
 // Mock Reanimated
 jest.mock('react-native-reanimated', () => {
   try {

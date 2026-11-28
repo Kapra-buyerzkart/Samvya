@@ -67,13 +67,13 @@ const extraProguardRules = `
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'HRMS Attendance',
+  name: 'Samavya',
   slug: 'hrms-attendance',
   version: appVersion,
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'hrms',
-  userInterfaceStyle: 'automatic',
+  userInterfaceStyle: 'light',
   runtimeVersion: {
     policy: 'fingerprint',
   },

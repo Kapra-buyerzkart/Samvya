@@ -140,11 +140,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: 14,
     borderWidth: 1,
-    shadowColor: '#0F1E36',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
   },
   iconCircle: {
     width: 38,
